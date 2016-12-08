@@ -15,15 +15,12 @@ define(['jquery'], function($) {
 				html: generateCars(),
 				title: "[" + this.x + "," + this.y + "]"
 			});
-			if(cars.length > 0) {
-				console.debug(el);
-			}
 			return el;
 		};
 
-		self.isRoad = function() {
-			return isRoad ? true : false;
-		};
+		function generateStyle() {
+			return "background-color: " + (isRoad ? "grey" : "white") + "; width: 20px; height: 20px; text-align: center;";
+		}
 
 		function generateCars() {
 			if(cars.length == 0) {
@@ -37,6 +34,10 @@ define(['jquery'], function($) {
 			self.explodeCars();
 			return "<span style='color: red;'>X</span>";
 		}
+
+		self.isRoad = function() {
+			return isRoad ? true : false;
+		};
 
 		self.addCar = function(car) {
 			cars.push(car);
@@ -65,10 +66,6 @@ define(['jquery'], function($) {
 			cars = [];
 		};
 
-		function generateStyle() {
-			return "background-color: " + (isRoad ? "grey" : "white") + "; width: 20px; height: 20px; text-align: center;";
-		}
-
 		self.getNorthCel = function() {
 			return getNeighborCel(0, -1);
 		};
@@ -94,6 +91,12 @@ define(['jquery'], function($) {
 			}
 			var neighborCel = self.tableParent.getCelAt(self.x * 1 + dX, self.y * 1 + dY);
 			return neighborCel;
+		}
+
+		self.isBorder = function() {
+			return self.x === 0 || self.y === 0 
+				|| self.x === self.tableParent.getXDimension()-1 
+				|| self.y === self.tableParent.getYDimension()-1;
 		}
 	}
 });

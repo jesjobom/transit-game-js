@@ -51,7 +51,10 @@ define(['jquery', 'transit-cel', 'transit-car'], function($, cel, car) {
 
 			for(line in cels) {
 				for(cel in cels[line]) {
-					if(cels[line][cel].isRoad() && cels[line][cel].quantityCars() == 0) {
+					var randomValue = Math.random();
+
+					if(randomValue < 0.3 && cels[line][cel].isRoad() && cels[line][cel].quantityCars() == 0) {
+
 						if(selectedCel == null) {
 							selectedCel = cels[line][cel];
 

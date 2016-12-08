@@ -17,7 +17,7 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 				mainTable.addCar(generateCar());
 			}
 
-			setTimeout(loop, 2000);
+			setTimeout(loop, 500);
 		}
 
 		function generateCar() {
@@ -25,6 +25,6 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 		}
 	}
 
-	var director = new director(3, binaryTable);
+	var director = new director(5, binaryTable);
 	director.start();
 });
