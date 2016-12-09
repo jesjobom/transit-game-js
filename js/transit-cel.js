@@ -11,15 +11,15 @@ define(['jquery'], function($) {
 
 		self.generateTd = function() {
 			var el = $("<td></td>", {
-				style: generateStyle(),
+				class: generateClass(),
 				html: generateCars(),
 				title: "[" + this.x + "," + this.y + "]"
 			});
 			return el;
 		};
 
-		function generateStyle() {
-			return "background-color: " + (isRoad ? "grey" : "white") + "; width: 20px; height: 20px; text-align: center;";
+		function generateClass() {
+			return isRoad ? "road" : "";
 		}
 
 		function generateCars() {
@@ -32,7 +32,7 @@ define(['jquery'], function($) {
 			}
 
 			self.explodeCars();
-			return "<span style='color: red;'>X</span>";
+			return "<span class='crash'>X</span>";
 		}
 
 		self.isRoad = function() {

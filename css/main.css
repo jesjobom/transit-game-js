@@ -1,0 +1,25 @@
+footer {
+	padding: 1em;
+	color: white;
+	background-color: black;
+	clear: left;
+	text-align: center;
+	position: absolute; 
+	bottom: 0; 
+	width: 97%;
+}
+
+#game_area td {
+	background-color: white; 
+	width: 20px; 
+	height: 20px; 
+	text-align: center;
+}
+
+#game_area td.road {
+	background-color: grey; 
+}
+
+#game_area span.crash {
+	color: red; 
+}
