@@ -23,7 +23,7 @@ define(['jquery', 'transit-cel', 'transit-car'], function($, cel, car) {
 		}
 
 		self.generateTable = function() {
-			var table = $("<table></table>");
+			var table = $("<table cellspacing='0' cellpadding='0'></table>");
 
 			for(line in cels) {
 				var tr = $("<tr></tr>");

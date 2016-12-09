@@ -36,6 +36,10 @@ define(['jquery'], function($) {
 			}
 		};
 
+		self.getDirection = function() {
+			return direction;
+		};
+
 		self.printInfo = function() {
 			var info = "Car '" + self.id + "'";
 			info += " {speed: " + speed;

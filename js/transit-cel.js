@@ -32,8 +32,23 @@ define(['jquery'], function($) {
 				return cars[0].id;
 			}
 
+
+			if(isCarsParallelAndOposite()) {
+				var ids = cars[0].id + cars[1].id;
+				return "<span class='multiple'>" + ids + "</span>"
+			}
+
 			self.explodeCars();
 			return "<span class='crash'>X</span>";
+		}
+
+		function isCarsParallelAndOposite() {
+			if(cars.length != 2) {
+				return false;
+			}
+			
+			var directionDifference = cars[0].getDirection() - cars[1].getDirection();
+			return directionDifference === 2 || directionDifference === -2;
 		}
 
 		self.isRoad = function() {

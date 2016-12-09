@@ -23,3 +23,7 @@ footer {
 #game_area span.crash {
 	color: red; 
 }
+
+#game_area span.multiple {
+	font-size: 70%; 
+}
