@@ -26,3 +26,11 @@ var binaryTable = [
 ];
 
 requirejs(['transit-main']);
+
+function printCelInfo(x, y) {
+	var table = MAIN_TABLE;
+	var cel = table.getCelAt(x, y);
+	var info = cel.printInfo();
+
+	console.debug(info);	
+}

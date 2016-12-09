@@ -8,6 +8,7 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 
 		self.start = function() {
 			mainTable = new table(binaryTable);
+			window.MAIN_TABLE = mainTable;
 			loop();
 		};
 

@@ -5,15 +5,16 @@ define(['jquery'], function($) {
 	
 		var isRoad = isRoad;
 		var cars = [];
-		this.x = x;
-		this.y = y;
+		this.x = x * 1;
+		this.y = y * 1;
 		this.tableParent = t;
 
 		self.generateTd = function() {
 			var el = $("<td></td>", {
 				class: generateClass(),
 				html: generateCars(),
-				title: "[" + this.x + "," + this.y + "]"
+				title: "[" + this.x + "," + this.y + "]",
+				onclick: "printCelInfo(" + x + ", " + y + ");"
 			});
 			return el;
 		};
@@ -83,13 +84,13 @@ define(['jquery'], function($) {
 		};
 
 		function getNeighborCel(dX, dY) {
-			if(self.x * 1 + dX < 0 || self.x * 1 + dX > self.tableParent.getXDimension()-1) {
+			if(self.x + dX < 0 || self.x + dX > self.tableParent.getXDimension()-1) {
 				return null;
 			}
-			if(self.y * 1 + dY < 0 || self.y * 1 + dY > self.tableParent.getYDimension()-1) {
+			if(self.y + dY < 0 || self.y + dY > self.tableParent.getYDimension()-1) {
 				return null;
 			}
-			var neighborCel = self.tableParent.getCelAt(self.x * 1 + dX, self.y * 1 + dY);
+			var neighborCel = self.tableParent.getCelAt(self.x + dX, self.y + dY);
 			return neighborCel;
 		}
 
@@ -97,7 +98,21 @@ define(['jquery'], function($) {
 			return self.x === 0 || self.y === 0 
 				|| self.x === self.tableParent.getXDimension()-1 
 				|| self.y === self.tableParent.getYDimension()-1;
-		}
+		};
+
+		self.printInfo = function() {
+			var info = "[" + self.x + ", " + self.y + "] ";
+			if(self.isRoad()) {
+				info += self.quantityCars() + " cars: ";
+				cars.forEach(function(c){
+					info += c.printInfo() + " / ";
+				});
+			} else {
+				info += " No a road";
+			}
+			
+			return info;
+		};
 	}
 });
 

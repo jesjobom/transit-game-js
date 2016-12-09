@@ -6,6 +6,13 @@ define(['jquery'], function($) {
 		this.id = id;
 		var cel = null;
 		var exploded = false;
+		
+		/*
+		 * Speed converted to timeout (ms) in the movement function.
+		 * timeout = 3000 - speed
+		 * speed in [0-2000]
+		 */
+		var speed = 0;
 
 		/*
 		 * 0 = North
@@ -29,56 +36,95 @@ define(['jquery'], function($) {
 			}
 		};
 
+		self.printInfo = function() {
+			var info = "Car '" + self.id + "'";
+			info += " {speed: " + speed;
+			info += ", direction: " + direction;
+			info += "}";
+			return info;
+		};
+
 		function loop() {
 			if(!exploded) {
-				move();
+				if(direction == null) {
+					direction = generateInitialDirection();
+				} else {
+					move();
+				}
 		
-				//TODO create speed simulation
-				setTimeout(loop, (Math.random() * 1000) + 1000);
+				setTimeout(loop, 3000-speed);
 			}
 		}
 
-		function move() {
-			if(direction == null) {
-				direction = generateInitialDirection();
+		function speedUp() {
+			if(speed < 2000) {
+				speed += 100;
 			}
+		}
+
+		function speedDown() {
+			speed = 0;
+		}
+
+		/*
+		 * Dictates how the car should move.
+		 * TODO: avoid colisions
+		 */
+		function move() {
 			
 			var leftCel = null;
 			var frontCel = null;
 			var rightCel = null;
+			var backCel = null;
 
 			if(direction === 0) {
 				leftCel = cel.getWestCel();
 				frontCel = cel.getNorthCel();
 				rightCel = cel.getEastCel();
+				backCel = cel.getSouthCel();
 			} else if(direction === 1) {
 				leftCel = cel.getNorthCel();
 				frontCel = cel.getEastCel();
 				rightCel = cel.getSouthCel();
+				backCel = cel.getWestCel();
 			} else if(direction === 2) {
 				leftCel = cel.getEastCel();
 				frontCel = cel.getSouthCel();
 				rightCel = cel.getWestCel();
+				backCel = cel.getNorthCel();
 			} else if(direction === 3) {
 				leftCel = cel.getSouthCel();
 				frontCel = cel.getWestCel();
 				rightCel = cel.getNorthCel();
+				backCel = cel.getEastCel();
 			}
 
-			var deltaDirection = chooseDirection();
+			var deltaDirection = 0;
+			//If the car is in a dead end that isn't the end of the map, go back
+			if((leftCel == null || !leftCel.isRoad()) && frontCel != null && !frontCel.isRoad() && (rightCel == null || !rightCel.isRoad())) {
+				deltaDirection = 2;
+			} else {
+				deltaDirection = chooseDirection();
+			}
 
-			var chosenCel = deltaDirection === 0 ? frontCel : deltaDirection === 1 ? rightCel : leftCel;
+			var chosenCel = [frontCel, rightCel, backCel, leftCel][deltaDirection];
 
-			if(chosenCel != null && !chosenCel.isRoad()) {
+			if( (chosenCel != null && !chosenCel.isRoad())
+				|| (chosenCel == null && deltaDirection !== 0) ) {
 				return move();
 			}
 			
-			direction = (direction + deltaDirection) % 4;
 			cel.removeCar(self);
 
 			if(chosenCel == null) {
 				self.explode();
 			} else {
+				direction = (direction + deltaDirection) % 4;
+				if(deltaDirection === 0) {
+					speedUp();
+				} else {
+					speedDown();
+				}
 				chosenCel.addCar(self);
 			}
 		}
