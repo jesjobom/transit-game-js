@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('../fonts/icomoon.eot?hj1921');
-  src:  url('../fonts/icomoon.eot?hj1921#iefix') format('embedded-opentype'),
-    url('../fonts/icomoon.ttf?hj1921') format('truetype'),
-    url('../fonts/icomoon.woff?hj1921') format('woff'),
-    url('../fonts/icomoon.svg?hj1921#icomoon') format('svg');
+  src:  url('../fonts/icomoon.eot?fpaulw');
+  src:  url('../fonts/icomoon.eot?fpaulw#iefix') format('embedded-opentype'),
+    url('../fonts/icomoon.ttf?fpaulw') format('truetype'),
+    url('../fonts/icomoon.woff?fpaulw') format('woff'),
+    url('../fonts/icomoon.svg?fpaulw#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -22,6 +22,35 @@
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-explosion .path1:before {
+  content: "\e901";
+  color: rgb(239, 78, 22);
+}
+
+.icon-explosion .path2:before {
+  content: "\e902";
+  margin-left: -1em;
+  color: rgb(255, 206, 49);
+}
+
+.icon-explosion .path3:before {
+  content: "\e903";
+  margin-left: -1em;
+  color: rgb(255, 255, 255);
+}
+
+.icon-explosion .path1 {
+  font-size: 1.2em;
+}
+
+.icon-explosion .path2 {
+  font-size: 1.2em;
+}
+
+.icon-explosion .path3 {
+  font-size: 1.2em;
 }
 
 .icon-car:before {
