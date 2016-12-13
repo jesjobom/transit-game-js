@@ -2,7 +2,7 @@ define(['jquery'], function($) {
 
 	return function cel(t, isRoad, x, y) {
 		var self = this;
-	
+
 		var isRoad = isRoad;
 		var cars = [];
 		this.x = x * 1;
@@ -29,13 +29,12 @@ define(['jquery'], function($) {
 			}
 
 			if(cars.length == 1) {
-				return cars[0].id;
+				return cars[0].printCar();
 			}
 
-
 			if(isCarsParallelAndOposite()) {
-				var ids = cars[0].id + cars[1].id;
-				return "<span class='multiple'>" + ids + "</span>"
+				var mCars = cars[0].printCar() + cars[1].printCar();
+				return "<span class='multiple'>" + mCars + "</span>"
 			}
 
 			self.explodeCars();
@@ -46,7 +45,7 @@ define(['jquery'], function($) {
 			if(cars.length != 2) {
 				return false;
 			}
-			
+
 			var directionDifference = cars[0].getDirection() - cars[1].getDirection();
 			return directionDifference === 2 || directionDifference === -2;
 		}
@@ -110,8 +109,8 @@ define(['jquery'], function($) {
 		}
 
 		self.isBorder = function() {
-			return self.x === 0 || self.y === 0 
-				|| self.x === self.tableParent.getXDimension()-1 
+			return self.x === 0 || self.y === 0
+				|| self.x === self.tableParent.getXDimension()-1
 				|| self.y === self.tableParent.getYDimension()-1;
 		};
 
@@ -125,9 +124,8 @@ define(['jquery'], function($) {
 			} else {
 				info += " No a road";
 			}
-			
+
 			return info;
 		};
 	}
 });
-

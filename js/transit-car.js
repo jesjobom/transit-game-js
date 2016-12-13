@@ -6,7 +6,7 @@ define(['jquery'], function($) {
 		this.id = id;
 		var cel = null;
 		var exploded = false;
-		
+
 		/*
 		 * Speed converted to timeout (ms) in the movement function.
 		 * timeout = 3000 - speed
@@ -21,11 +21,13 @@ define(['jquery'], function($) {
 		 * 3 = West
 		 */
 		var direction = null;
-	
+
+		var color = "#"+((1<<24)*Math.random()|0).toString(16);
+
 		self.explode = function() {
 			exploded = true;
 		};
-	
+
 		self.setCel = function(c) {
 			cel = c;
 		};
@@ -39,6 +41,14 @@ define(['jquery'], function($) {
 		self.getDirection = function() {
 			return direction;
 		};
+
+		self.printCar = function() {
+			return "<i class='icon-car " + generateOrientationClass() + "' style='color:" + color + "'></i>"
+		};
+
+		function generateOrientationClass() {
+			return 'icon-rotate-' + ['north', 'east', 'south', 'west'][direction];
+		}
 
 		self.printInfo = function() {
 			var info = "Car '" + self.id + "'";
@@ -55,7 +65,7 @@ define(['jquery'], function($) {
 				} else {
 					move();
 				}
-		
+
 				setTimeout(loop, 3000-speed);
 			}
 		}
@@ -75,7 +85,7 @@ define(['jquery'], function($) {
 		 * TODO: avoid colisions
 		 */
 		function move() {
-			
+
 			var leftCel = null;
 			var frontCel = null;
 			var rightCel = null;
@@ -117,7 +127,7 @@ define(['jquery'], function($) {
 				|| (chosenCel == null && deltaDirection !== 0) ) {
 				return move();
 			}
-			
+
 			cel.removeCar(self);
 
 			if(chosenCel == null) {
@@ -152,7 +162,7 @@ define(['jquery'], function($) {
 
 	function chooseDirection() {
 		var guide = Math.random() * 100;
-		
+
 		if(guide < 25) {
 			return 3;
 		}

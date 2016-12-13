@@ -2,7 +2,7 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 
 	function director(maxCars, binaryTable) {
 		var self = this;
-	
+
 		var maxCars = maxCars;
 		var mainTable = null;
 
@@ -26,6 +26,6 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 		}
 	}
 
-	var director = new director(5, binaryTable);
+	var director = new director(15, binaryTable);
 	director.start();
 });
