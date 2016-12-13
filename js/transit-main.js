@@ -13,12 +13,14 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 		};
 
 		function loop() {
-			$("#game_area").html(mainTable.generateTable());
-			if(mainTable.quantityCars() < maxCars) {
-				mainTable.addCar(generateCar());
+			if(!CONFIG.paused) {
+				$("#game_area").html(mainTable.generateTable());
+				if(mainTable.quantityCars() < maxCars) {
+					mainTable.addCar(generateCar());
+				}
 			}
 
-			setTimeout(loop, 500);
+			setTimeout(loop, 500 / CONFIG.speed);
 		}
 
 		function generateCar() {

@@ -28,4 +28,18 @@ function printCelInfo(x, y) {
 	console.debug(info);
 }
 
+var CONFIG = {
+	paused : false,
+	speed : 1.0,
+
+	pause: function() {
+		CONFIG.paused = true;
+	},
+
+	play: function(speed) {
+		CONFIG.paused = false;
+		CONFIG.speed = speed * 1;
+	}
+};
+
 requirejs(['transit-main']);

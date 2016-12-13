@@ -60,13 +60,16 @@ define(['jquery'], function($) {
 
 		function loop() {
 			if(!exploded) {
-				if(direction == null) {
-					direction = generateInitialDirection();
-				} else {
-					move();
+
+				if(!CONFIG.paused) {
+					if(direction == null) {
+						direction = generateInitialDirection();
+					} else {
+						move();
+					}
 				}
 
-				setTimeout(loop, 3000-speed);
+				setTimeout(loop, (3000-speed) / CONFIG.speed);
 			}
 		}
 
