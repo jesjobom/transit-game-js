@@ -34,7 +34,7 @@ define(['jquery'], function($) {
 
 			if(isCarsParallelAndOposite()) {
 				var mCars = cars[0].printCar() + cars[1].printCar();
-				return "<span class='multiple'>" + mCars + "</span>"
+				return mCars;
 			}
 
 			self.explodeCars();

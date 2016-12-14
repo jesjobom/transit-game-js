@@ -9,17 +9,57 @@ footer {
 	width: 97%;
 }
 
-#game_area td {
+.game_area td {
 	background-color: white;
 	width: 20px;
 	height: 20px;
 	text-align: center;
+	position: relative;
 }
 
-#game_area td.road {
+.game_area td.road {
 	background-color: grey;
 }
 
-#game_area span.multiple {
-	font-size: 60%;
+.icon-rotate-north {
+  display: inline-block;
+  position: absolute;
+  top: 10%;
+  right: -2;
+}
+
+.icon-rotate-east {
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
+  display: inline-block;
+  position: absolute;
+  bottom: -2;
+  right: 10%;
+}
+
+.icon-rotate-south {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+  display: inline-block;
+  position: absolute;
+  top: 10%;
+  left: -2;
+}
+
+.icon-rotate-west {
+  -webkit-transform: rotate(270deg);
+  -moz-transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  -o-transform: rotate(270deg);
+  transform: rotate(270deg);
+  display: inline-block;
+  position: absolute;
+  top: -2;
+  left: 10%;
 }

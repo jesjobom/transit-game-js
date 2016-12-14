@@ -8,25 +8,14 @@
 	<body>
 		<h1>TRANSIT GAME of Life</h1>
 
-		<div style="height: 20px; width: 20px">
-			<span class="multiple" style="font-size: 60%">
-			<i class="icon-car icon-rotate-west"></i><i class="icon-car icon-rotate-east"></i>
-			</span>
-		</div>
-
-		<div style="height: 20px; width: 20px">
-			<span class="multiple" style="font-size: 60%">
-			<i class="icon-car icon-rotate-north"></i><i class="icon-car icon-rotate-south"></i>
-			</span>
-		</div>
-
 		<div class="game_control">
 			<input type="button" value="PAUSE" onclick="javascript: CONFIG.pause(); " />
 			<input type="button" value="PLAY" onclick="javascript: CONFIG.play($('#speed').val()); " />
-			<input type="text" value="1.0" maxlength="3" size="5" id="speed" />
+			<input type="number" value="1" maxlength="3" size="5" id="speed" min="1" />
+			<hr></hr>
 		</div>
 
-		<div id="game_area"></div>
+		<div id="game_area" class="game_area"></div>
 
 		<footer>by Jesjobom (<a href="http://blog.jesjobom.com/en/">blog.jesjobom.com</a>)</footer>
 	</body>

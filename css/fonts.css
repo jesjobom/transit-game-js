@@ -61,36 +61,6 @@
   text-shadow: 1px 1px 1px #111;
 }
 
-.icon-rotate-north {
-}
-
-.icon-rotate-east {
-  -webkit-transform: rotate(90deg);
-  -moz-transform: rotate(90deg);
-  -ms-transform: rotate(90deg);
-  -o-transform: rotate(90deg);
-  transform: rotate(90deg);
-  display: inline-block;
-}
-
-.icon-rotate-south {
-  -webkit-transform: rotate(180deg);
-  -moz-transform: rotate(180deg);
-  -ms-transform: rotate(180deg);
-  -o-transform: rotate(180deg);
-  transform: rotate(180deg);
-  display: inline-block;
-}
-
-.icon-rotate-west {
-  -webkit-transform: rotate(270deg);
-  -moz-transform: rotate(270deg);
-  -ms-transform: rotate(270deg);
-  -o-transform: rotate(270deg);
-  transform: rotate(270deg);
-  display: inline-block;
-}
-
 .icon-small {
   font-size: 0.7em;
 }
