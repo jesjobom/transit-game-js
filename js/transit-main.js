@@ -24,7 +24,7 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 		}
 
 		function generateCar() {
-			return new car((Math.floor(Math.random() * 26) +10).toString(36));
+			return new car();
 		}
 	}
 
