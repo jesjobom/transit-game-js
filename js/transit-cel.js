@@ -1,5 +1,12 @@
 define(['jquery'], function($) {
 
+	/*
+	 * This class defines a cell in the table used to draw our "city".
+	 * It is also responsible for the information about position in the map that
+	 * cars will use to navigate.
+	 * And it should handle colisions, since cars decide where to go, but they
+	 * won't handle any side efect of this movement...
+	 */
 	return function cel(t, isRoad, x, y) {
 		var self = this;
 
@@ -7,8 +14,16 @@ define(['jquery'], function($) {
 		var cars = [];
 		this.x = x * 1;
 		this.y = y * 1;
+
+		/*
+		 * Table that contains this cell. Generally used to determine the limits of the map
+		 */
 		this.tableParent = t;
 
+		/*
+		 * Generates the HTML for the table's cell with car(s) or explosion if
+		 * that's the case.
+		 */
 		self.generateTd = function() {
 			var el = $("<td></td>", {
 				class: generateClass(),
@@ -32,7 +47,7 @@ define(['jquery'], function($) {
 				return cars[0].printCar();
 			}
 
-			if(isCarsParallelAndOposite()) {
+			if(isCarsParallelAndOpposite()) {
 				var mCars = cars[0].printCar() + cars[1].printCar();
 				return mCars;
 			}
@@ -41,13 +56,30 @@ define(['jquery'], function($) {
 			return "<i class='icon-explosion'><i class='path1'></i><i class='path2'></i><i class='path3'></i></i>";
 		}
 
-		function isCarsParallelAndOposite() {
+		/*
+		 * The only case where 2 cars can occupy the same space is when they are
+		 * moving in opposite directions, because they are on different lanes.
+		 */
+		function isCarsParallelAndOpposite() {
 			if(cars.length != 2) {
 				return false;
 			}
 
 			var directionDifference = cars[0].getDirection() - cars[1].getDirection();
-			return directionDifference === 2 || directionDifference === -2;
+			return Math.abs(directionDifference) === 2;
+		}
+
+		/*
+		 * Answer to a car if it will colide if it enters this cell
+		 */
+		self.willNewCarColide = function(newCar, deltaDirection) {
+			if(cars.length != 1) {
+				return cars.length > 1;
+			}
+
+			var carInHere = cars[0];
+			var directionDifference = carInHere.getDirection() - ((newCar.getDirection() + deltaDirection) % 4);
+			return Math.abs(directionDifference) !== 2;
 		}
 
 		self.isRoad = function() {

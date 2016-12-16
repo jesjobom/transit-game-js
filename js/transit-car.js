@@ -180,6 +180,7 @@ define(['jquery'], function($) {
 				backCel = cel.getEastCel();
 			}
 
+			//The car will turn right 90 degrees * deltaDirection
 			var deltaDirection = 0;
 			//If the car is in a dead end that isn't the end of the map, go back
 			if((leftCel == null || !leftCel.isRoad()) && frontCel != null && !frontCel.isRoad() && (rightCel == null || !rightCel.isRoad())) {
@@ -193,13 +194,21 @@ define(['jquery'], function($) {
 			if( (chosenCel != null && !chosenCel.isRoad())
 				|| (chosenCel == null && deltaDirection !== 0) ) {
 				return move();
+
 			}
 
-			cel.removeCar(self);
-
 			if(chosenCel == null) {
+				//Exiting the map
+				cel.removeCar(self);
 				self.explode();
+
+			} else if(chosenCel.willNewCarColide(self, deltaDirection)) {
+				//Won't move to avoid colision
+				speedDown();
+
 			} else {
+				//Moving
+				cel.removeCar(self);
 				direction = (direction + deltaDirection) % 4;
 				if(deltaDirection === 0) {
 					speedUp();
@@ -209,6 +218,7 @@ define(['jquery'], function($) {
 				chosenCel.addCar(self);
 			}
 		}
+
 
 		/*
 		 * Tries to identify the direction where the map ends in order to go
