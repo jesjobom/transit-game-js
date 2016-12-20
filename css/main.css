@@ -11,14 +11,35 @@ footer {
 
 .game_area td {
 	background-color: white;
-	width: 20px;
-	height: 20px;
+	width: 23px;
+	height: 23px;
 	text-align: center;
 	position: relative;
 }
 
 .game_area td.road {
 	background-color: grey;
+	border: thin solid grey;
+}
+
+.game_area td.vertical-yellow-light {
+	border-bottom: thin solid yellow;
+	border-top: thin solid yellow;
+}
+
+.game_area td.vertical-red-light {
+	border-bottom: thin solid red;
+	border-top: thin solid red;
+}
+
+.game_area td.horizontal-yellow-light {
+	border-right: thin solid yellow;
+	border-left: thin solid yellow;
+}
+
+.game_area td.horizontal-red-light {
+	border-right: thin solid red;
+	border-left: thin solid red;
 }
 
 .icon-rotate-north {

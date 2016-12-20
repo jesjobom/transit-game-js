@@ -1,4 +1,4 @@
-define(['jquery'], function($) {
+define(['jquery', 'transit-light'], function($, light) {
 
 	/*
 	 * This class defines a cell in the table used to draw our "city".
@@ -7,10 +7,11 @@ define(['jquery'], function($) {
 	 * And it should handle colisions, since cars decide where to go, but they
 	 * won't handle any side efect of this movement...
 	 */
-	return function cel(t, isRoad, x, y) {
+	return function cel(t, typeRoad, x, y) {
 		var self = this;
 
-		var isRoad = isRoad;
+		var isRoad = typeRoad > 0;
+		var transitLight = typeRoad > 1 ? new light() : null;
 		var cars = [];
 		this.x = x * 1;
 		this.y = y * 1;
@@ -35,7 +36,11 @@ define(['jquery'], function($) {
 		};
 
 		function generateClass() {
-			return isRoad ? "road" : "";
+			var cssClass = isRoad ? "road" : "";
+			if(transitLight != null) {
+				cssClass += " " + transitLight.getClass();
+			}
+			return cssClass;
 		}
 
 		function generateCars() {
@@ -70,9 +75,14 @@ define(['jquery'], function($) {
 		}
 
 		/*
-		 * Answer to a car if it will colide if it enters this cell
+		 * Answer to a car can enter this cell.
+		 * The answer will be false if there will be a colision or if the traffic
+		 * light is red
 		 */
-		self.willNewCarColide = function(newCar, deltaDirection) {
+		self.cannotEnter = function(newCar, deltaDirection) {
+			if(transitLight != null && !transitLight.allowCarDirection((newCar.getDirection() + deltaDirection) % 4)) {
+				return true;
+			}
 			if(cars.length != 1) {
 				return cars.length > 1;
 			}
@@ -94,7 +104,7 @@ define(['jquery'], function($) {
 
 		self.removeCar = function(car) {
 			cars.every(function(c, i) {
-				if(c.id == car.id) {
+				if(c == car) {
 					cars.splice(i, 1);
 					return false;
 				}

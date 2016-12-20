@@ -38,7 +38,7 @@ define(['jquery'], function($) {
 
 
 		/*
-		 * Generate a random color between #000000 (black) and #ffffff (white)
+		 * Generate a random color between #000000 (black) and #ffffff (white).
 		 */
 		var color = "#"+((1<<24)*Math.random()|0).toString(16);
 
@@ -202,7 +202,7 @@ define(['jquery'], function($) {
 				cel.removeCar(self);
 				self.explode();
 
-			} else if(chosenCel.willNewCarColide(self, deltaDirection)) {
+			} else if(chosenCel.cannotEnter(self, deltaDirection)) {
 				//Won't move to avoid colision
 				speedDown();
 
