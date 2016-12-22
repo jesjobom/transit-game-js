@@ -1,3 +1,6 @@
+/*
+ * FOOTER
+ */
 footer {
 	padding: 1em;
 	color: white;
@@ -9,6 +12,9 @@ footer {
 	width: 97%;
 }
 
+/*
+ * MAIN TABLE / ROADS
+ */
 .game_area td {
 	background-color: white;
 	width: 23px;
@@ -22,6 +28,9 @@ footer {
 	border: thin solid grey;
 }
 
+/*
+ * TRAFFIC LIGHT
+ */
 .game_area td.vertical-yellow-light {
 	border-bottom: thin solid yellow;
 	border-top: thin solid yellow;
@@ -42,10 +51,55 @@ footer {
 	border-left: thin solid red;
 }
 
+.game_area td.north-green-light {
+	border-right: thin solid red;
+	border-bottom: thin solid red;
+	border-left: thin solid red;
+}
+
+.game_area td.north-yellow-light {
+	border-top: thin solid yellow;
+}
+
+.game_area td.east-green-light {
+	border-bottom: thin solid red;
+	border-left: thin solid red;
+	border-top: thin solid red;
+}
+
+.game_area td.east-yellow-light {
+	border-right: thin solid yellow;
+}
+
+.game_area td.south-green-light {
+	border-left: thin solid red;
+	border-top: thin solid red;
+	border-right: thin solid red;
+}
+
+.game_area td.south-yellow-light {
+	border-bottom: thin solid yellow;
+}
+
+.game_area td.west-green-light {
+	border-top: thin solid red;
+	border-right: thin solid red;
+	border-bottom: thin solid red;
+}
+
+.game_area td.west-yellow-light {
+	border-left: thin solid yellow;
+}
+
+/*
+ * CARS ROTATION AND POSITION
+ */
 .icon-rotate-north {
-  display: inline-block;
-  position: absolute;
-  top: 10%;
+}
+
+.icon-car.icon-rotate-north {
+	position: absolute;
+	top: 10%;
   right: -2;
 }
 
@@ -55,10 +109,12 @@ footer {
   -ms-transform: rotate(90deg);
   -o-transform: rotate(90deg);
   transform: rotate(90deg);
-  display: inline-block;
-  position: absolute;
-  bottom: -2;
-  right: 10%;
+}
+
+.icon-car.icon-rotate-east {
+	position: absolute;
+	bottom: -2;
+	right: 10%;
 }
 
 .icon-rotate-south {
@@ -67,10 +123,12 @@ footer {
   -ms-transform: rotate(180deg);
   -o-transform: rotate(180deg);
   transform: rotate(180deg);
-  display: inline-block;
-  position: absolute;
-  top: 10%;
-  left: -2;
+}
+
+.icon-car.icon-rotate-south {
+	position: absolute;
+	top: 10%;
+	left: -2;
 }
 
 .icon-rotate-west {
@@ -79,8 +137,10 @@ footer {
   -ms-transform: rotate(270deg);
   -o-transform: rotate(270deg);
   transform: rotate(270deg);
-  display: inline-block;
-  position: absolute;
-  top: -2;
-  left: 10%;
+}
+
+.icon-car.icon-rotate-west {
+	position: absolute;
+	top: -2;
+	left: 10%;
 }

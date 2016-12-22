@@ -11,7 +11,7 @@ define(['jquery', 'transit-light'], function($, light) {
 		var self = this;
 
 		var isRoad = typeRoad > 0;
-		var transitLight = typeRoad > 1 ? new light() : null;
+		var transitLight = [null, null, light.INSTANCE_2STAGE, null, light.INSTANCE_4STAGE][typeRoad];
 		var cars = [];
 		this.x = x * 1;
 		this.y = y * 1;

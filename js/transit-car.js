@@ -36,7 +36,6 @@ define(['jquery'], function($) {
 		 */
 		var direction = null;
 
-
 		/*
 		 * Generate a random color between #000000 (black) and #ffffff (white).
 		 */
@@ -129,7 +128,7 @@ define(['jquery'], function($) {
 		 */
 		function speedUp() {
 			if(speed < 2000) {
-				speed += 100;
+				speed += 400;
 			}
 		}
 

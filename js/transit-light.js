@@ -2,16 +2,16 @@ define(['jquery'], function($) {
 
 	/*
 	 * Class to define the transit lights behaviour.
-	 * Through the states array, it is possible to easly create a 2-stroke/step
-	 * or 4-stroke/step transit light.
+	 * Through the states array, it is possible to easly create a 2-staged
+	 * or 4-staged traffic light.
 	 */
-	return function light() {
+	function light(states) {
 		var self = this;
 
 		/*
 		 * Next state index
 		 */
-		var state = 0;
+		var nextState = 0;
 
 		/*
 		 * Current state
@@ -21,12 +21,7 @@ define(['jquery'], function($) {
 		/*
 		 * States array, defining a complete flow
 		 */
-		var stateArray = [
-			new lightState('vertical-red-light', 8000, [0, 1, 0, 1]),
-			new lightState('vertical-red-light horizontal-yellow-light', 2000, [0, 1, 0, 1]),
-			new lightState('horizontal-red-light', 8000, [1, 0, 1, 0]),
-			new lightState('horizontal-red-light vertical-yellow-light', 2000, [1, 0, 1, 0])
-		];
+		var stateArray = states;
 
 		self.getClass = function() {
 			return stateObj == null ? '' : stateObj.cssClass;
@@ -38,8 +33,8 @@ define(['jquery'], function($) {
 
 		function loop() {
 			if(!CONFIG.paused) {
-				stateObj = stateArray[state];
-				state = (state + 1) % 4;
+				stateObj = stateArray[nextState];
+				nextState = (nextState + 1) % stateArray.length;
 			}
 
 			setTimeout(function () {
@@ -57,4 +52,24 @@ define(['jquery'], function($) {
 		self.timeout = timeout;
 		self.allowCarDirection = allowCarDirection;
 	}
+
+	light.INSTANCE_2STAGE = new light([
+		new lightState('vertical-red-light', 8000, [0, 1, 0, 1]),
+		new lightState('vertical-red-light horizontal-yellow-light', 2000, [0, 1, 0, 1]),
+		new lightState('horizontal-red-light', 8000, [1, 0, 1, 0]),
+		new lightState('horizontal-red-light vertical-yellow-light', 2000, [1, 0, 1, 0])
+	]);
+
+	light.INSTANCE_4STAGE = new light([
+		new lightState('north-green-light', 6000, [0, 0, 1, 0]),
+		new lightState('north-green-light north-yellow-light', 1000, [0, 0, 1, 0]),
+		new lightState('east-green-light', 6000, [0, 0, 0, 1]),
+		new lightState('east-green-light east-yellow-light', 1000, [0, 0, 0, 1]),
+		new lightState('south-green-light', 6000, [1, 0, 0, 0]),
+		new lightState('south-green-light south-yellow-light', 1000, [1, 0, 0, 0]),
+		new lightState('west-green-light', 6000, [0, 1, 0, 0]),
+		new lightState('west-green-light west-yellow-light', 1000, [0, 1, 0, 0])
+	]);
+
+	return light;
 });
