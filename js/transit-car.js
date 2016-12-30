@@ -119,7 +119,7 @@ define(['jquery'], function($) {
 
 				//The frequency of movements is set by the car's speed and the
 				//speed set by the user
-				setTimeout(loop, (3000-speed) / CONFIG.speed);
+				setTimeout(loop, (4000-speed) / CONFIG.speed);
 			}
 		}
 
@@ -127,8 +127,8 @@ define(['jquery'], function($) {
 		 * Accelerate the car with a speed limit
 		 */
 		function speedUp() {
-			if(speed < 2000) {
-				speed += 400;
+			if(speed < CONFIG.maxCarSpeed) {
+				speed += CONFIG.accCarSpeed;
 			}
 		}
 
@@ -148,35 +148,30 @@ define(['jquery'], function($) {
 		 *  - If cannot go Left, Right or Forward, go Backward
 		 *  - If chose to turn right, left or backward, reduce the speed
 		 *
-		 * TODO: avoid colisions
 		 */
 		function move() {
 
 			var leftCel = null;
 			var frontCel = null;
 			var rightCel = null;
-			var backCel = null;
+			var backCel = cel; //will make a U turn if necessary
 
 			if(direction === 0) {
 				leftCel = cel.getWestCel();
 				frontCel = cel.getNorthCel();
 				rightCel = cel.getEastCel();
-				backCel = cel.getSouthCel();
 			} else if(direction === 1) {
 				leftCel = cel.getNorthCel();
 				frontCel = cel.getEastCel();
 				rightCel = cel.getSouthCel();
-				backCel = cel.getWestCel();
 			} else if(direction === 2) {
 				leftCel = cel.getEastCel();
 				frontCel = cel.getSouthCel();
 				rightCel = cel.getWestCel();
-				backCel = cel.getNorthCel();
 			} else if(direction === 3) {
 				leftCel = cel.getSouthCel();
 				frontCel = cel.getWestCel();
 				rightCel = cel.getNorthCel();
-				backCel = cel.getEastCel();
 			}
 
 			//The car will turn right 90 degrees * deltaDirection
@@ -192,8 +187,9 @@ define(['jquery'], function($) {
 
 			if( (chosenCel != null && !chosenCel.isRoad())
 				|| (chosenCel == null && deltaDirection !== 0) ) {
+				//TODO this recursion with exceed the recursion pile when there is nowhere to go
+				//Should choose to stay in current cell if tried too many times to choose a destiny
 				return move();
-
 			}
 
 			if(chosenCel == null) {
@@ -249,16 +245,16 @@ define(['jquery'], function($) {
 	 */
 	function chooseDirection() {
 		var guide = Math.random() * 100;
-
-		if(guide < 25) {
+		//left
+		if(guide < CONFIG.chanceTurnLeft) {
 			return 3;
 		}
-		if(guide < 50) {
+		//right
+		if(guide < (CONFIG.chanceTurnLeft + CONFIG.chanceTurnRight)) {
 			return 1;
 		}
-		if(guide < 100) {
-			return 0;
-		}
+		//forward
+		return 0;
 	}
 
 });

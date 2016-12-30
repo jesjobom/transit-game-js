@@ -9,9 +9,18 @@
 		<h1>TRANSIT GAME of Life</h1>
 
 		<div class="game_control">
-			<input type="button" value="PAUSE" onclick="javascript: CONFIG.pause(); " />
-			<input type="button" value="PLAY" onclick="javascript: CONFIG.play($('#speed').val()); " />
-			<input type="number" value="1" maxlength="3" size="5" id="speed" min="1" />
+			<input type="button" value="PAUSE" onclick="javascript: CONFIG.pause();" class="main_control" />
+			<input type="button" value="PLAY / APPLY" onclick="javascript: CONFIG.play();" class="main_control" />
+			<input type="button" value="CONFIGS" onclick="javascript: $('#configs').toggle();" class="main_control" />
+			<div id="configs">
+				<br/><label for="speed">General Speed:</label> <input type="number" value="5" maxlength="3" size="5" id="speed" min="1" max="999" title="Main speed of the whole game"/>
+				<br/><label for="maxCars">Max Cars Quantity:</label> <input type="number" value="15" maxlength="3" size="5" id="maxCars" min="0" max="100" title="Max quantity of cars in any given moment" />
+				<br/><label for="chanceTurnRight">% To Turn Right:</label> <input type="number" value="25" maxlength="3" size="5" id="chanceTurnRight" min="0" max="100" title="Odds that any car will turn right (0% may leave cars stuck)"/>
+				<br/><label for="chanceTurnLeft">% To Turn Left:</label> <input type="number" value="25" maxlength="3" size="5" id="chanceTurnLeft" min="0" max="100" title="Odds that any car will turn left (0% may leave cars stuck)"/>
+				<br/><label for="maxCarSpeed">Max Car Speed:</label> <input type="number" value="3000" maxlength="4" size="5" id="maxCarSpeed" min="0" max="4000" step="500" title="Max speed of every car (4000 = almost teleport / 0 = no acceleration)"/>
+				<br/><label for="accCarSpeed">Car Acceleration:</label> <input type="number" value="400" maxlength="4" size="5" id="accCarSpeed" min="0" max="2000" step="100" title="Acceleration that cars will have when going forward (0 = no acceleration)"/>
+				<br/><label for="avoidCollision">Avoid Collision:</label> <input type="checkbox" id="avoidCollision" checked="checked" title="If cars should stop whenever they will collide with another car"/>
+			</div>
 			<hr></hr>
 		</div>
 

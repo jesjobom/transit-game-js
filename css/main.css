@@ -144,3 +144,28 @@ footer {
 	top: -2;
 	left: 10%;
 }
+
+/*
+ * GAME CONTROLS
+ */
+div.game_control {
+	max-width: 400px;
+}
+
+.game_control input.main_control {
+	float:none;
+}
+
+.game_control #configs {
+	display: none;
+}
+
+.game_control input {
+	width: 100px;
+}
+
+.game_control label {
+	display: inline-block;
+  width: 140px;
+  text-align: right;
+}

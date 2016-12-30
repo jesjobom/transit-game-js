@@ -76,13 +76,18 @@ define(['jquery', 'transit-light'], function($, light) {
 
 		/*
 		 * Answer to a car can enter this cell.
-		 * The answer will be false if there will be a colision or if the traffic
+		 * The answer will be false if there will be a collision or if the traffic
 		 * light is red
 		 */
 		self.cannotEnter = function(newCar, deltaDirection) {
 			if(transitLight != null && !transitLight.allowCarDirection((newCar.getDirection() + deltaDirection) % 4)) {
 				return true;
 			}
+
+			if(!CONFIG.avoidCollision) {
+				return false;
+			}
+
 			if(cars.length != 1) {
 				return cars.length > 1;
 			}

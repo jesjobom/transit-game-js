@@ -38,15 +38,28 @@ function printCelInfo(x, y) {
 
 var CONFIG = {
 	paused : false,
-	speed : 1.0,
+	speed : 5.0,
+	maxCars : 15,
+	chanceTurnRight : 25,
+	chanceTurnLeft : 25,
+	chanceForward : 50,
+	maxCarSpeed : 3000,
+	accCarSpeed : 400,
+	avoidCollision : true,
 
 	pause: function() {
 		CONFIG.paused = true;
 	},
 
-	play: function(speed) {
+	play: function() {
 		CONFIG.paused = false;
-		CONFIG.speed = speed * 1;
+		CONFIG.speed = $('#speed').val() * 1;
+		CONFIG.maxCars = $('#maxCars').val() * 1;
+		CONFIG.chanceTurnRight = $('#chanceTurnRight').val() * 1;
+		CONFIG.chanceTurnLeft = $('#chanceTurnLeft').val() * 1;
+		CONFIG.maxCarSpeed = $('#maxCarSpeed').val() * 1;
+		CONFIG.accCarSpeed = $('#accCarSpeed').val() * 1;
+		CONFIG.avoidCollision = $("#avoidCollision").is(":checked");
 	}
 };
 

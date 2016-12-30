@@ -1,9 +1,8 @@
 define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 
-	function director(maxCars, binaryTable) {
+	function director(binaryTable) {
 		var self = this;
 
-		var maxCars = maxCars;
 		var mainTable = null;
 
 		self.start = function() {
@@ -15,7 +14,7 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 		function loop() {
 			if(!CONFIG.paused) {
 				$("#game_area").html(mainTable.generateTable());
-				if(mainTable.quantityCars() < maxCars) {
+				if(mainTable.quantityCars() < CONFIG.maxCars) {
 					mainTable.addCar(generateCar());
 				}
 			}
@@ -28,6 +27,6 @@ define(['jquery', 'transit-table', 'transit-car'], function($, table, car) {
 		}
 	}
 
-	var director = new director(15, binaryTable);
+	var director = new director(binaryTable);
 	director.start();
 });
