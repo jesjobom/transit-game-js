@@ -14,3 +14,8 @@ Technologies I am using:
   * RequireJS for dynamyc JS loading
   * CSS
   * HTML
+
+TODO
+  * Cars are stuck when it should be "free to turn right", but a car is already in the next spot and transversal
+  * There should be some way to randomly cause accidents (colisions), and these accidents should block the transit for some time (maybe random chance to hit a transversal car in a crossroad without trafic light and with high speed?)
+  * Cars are sometimes throwing exception due a big recursion pile when trying to decide where to go without good options (see TODO in transit-car.js)
