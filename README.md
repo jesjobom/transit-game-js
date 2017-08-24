@@ -1,6 +1,8 @@
 # Transit: Game of Life... with cars...
 
-While talking with a friend about [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life) I had an idea about a simple transit simulator, where cars would indepentently move along roads respecting some basic rules. (Actually I had had this idea for some time, but I was lacking time and motivation to do it ^^).
+Demo: https://jesjobom.github.io/transit-game-js/transit.html
+
+While talking with a [friend](https://github.com/rogeriofonseca) about [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life) I had an idea about a simple transit simulator, where cars would indepentently move along roads respecting some basic rules. (Actually I had had this idea for some time, but I was lacking time and motivation to do it ^^).
 
 I chose Javascript/HTML to do it because
   1. It is simple to code and visualize
