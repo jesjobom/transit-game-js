@@ -149,6 +149,8 @@ function renderTrafficLight(lightPhase) {
 
   return `
     <span class="traffic-light-cluster" aria-label="traffic light ${escapeHtml(lightPhase)}">
+      <span class="traffic-light-housing traffic-light-housing--vertical"></span>
+      <span class="traffic-light-housing traffic-light-housing--horizontal"></span>
       ${renderTrafficLightBulb('north', meta.north)}
       ${renderTrafficLightBulb('east', meta.east)}
       ${renderTrafficLightBulb('south', meta.south)}
@@ -162,7 +164,7 @@ function renderTrafficLightBulb(direction, state = 'red') {
 }
 
 function renderVehicle(world, vehicle, map) {
-  const offset = scaleOffset(getDirectionOffset(vehicle.direction), 0.7);
+  const offset = getDirectionOffset(vehicle.direction);
   const startPosition = getVehicleStartPosition(world, vehicle);
   const endX = toPercent(vehicle.x, map.width);
   const endY = toPercent(vehicle.y, map.height);
@@ -173,7 +175,7 @@ function renderVehicle(world, vehicle, map) {
   return `
     <span
       class="vehicle vehicle--${escapeHtml(vehicle.direction)}"
-      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-x:${offset.x}%; --lane-offset-y:${offset.y}%; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
+      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-x:${offset.x}px; --lane-offset-y:${offset.y}px; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
       title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"
       aria-label="${escapeHtml(vehicle.id)}"
     >
@@ -209,13 +211,6 @@ function getVehicleStartPosition(world, vehicle) {
   return {
     x: vehicle.x + backDelta.x,
     y: vehicle.y + backDelta.y
-  };
-}
-
-function scaleOffset(offset, scale) {
-  return {
-    x: offset.x * scale,
-    y: offset.y * scale
   };
 }
 

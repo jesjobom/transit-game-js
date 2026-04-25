@@ -270,14 +270,38 @@ button {
   inset: 0;
 }
 
+.traffic-light-housing {
+  position: absolute;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.traffic-light-housing--vertical {
+  top: 2px;
+  bottom: 2px;
+  left: calc(50% - 7px);
+  width: 14px;
+  border-radius: 999px;
+}
+
+.traffic-light-housing--horizontal {
+  left: 2px;
+  right: 2px;
+  top: calc(50% - 7px);
+  height: 14px;
+  border-radius: 999px;
+}
+
 .traffic-light {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 999px;
   border: 1px solid rgba(15, 23, 42, 0.75);
-  background: rgba(71, 85, 105, 0.85);
+  background: rgba(71, 85, 105, 0.92);
   box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+  z-index: 1;
 }
 
 .traffic-light--north {
@@ -321,8 +345,8 @@ button {
   height: 14px;
   transform:
     translate(
-      calc(-50% + var(--lane-offset-x, 0%)),
-      calc(-50% + var(--lane-offset-y, 0%))
+      calc(-50% + var(--lane-offset-x, 0px)),
+      calc(-50% + var(--lane-offset-y, 0px))
     )
     rotate(var(--vehicle-angle, 0deg));
   animation: vehicle-slide var(--vehicle-animation-duration, 240ms) ease-out;

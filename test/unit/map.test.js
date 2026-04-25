@@ -48,7 +48,8 @@ test('map helpers resolve roads, lane directions, and movement correctly', () =>
     ['lane-north', 'lane-east', 'lane-south', 'lane-west']
   );
   assert.equal(getLaneKey('north'), 'lane-north');
-  assert.deepEqual(getDirectionOffset('north'), { x: -18, y: 18 });
+  assert.deepEqual(getDirectionOffset('north'), { x: -8, y: 0 });
+  assert.deepEqual(getDirectionOffset('east'), { x: 0, y: 8 });
 });
 
 test('intersection helpers expose compatible outbound directions and turning relations', () => {

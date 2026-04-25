@@ -138,10 +138,10 @@ export function getLaneKey(direction) {
 
 export function getDirectionOffset(direction) {
   return {
-    north: { x: -18, y: 18 },
-    south: { x: 18, y: -18 },
-    east: { x: 18, y: 18 },
-    west: { x: -18, y: -18 }
+    north: { x: -8, y: 0 },
+    south: { x: 8, y: 0 },
+    east: { x: 0, y: 8 },
+    west: { x: 0, y: -8 }
   }[direction] ?? { x: 0, y: 0 };
 }
 
