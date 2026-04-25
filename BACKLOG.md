@@ -76,7 +76,7 @@ Eliminar problemas do modelo atual antes de empilhar melhorias em cima dele.
 - [ ] Revisar geração inicial de direção nos pontos de entrada
 - [ ] Revisar spawn de carros para evitar padrões ruins ou enviesados
 - [ ] Revisar representação de múltiplos carros na mesma célula
-- [ ] Revisar semântica de pistas opostas e paralelas
+- [~] Revisar semântica de pistas opostas e paralelas
 - [ ] Definir comportamento claro para deadlocks e travamentos
 
 ---
@@ -149,6 +149,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [~] Separar tick lógico da taxa de atualização visual
 - [ ] Implementar aceleração e desaceleração mais graduais
 - [~] Melhorar posicionamento visual por faixa/direção
+- [x] Introduzir sentido explícito nas vias do mapa bootstrap para evitar tráfego frontal em segmentos de célula única
 - [ ] Melhorar espaçamento entre veículos em fila
 - [~] Redesenhar a interface geral da aplicação
 - [x] Renderizar o mapa em tela, mesmo em visual cru
@@ -174,7 +175,7 @@ Aumentar o poder experimental da simulação depois que a base estiver estável.
 - [ ] Adicionar limite de velocidade por trecho
 - [ ] Adicionar proibição de conversão à esquerda em vias selecionadas
 - [ ] Adicionar faixa exclusiva de conversão
-- [ ] Adicionar suporte a mão única / mão dupla
+- [~] Adicionar suporte a mão única / mão dupla (base de mão única/direção explícita já aplicada no mapa bootstrap; falta generalizar e suportar mão dupla real)
 - [ ] Adicionar rotatórias
 - [ ] Adicionar faixas de pedestre
 - [ ] Adicionar pedestres simulados

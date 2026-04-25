@@ -40,7 +40,7 @@ test('engine spawns vehicles deterministically when benchmark mode is enabled', 
 test('engine moves vehicles forward and completes trips at map exits', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-1', x: 7, y: 4, direction: 'east', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-1', x: 7, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }
     ]
   });
   const engine = createEngine(world);
@@ -56,10 +56,25 @@ test('engine moves vehicles forward and completes trips at map exits', () => {
   assert.equal(world.events.at(-1).type, 'vehicleExited');
 });
 
+test('engine blocks movement that violates road direction', () => {
+  const world = createWorldState({
+    vehicles: [
+      { id: 'vehicle-1', x: 7, y: 2, direction: 'west', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  assert.equal(world.entities.vehicles[0].x, 7);
+  assert.equal(world.metrics.blockedMoves, 1);
+  assert.equal(world.events[0].type, 'vehicleBlocked');
+});
+
 test('engine respects traffic light direction gating at controlled intersections', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-1', x: 3, y: 4, direction: 'east', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-1', x: 5, y: 4, direction: 'west', status: 'active', spawnedAtTick: 0 }
     ],
     lights: [
       {
@@ -77,7 +92,7 @@ test('engine respects traffic light direction gating at controlled intersections
 
   engine.tick();
 
-  assert.equal(world.entities.vehicles[0].x, 3);
+  assert.equal(world.entities.vehicles[0].x, 5);
   assert.equal(world.metrics.blockedMoves, 1);
   assert.equal(world.events[0].type, 'vehicleBlocked');
 });

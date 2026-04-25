@@ -62,9 +62,11 @@ export function buildWorldHtml(world, options = {}) {
       if (vehicle) {
         content = `<span class="vehicle vehicle--${escapeHtml(vehicle.direction)}" title="${escapeHtml(vehicle.id)}">${escapeHtml(directionGlyph(vehicle.direction))}</span>`;
       } else if (spawnPoint) {
-        content = '<span class="spawn-marker">◎</span>';
+        content = `<span class="spawn-marker" title="spawn ${escapeHtml(spawnPoint.direction)}">◎</span>`;
       } else if (intersection) {
-        content = '<span class="intersection-marker">╋</span>';
+        content = `<span class="intersection-marker" title="${escapeHtml(formatDirections(road?.allowedDirections || []))}">╋</span>`;
+      } else if (road) {
+        content = `<span class="road-direction" title="${escapeHtml(formatDirections(road.allowedDirections || []))}">${escapeHtml(directionSetGlyph(road.allowedDirections || []))}</span>`;
       }
 
       cells.push(`
@@ -102,6 +104,18 @@ function directionGlyph(direction) {
     south: '↓',
     west: '←'
   }[direction] ?? '•';
+}
+
+function directionSetGlyph(directions) {
+  if (directions.length === 0) {
+    return '·';
+  }
+
+  return directions.map((direction) => directionGlyph(direction)).join('');
+}
+
+function formatDirections(directions) {
+  return directions.length > 0 ? `allowed: ${directions.join(', ')}` : 'allowed: none';
 }
 
 function slugify(value) {

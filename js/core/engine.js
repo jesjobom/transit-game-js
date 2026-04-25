@@ -1,5 +1,6 @@
 import { finalizeBenchmark } from './benchmark.js';
 import {
+  canTravelDirection,
   getAvailableDirections,
   getCell,
   getIntersection,
@@ -79,6 +80,11 @@ function maybeSpawnVehicle(world) {
   }
 
   const selectedSpawn = spawnPoints[Math.floor(nextRandomFloat(world) * spawnPoints.length)] ?? spawnPoints[0];
+
+  if (!canTravelDirection(world.map, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction)) {
+    addWorldEvent(world, 'vehicleSpawnRejected', { spawnPointId: selectedSpawn.id, reason: 'invalid-direction' });
+    return;
+  }
 
   if (isPositionOccupied(world, selectedSpawn.x, selectedSpawn.y)) {
     world.metrics.blockedMoves += 1;
@@ -236,6 +242,10 @@ function getDirectionWeight(world, currentDirection, candidateDirection) {
 }
 
 function canVehicleEnter(world, vehicle, nextPosition) {
+  if (!canTravelDirection(world.map, nextPosition.x, nextPosition.y, vehicle.direction)) {
+    return false;
+  }
+
   if (isPositionOccupied(world, nextPosition.x, nextPosition.y, vehicle.id)) {
     return false;
   }

@@ -22,18 +22,26 @@ export function createBootstrapMap(options = {}) {
   const width = 9;
   const height = 9;
   const roads = [];
-  const roadColumns = [2, 4, 6];
-  const roadRows = [2, 4, 6];
+  const rowDirections = new Map([
+    [2, 'east'],
+    [4, 'west'],
+    [6, 'east']
+  ]);
+  const columnDirections = new Map([
+    [2, 'south'],
+    [4, 'north'],
+    [6, 'south']
+  ]);
 
-  for (const y of roadRows) {
+  for (const [y, direction] of rowDirections.entries()) {
     for (let x = 0; x < width; x += 1) {
-      roads.push(createRoadCell(x, y));
+      roads.push(createRoadCell(x, y, [direction]));
     }
   }
 
-  for (const x of roadColumns) {
+  for (const [x, direction] of columnDirections.entries()) {
     for (let y = 0; y < height; y += 1) {
-      roads.push(createRoadCell(x, y));
+      roads.push(createRoadCell(x, y, [direction]));
     }
   }
 
@@ -56,18 +64,12 @@ export function createBootstrapMap(options = {}) {
       { x: 6, y: 6 }
     ],
     spawnPoints: [
-      { id: 'north-west-entry', x: 2, y: 0, direction: 'south' },
-      { id: 'north-main-entry', x: 4, y: 0, direction: 'south' },
-      { id: 'north-east-entry', x: 6, y: 0, direction: 'south' },
-      { id: 'south-west-entry', x: 2, y: 8, direction: 'north' },
-      { id: 'south-main-entry', x: 4, y: 8, direction: 'north' },
-      { id: 'south-east-entry', x: 6, y: 8, direction: 'north' },
       { id: 'west-north-entry', x: 0, y: 2, direction: 'east' },
-      { id: 'west-main-entry', x: 0, y: 4, direction: 'east' },
-      { id: 'west-south-entry', x: 0, y: 6, direction: 'east' },
-      { id: 'east-north-entry', x: 8, y: 2, direction: 'west' },
       { id: 'east-main-entry', x: 8, y: 4, direction: 'west' },
-      { id: 'east-south-entry', x: 8, y: 6, direction: 'west' }
+      { id: 'west-south-entry', x: 0, y: 6, direction: 'east' },
+      { id: 'north-west-entry', x: 2, y: 0, direction: 'south' },
+      { id: 'south-main-entry', x: 4, y: 8, direction: 'north' },
+      { id: 'north-east-entry', x: 6, y: 0, direction: 'south' }
     ]
   });
 }
@@ -78,10 +80,15 @@ export function normalizeMap(map) {
   const intersectionsByKey = Object.create(null);
 
   for (const road of map.roads || []) {
-    roadsByKey[toPositionKey(road.x, road.y)] = {
+    const key = toPositionKey(road.x, road.y);
+    const existing = roadsByKey[key];
+    const allowedDirections = uniqueDirections([...(existing?.allowedDirections || []), ...(road.allowedDirections || [])]);
+
+    roadsByKey[key] = {
       x: road.x,
       y: road.y,
-      type: road.type ?? 'road'
+      type: road.type ?? 'road',
+      allowedDirections
     };
   }
 
@@ -119,6 +126,14 @@ export function isIntersection(map, x, y) {
   return Boolean(getIntersection(map, x, y));
 }
 
+export function getAllowedDirections(map, x, y) {
+  return getCell(map, x, y)?.allowedDirections ?? [];
+}
+
+export function canTravelDirection(map, x, y, direction) {
+  return getAllowedDirections(map, x, y).includes(direction);
+}
+
 export function getNextPosition(position, direction) {
   const delta = DIRECTION_VECTORS[direction];
 
@@ -133,9 +148,9 @@ export function getNextPosition(position, direction) {
 }
 
 export function getAvailableDirections(map, x, y) {
-  return DIRECTION_ORDER.filter((direction) => {
+  return getAllowedDirections(map, x, y).filter((direction) => {
     const next = getNextPosition({ x, y }, direction);
-    return isInsideMap(map, next.x, next.y) && isRoad(map, next.x, next.y);
+    return isInsideMap(map, next.x, next.y) && isRoad(map, next.x, next.y) && canTravelDirection(map, next.x, next.y, direction);
   });
 }
 
@@ -159,6 +174,10 @@ export function toPositionKey(x, y) {
   return `${x},${y}`;
 }
 
-function createRoadCell(x, y) {
-  return { x, y, type: 'road' };
+function createRoadCell(x, y, allowedDirections) {
+  return { x, y, type: 'road', allowedDirections: uniqueDirections(allowedDirections) };
+}
+
+function uniqueDirections(directions) {
+  return DIRECTION_ORDER.filter((direction) => directions.includes(direction));
 }

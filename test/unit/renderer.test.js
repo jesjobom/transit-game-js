@@ -34,4 +34,6 @@ test('buildWorldHtml renders summary, map cells, and vehicles', () => {
   assert.match(html, /map-cell--intersection/);
   assert.match(html, /map-cell--light-east-west/);
   assert.match(html, /↓/);
+  assert.match(html, /road-direction/);
+  assert.match(html, /allowed: /);
 });
