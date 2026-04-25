@@ -39,6 +39,15 @@ function boot() {
         startLoop();
       }
     },
+    onStep() {
+      if (isRunning || state.world.status === 'completed') {
+        return;
+      }
+
+      state.engine.tick();
+      render();
+      appShell.setRunningState(false);
+    },
     onReset() {
       stopLoop();
       state = createSimulationState();

@@ -9,18 +9,23 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
     engine,
     renderer,
     benchmark,
-    bindControls({ onPlayPause, onReset } = {}) {
+    bindControls({ onPlayPause, onStep, onReset } = {}) {
       bindButton('control-play-pause', onPlayPause);
+      bindButton('control-step', onStep);
       bindButton('control-reset', onReset);
     },
     setRunningState(isRunning) {
-      const button = document.getElementById('control-play-pause');
-      if (!button) {
-        return;
+      const playPauseButton = document.getElementById('control-play-pause');
+      if (playPauseButton) {
+        playPauseButton.textContent = isRunning ? 'Pause' : 'Play';
+        playPauseButton.dataset.running = String(isRunning);
       }
 
-      button.textContent = isRunning ? 'Pause' : 'Play';
-      button.dataset.running = String(isRunning);
+      const stepButton = document.getElementById('control-step');
+      if (stepButton) {
+        stepButton.disabled = isRunning;
+        stepButton.dataset.running = String(isRunning);
+      }
     },
     renderDiagnostics({ metrics = [], lights = [], events = [] } = {}) {
       renderMetricList('live-metrics', metrics);

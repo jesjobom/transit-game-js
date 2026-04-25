@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 14';
-export const BUILD_TAG = 's14-turn-arc-fix';
+export const APP_VERSION = 'Sprint 15';
+export const BUILD_TAG = 's15-step-control';
