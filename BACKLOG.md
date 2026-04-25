@@ -53,15 +53,15 @@ Foco: profundidade, polimento forte e recursos “laboratório premium”.
 ### Objetivo
 Criar uma base que permita evoluir regras, visual e benchmark sem quebrar tudo a cada mudança.
 
-- [ ] Separar claramente a engine de simulação da renderização visual
-- [ ] Substituir loops independentes por carro por uma engine central baseada em ticks
-- [ ] Definir um estado global serializável da simulação
+- [x] Separar claramente a engine de simulação da renderização visual
+- [x] Substituir loops independentes por carro por uma engine central baseada em ticks
+- [x] Definir um estado global serializável da simulação
 - [ ] Permitir reset/reexecução com a mesma configuração e mesma seed
-- [ ] Remover dependências diretas da lógica de negócio com o DOM
-- [ ] Definir um formato base para configuração da simulação
-- [ ] Definir um formato base para mapas/cenários
-- [ ] Definir contrato para geração procedural de mapas baseada em seed
-- [ ] Padronizar a organização dos arquivos do projeto
+- [x] Remover dependências diretas da lógica de negócio com o DOM
+- [x] Definir um formato base para configuração da simulação
+- [x] Definir um formato base para mapas/cenários
+- [x] Definir contrato para geração procedural de mapas baseada em seed
+- [x] Padronizar a organização dos arquivos do projeto
 
 ---
 
@@ -86,11 +86,11 @@ Eliminar problemas do modelo atual antes de empilhar melhorias em cima dele.
 ### Objetivo
 Permitir comparação objetiva entre diferentes conjuntos de regras/configurações.
 
-- [ ] Definir um modo de teste padronizado
-- [ ] Introduzir seed fixa para cenários reproduzíveis
-- [ ] Permitir configurar duração fixa da simulação para benchmark
-- [ ] Permitir configurar taxa de spawn de veículos no benchmark
-- [ ] Definir conjunto mínimo de métricas coletadas por execução
+- [~] Definir um modo de teste padronizado
+- [x] Introduzir seed fixa para cenários reproduzíveis
+- [x] Permitir configurar duração fixa da simulação para benchmark
+- [x] Permitir configurar taxa de spawn de veículos no benchmark
+- [~] Definir conjunto mínimo de métricas coletadas por execução
 - [ ] Detectar deadlocks e travamentos da malha
 - [ ] Medir carros concluídos por unidade de tempo
 - [ ] Medir tempo médio de travessia
@@ -108,16 +108,16 @@ Permitir comparação objetiva entre diferentes conjuntos de regras/configuraç�
 ### Objetivo
 Garantir evolução segura da nova engine sem depender de validação manual constante na UI.
 
-- [ ] Escolher e configurar o runner de testes em Node.js
-- [ ] Criar estrutura inicial de testes (`unit`, `integration`, `regression`)
-- [ ] Criar primeiros testes unitários para RNG com seed
+- [x] Escolher e configurar o runner de testes em Node.js
+- [x] Criar estrutura inicial de testes (`unit`, `integration`, `regression`)
+- [x] Criar primeiros testes unitários para RNG com seed
 - [ ] Criar primeiros testes unitários para semáforos
 - [ ] Criar primeiros testes unitários para regras de trânsito isoladas
 - [ ] Criar primeiros testes unitários para métricas e score
-- [ ] Criar primeiros testes de integração para cenários pequenos
-- [ ] Criar primeiro teste de regressão de benchmark com seed fixa
-- [ ] Garantir que mesma seed + mesma config produz o mesmo resultado lógico
-- [ ] Definir fluxo padrão para rodar testes antes de fechar features importantes
+- [x] Criar primeiros testes de integração para cenários pequenos
+- [x] Criar primeiro teste de regressão de benchmark com seed fixa
+- [x] Garantir que mesma seed + mesma config produz o mesmo resultado lógico
+- [~] Definir fluxo padrão para rodar testes antes de fechar features importantes
 
 ---
 
@@ -148,7 +148,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Implementar aceleração e desaceleração mais graduais
 - [ ] Melhorar posicionamento visual por faixa/direção
 - [ ] Melhorar espaçamento entre veículos em fila
-- [ ] Redesenhar a interface geral da aplicação
+- [~] Redesenhar a interface geral da aplicação
 - [ ] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [ ] Melhorar a aparência visual dos semáforos
 - [ ] Melhorar o visual dos carros com sprites/ícones mais profissionais
