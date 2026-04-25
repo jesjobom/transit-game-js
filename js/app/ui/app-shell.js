@@ -9,16 +9,23 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
     engine,
     renderer,
     benchmark,
-    bindControls({ onPlayPause, onStep, onReset } = {}) {
+    bindControls({ onPlayPause, onStepBack, onStep, onReset } = {}) {
       bindButton('control-play-pause', onPlayPause);
+      bindButton('control-step-back', onStepBack);
       bindButton('control-step', onStep);
       bindButton('control-reset', onReset);
     },
-    setRunningState(isRunning) {
+    setRunningState(isRunning, { canStepBack = true } = {}) {
       const playPauseButton = document.getElementById('control-play-pause');
       if (playPauseButton) {
         playPauseButton.textContent = isRunning ? 'Pause' : 'Play';
         playPauseButton.dataset.running = String(isRunning);
+      }
+
+      const stepBackButton = document.getElementById('control-step-back');
+      if (stepBackButton) {
+        stepBackButton.disabled = isRunning || !canStepBack;
+        stepBackButton.dataset.running = String(isRunning);
       }
 
       const stepButton = document.getElementById('control-step');

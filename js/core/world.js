@@ -130,6 +130,26 @@ export function hydrateVehicle(world, vehicle) {
   };
 }
 
+export function snapshotWorldState(world) {
+  const snapshot = structuredClone({
+    ...world,
+    rng: null,
+    rngState: world.rng?.getState?.() ?? world.rngState
+  });
+
+  delete snapshot.rng;
+  return snapshot;
+}
+
+export function restoreWorldState(snapshot) {
+  const world = structuredClone(snapshot);
+  const rng = createSeededRng(world.simulationSeed ?? world.seed);
+  rng.setState(world.rngState ?? world.simulationSeed ?? world.seed);
+  world.rng = rng;
+  syncWorldRngState(world);
+  return world;
+}
+
 function worldLike(simulationSeed) {
   return { simulationSeed };
 }

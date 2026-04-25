@@ -162,7 +162,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Exibir claramente quais regras opcionais estão ativas
 - [~] Melhorar layout dos controles/configurações
 - [x] Exibir informação de versão na UI para ajudar a detectar cache antigo
-- [x] Permitir play/pause, reset e avanço manual de 1 tick na UI
+- [x] Permitir play/pause, reset, avanço manual de 1 tick e retorno de 1 tick na UI
 - [x] Fazer veículos tomarem decisões básicas em interseções
 
 ---

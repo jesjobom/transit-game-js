@@ -20,13 +20,14 @@ function createElement(id) {
   };
 }
 
-test('createAppShell binds step control and disables it while running', () => {
+test('createAppShell binds step controls and disables them appropriately while running', () => {
   const elements = new Map([
     ['status-app', createElement('status-app')],
     ['status-renderer', createElement('status-renderer')],
     ['status-engine', createElement('status-engine')],
     ['app-version', createElement('app-version')],
     ['control-play-pause', createElement('control-play-pause')],
+    ['control-step-back', createElement('control-step-back')],
     ['control-step', createElement('control-step')],
     ['control-reset', createElement('control-reset')],
     ['live-metrics', createElement('live-metrics')],
@@ -43,6 +44,7 @@ test('createAppShell binds step control and disables it while running', () => {
 
   try {
     let stepCalls = 0;
+    let stepBackCalls = 0;
     const appShell = createAppShell({
       world: {},
       engine: { status: 'ready' },
@@ -53,22 +55,32 @@ test('createAppShell binds step control and disables it while running', () => {
 
     appShell.bindControls({
       onPlayPause() {},
+      onStepBack() {
+        stepBackCalls += 1;
+      },
       onStep() {
         stepCalls += 1;
       },
       onReset() {}
     });
 
+    elements.get('control-step-back').onclick();
     elements.get('control-step').onclick();
+    assert.equal(stepBackCalls, 1);
     assert.equal(stepCalls, 1);
 
-    appShell.setRunningState(true);
+    appShell.setRunningState(true, { canStepBack: true });
     assert.equal(elements.get('control-play-pause').textContent, 'Pause');
+    assert.equal(elements.get('control-step-back').disabled, true);
     assert.equal(elements.get('control-step').disabled, true);
 
-    appShell.setRunningState(false);
+    appShell.setRunningState(false, { canStepBack: false });
     assert.equal(elements.get('control-play-pause').textContent, 'Play');
+    assert.equal(elements.get('control-step-back').disabled, true);
     assert.equal(elements.get('control-step').disabled, false);
+
+    appShell.setRunningState(false, { canStepBack: true });
+    assert.equal(elements.get('control-step-back').disabled, false);
   } finally {
     globalThis.document = originalDocument;
   }
