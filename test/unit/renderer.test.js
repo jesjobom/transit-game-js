@@ -76,3 +76,23 @@ test('buildWorldHtml renders turning vehicles with start/end angle and lane offs
   assert.match(html, /--lane-offset-start-x:-8px; --lane-offset-start-y:4px;/);
   assert.match(html, /--lane-offset-x:-4px; --lane-offset-y:8px;/);
 });
+
+test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
+  const world = createWorldState({
+    vehicles: [
+      { id: 'vehicle-drift-fix', x: 4, y: 3, direction: 'north', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+
+  world.events = [
+    { type: 'vehicleTurned', tick: 1, payload: { vehicleId: 'vehicle-drift-fix', from: 'west', to: 'north', x: 5, y: 3 } },
+    { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-drift-fix', x: 4, y: 3, direction: 'north', laneKey: 'lane-north' } }
+  ];
+
+  const html = buildWorldHtml(world, { animationDurationMs: 320 });
+
+  assert.match(html, /vehicle--turning/);
+  assert.match(html, /--vehicle-angle-from:180deg;/);
+  assert.match(html, /--vehicle-angle-to:270deg;/);
+  assert.doesNotMatch(html, /--vehicle-angle-to:-90deg;/);
+});

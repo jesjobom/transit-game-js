@@ -145,7 +145,7 @@ Permitir ativar/desativar regras opcionais e comparar o impacto delas com benchm
 ### Objetivo
 Melhorar bastante a percepção de qualidade sem tentar resolver todo o polimento de uma vez.
 
-- [~] Implementar movimento suave entre células com interpolação visual (interpolação curta + animação de curva/virada já aplicadas; ainda falta aprofundar a sensação de trajetória)
+- [~] Implementar movimento suave entre células com interpolação visual (interpolação curta + animação de curva/virada com arco curto já aplicadas; ainda falta aprofundar a sensação de trajetória)
 - [~] Separar tick lógico da taxa de atualização visual
 - [ ] Implementar aceleração e desaceleração mais graduais
 - [x] Melhorar posicionamento visual por faixa/direção

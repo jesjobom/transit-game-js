@@ -176,6 +176,7 @@ function renderVehicle(world, vehicle, map) {
   const startX = toPercent(startPosition.x, map.width);
   const startY = toPercent(startPosition.y, map.height);
   const color = vehicle.color ?? getVehicleColor(world, vehicle);
+  const turnAngles = getTurnAngles(animationMeta.fromDirection, vehicle.direction);
   const classes = ['vehicle', `vehicle--${escapeHtml(vehicle.direction)}`];
 
   if (animationMeta.isTurning) {
@@ -185,7 +186,7 @@ function renderVehicle(world, vehicle, map) {
   return `
     <span
       class="${classes.join(' ')}"
-      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-start-x:${startOffset.x}px; --lane-offset-start-y:${startOffset.y}px; --lane-offset-x:${endOffset.x}px; --lane-offset-y:${endOffset.y}px; --vehicle-angle-from:${getDirectionAngle(animationMeta.fromDirection)}deg; --vehicle-angle-to:${getDirectionAngle(vehicle.direction)}deg; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
+      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-start-x:${startOffset.x}px; --lane-offset-start-y:${startOffset.y}px; --lane-offset-x:${endOffset.x}px; --lane-offset-y:${endOffset.y}px; --vehicle-angle-from:${turnAngles.from}deg; --vehicle-angle-to:${turnAngles.to}deg; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
       title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"
       aria-label="${escapeHtml(vehicle.id)}"
     >
@@ -281,6 +282,27 @@ function getDirectionAngle(direction) {
     south: 90,
     west: 180
   }[direction] ?? 0;
+}
+
+function getTurnAngles(fromDirection, toDirection) {
+  const from = getDirectionAngle(fromDirection);
+  const rawTo = getDirectionAngle(toDirection);
+  const delta = normalizeAngleDelta(rawTo - from);
+
+  return {
+    from,
+    to: from + delta
+  };
+}
+
+function normalizeAngleDelta(delta) {
+  let normalized = ((delta + 180) % 360 + 360) % 360 - 180;
+
+  if (normalized === -180) {
+    normalized = 180;
+  }
+
+  return normalized;
 }
 
 function toPercent(index, size) {
