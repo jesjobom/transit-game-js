@@ -16,6 +16,7 @@ const ANIMATION_DURATION_MS = 320;
 
 function boot() {
   let state = createSimulationState();
+  let previousWorld = snapshotRenderableWorld(state.world);
   const renderer = createRenderer(document.getElementById('simulation-root'));
   const benchmark = createBenchmarkShell();
   const appShell = createAppShell({
@@ -90,10 +91,12 @@ function boot() {
     tickAccumulatorMs += deltaMs;
 
     while (tickAccumulatorMs >= TICK_INTERVAL_MS && state.world.status !== 'completed') {
+      previousWorld = snapshotRenderableWorld(state.world);
       state.engine.tick();
       tickAccumulatorMs -= TICK_INTERVAL_MS;
-      render();
     }
+
+    render();
 
     if (state.world.status === 'completed') {
       stopLoop();
@@ -115,9 +118,14 @@ function boot() {
 
   function render() {
     const report = state.engine.getReport();
+    const motionProgress = isRunning ? Math.min(1, tickAccumulatorMs / TICK_INTERVAL_MS) : 1;
     renderer.renderWorld(state.world, {
       summaryLines: buildSimulationSummary(state.world, benchmark.summarize(report)),
-      animationDurationMs: ANIMATION_DURATION_MS
+      animationDurationMs: ANIMATION_DURATION_MS,
+      previousWorld,
+      motionProgress,
+      tickIntervalMs: TICK_INTERVAL_MS,
+      isRunning
     });
     appShell.renderDiagnostics({
       metrics: buildLiveMetrics(state.world, report),
@@ -125,6 +133,11 @@ function boot() {
       events: buildRecentEventSummary(state.world)
     });
   }
+}
+
+function snapshotRenderableWorld(world) {
+  const { rng, ...serializableWorld } = world;
+  return structuredClone(serializableWorld);
 }
 
 function createSimulationState() {

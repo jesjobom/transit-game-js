@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 15';
-export const BUILD_TAG = 's15-step-control';
+export const APP_VERSION = 'Sprint 17';
+export const BUILD_TAG = 's17-continuous-motion';

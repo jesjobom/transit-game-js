@@ -1,4 +1,11 @@
-import { getDirectionOffset, toPositionKey } from '../../core/map.js';
+import {
+  canTravelDirection,
+  getCell,
+  getDirectionOffset,
+  getIntersection,
+  getNextPosition,
+  toPositionKey
+} from '../../core/map.js';
 
 const ROAD_DIRECTION_SET = {
   horizontal: ['east', 'west'],
@@ -85,7 +92,7 @@ export function buildWorldHtml(world, options = {}) {
     }
   }
 
-  const vehicles = world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map));
+  const vehicles = world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map, options));
   const summary = options.summaryLines || [];
 
   const animationDurationMs = options.animationDurationMs ?? 240;
@@ -166,27 +173,20 @@ function renderTrafficLightBulb(direction, state = 'red') {
   return `<span class="traffic-light traffic-light--${escapeHtml(direction)} traffic-light--${escapeHtml(state)}"></span>`;
 }
 
-function renderVehicle(world, vehicle, map) {
-  const animationMeta = getVehicleAnimationMeta(world, vehicle);
-  const endOffset = animationMeta.endOffset;
-  const startOffset = animationMeta.startOffset;
-  const startPosition = animationMeta.startPosition;
-  const endX = toPercent(vehicle.x, map.width);
-  const endY = toPercent(vehicle.y, map.height);
-  const startX = toPercent(startPosition.x, map.width);
-  const startY = toPercent(startPosition.y, map.height);
+function renderVehicle(world, vehicle, map, options = {}) {
+  const renderState = getVehicleRenderState(world, vehicle, map, options);
   const color = vehicle.color ?? getVehicleColor(world, vehicle);
-  const turnAngles = getTurnAngles(animationMeta.fromDirection, vehicle.direction);
   const classes = ['vehicle', `vehicle--${escapeHtml(vehicle.direction)}`];
 
-  if (animationMeta.isTurning) {
+  if (renderState.motionKind === 'turn') {
     classes.push('vehicle--turning');
   }
 
   return `
     <span
       class="${classes.join(' ')}"
-      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-start-x:${startOffset.x}px; --lane-offset-start-y:${startOffset.y}px; --lane-offset-x:${endOffset.x}px; --lane-offset-y:${endOffset.y}px; --vehicle-angle-from:${turnAngles.from}deg; --vehicle-angle-to:${turnAngles.to}deg; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
+      data-motion-kind="${escapeHtml(renderState.motionKind)}"
+      style="left:${renderState.position.x}%; top:${renderState.position.y}%; --vehicle-render-offset-x:${renderState.offset.x}px; --vehicle-render-offset-y:${renderState.offset.y}px; --vehicle-render-angle:${renderState.angle}deg; --vehicle-motion-progress:${renderState.progress.toFixed(3)}; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
       title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"
       aria-label="${escapeHtml(vehicle.id)}"
     >
@@ -201,62 +201,49 @@ function renderVehicle(world, vehicle, map) {
   `;
 }
 
-function getVehicleAnimationMeta(world, vehicle) {
+function getVehicleRenderState(world, vehicle, map, options) {
+  const previousWorld = options.previousWorld;
+  const baseProgress = clamp01(options.motionProgress ?? 1);
+  const previousVehicle = previousWorld?.entities?.vehicles?.find((entry) => entry.id === vehicle.id) ?? null;
   const movedEvent = world.events.find((event) => event.type === 'vehicleMoved' && event.payload.vehicleId === vehicle.id);
-  if (!movedEvent) {
-    const restingOffset = getVehicleRenderOffset(vehicle.direction);
+  const turnEvent = world.events.find((event) => event.type === 'vehicleTurned' && event.payload.vehicleId === vehicle.id);
+  const motionKind = turnEvent ? 'turn' : movedEvent ? 'straight' : 'idle';
+  const fromDirection = turnEvent?.payload.from ?? previousVehicle?.direction ?? vehicle.direction;
+  const startOffset = getVehicleRenderOffset(fromDirection);
+  const endOffset = getVehicleRenderOffset(vehicle.direction);
+  const shouldSlowDown = motionKind === 'straight' && shouldSlowDownAhead(world, vehicle);
+  const progress = motionKind === 'straight' ? shapeStraightMotionProgress(baseProgress, shouldSlowDown) : baseProgress;
+
+  if (!previousVehicle || motionKind === 'idle') {
     return {
-      isTurning: false,
-      fromDirection: vehicle.direction,
-      startOffset: restingOffset,
-      endOffset: restingOffset,
-      startPosition: { x: vehicle.x, y: vehicle.y }
+      motionKind,
+      progress,
+      position: toPercentPoint({ x: vehicle.x + 0.5, y: vehicle.y + 0.5 }, map),
+      offset: endOffset,
+      angle: getDirectionAngle(vehicle.direction)
     };
   }
 
-  const turnEvent = world.events.find((event) => event.type === 'vehicleTurned' && event.payload.vehicleId === vehicle.id);
-  if (turnEvent) {
+  const startPoint = { x: previousVehicle.x + 0.5, y: previousVehicle.y + 0.5 };
+  const endPoint = { x: vehicle.x + 0.5, y: vehicle.y + 0.5 };
+
+  if (motionKind === 'turn') {
+    const curve = sampleTurnCurve(startPoint, endPoint, fromDirection, vehicle.direction, progress);
     return {
-      isTurning: true,
-      fromDirection: turnEvent.payload.from,
-      startOffset: getVehicleRenderOffset(turnEvent.payload.from),
-      endOffset: getVehicleRenderOffset(vehicle.direction),
-      startPosition: { x: turnEvent.payload.x, y: turnEvent.payload.y }
+      motionKind,
+      progress,
+      position: toPercentPoint(curve.point, map),
+      offset: interpolateOffset(startOffset, endOffset, progress),
+      angle: curve.angle
     };
   }
 
-  const restingOffset = getVehicleRenderOffset(vehicle.direction);
-
   return {
-    isTurning: false,
-    fromDirection: vehicle.direction,
-    startOffset: restingOffset,
-    endOffset: restingOffset,
-    startPosition: getVehicleStartPosition(world, vehicle)
-  };
-}
-
-function getVehicleStartPosition(world, vehicle) {
-  const movedEvent = world.events.find((event) => event.type === 'vehicleMoved' && event.payload.vehicleId === vehicle.id);
-  if (!movedEvent) {
-    return { x: vehicle.x, y: vehicle.y };
-  }
-
-  const turnEvent = world.events.find((event) => event.type === 'vehicleTurned' && event.payload.vehicleId === vehicle.id);
-  if (turnEvent) {
-    return { x: turnEvent.payload.x, y: turnEvent.payload.y };
-  }
-
-  const backDelta = {
-    north: { x: 0, y: 1 },
-    east: { x: -1, y: 0 },
-    south: { x: 0, y: -1 },
-    west: { x: 1, y: 0 }
-  }[vehicle.direction] ?? { x: 0, y: 0 };
-
-  return {
-    x: vehicle.x + backDelta.x,
-    y: vehicle.y + backDelta.y
+    motionKind,
+    progress,
+    position: toPercentPoint(lerpPoint(startPoint, endPoint, progress), map),
+    offset: interpolateOffset(startOffset, endOffset, progress),
+    angle: getTurnAngles(fromDirection, vehicle.direction).to
   };
 }
 
@@ -303,6 +290,120 @@ function normalizeAngleDelta(delta) {
   }
 
   return normalized;
+}
+
+function shouldSlowDownAhead(world, vehicle) {
+  const nextPosition = getNextPosition(vehicle, vehicle.direction);
+
+  if (!getCell(world.map, nextPosition.x, nextPosition.y)) {
+    return false;
+  }
+
+  if (!canTravelDirection(world.map, nextPosition.x, nextPosition.y, vehicle.direction)) {
+    return true;
+  }
+
+  const occupied = world.entities.vehicles.some((other) => {
+    if (other.id === vehicle.id) {
+      return false;
+    }
+
+    if (getIntersection(world.map, nextPosition.x, nextPosition.y)) {
+      return other.x === nextPosition.x && other.y === nextPosition.y;
+    }
+
+    return other.x === nextPosition.x && other.y === nextPosition.y && other.direction === vehicle.direction;
+  });
+
+  if (occupied) {
+    return true;
+  }
+
+  const controlledIntersection = world.map.intersections.find(
+    (intersection) => intersection.x === nextPosition.x && intersection.y === nextPosition.y && intersection.lightId
+  );
+
+  if (!controlledIntersection) {
+    return false;
+  }
+
+  const light = world.entities.lights.find((entry) => entry.id === controlledIntersection.lightId);
+  const phase = light?.phases?.[light.phaseIndex ?? 0];
+  return !phase?.allowedDirections?.includes(vehicle.direction);
+}
+
+function shapeStraightMotionProgress(progress, shouldSlowDown) {
+  if (!shouldSlowDown) {
+    return progress;
+  }
+
+  const eased = 1 - (1 - progress) * (1 - progress);
+  return Math.min(0.94, eased * 0.94);
+}
+
+function sampleTurnCurve(startPoint, endPoint, fromDirection, toDirection, progress) {
+  const control = getTurnControlPoint(startPoint, fromDirection, toDirection);
+  const point = quadraticBezier(startPoint, control, endPoint, progress);
+  const tangent = quadraticBezierTangent(startPoint, control, endPoint, progress);
+
+  return {
+    point,
+    angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
+  };
+}
+
+function getTurnControlPoint(startPoint, fromDirection, toDirection) {
+  const bias = {
+    north: { east: { x: 0, y: 0.7 }, west: { x: 0, y: 0.7 } },
+    south: { east: { x: 0, y: -0.7 }, west: { x: 0, y: -0.7 } },
+    east: { north: { x: -0.7, y: 0 }, south: { x: -0.7, y: 0 } },
+    west: { north: { x: 0.7, y: 0 }, south: { x: 0.7, y: 0 } }
+  }[fromDirection]?.[toDirection] ?? { x: 0, y: 0 };
+
+  return {
+    x: startPoint.x + bias.x,
+    y: startPoint.y + bias.y
+  };
+}
+
+function quadraticBezier(start, control, end, t) {
+  const oneMinusT = 1 - t;
+  return {
+    x: oneMinusT * oneMinusT * start.x + 2 * oneMinusT * t * control.x + t * t * end.x,
+    y: oneMinusT * oneMinusT * start.y + 2 * oneMinusT * t * control.y + t * t * end.y
+  };
+}
+
+function quadraticBezierTangent(start, control, end, t) {
+  return {
+    x: 2 * (1 - t) * (control.x - start.x) + 2 * t * (end.x - control.x),
+    y: 2 * (1 - t) * (control.y - start.y) + 2 * t * (end.y - control.y)
+  };
+}
+
+function toPercentPoint(point, map) {
+  return {
+    x: (point.x / map.width) * 100,
+    y: (point.y / map.height) * 100
+  };
+}
+
+function interpolateOffset(startOffset, endOffset, progress) {
+  return {
+    x: startOffset.x + (endOffset.x - startOffset.x) * progress,
+    y: startOffset.y + (endOffset.y - startOffset.y) * progress
+  };
+}
+
+function lerpPoint(start, end, progress) {
+  return {
+    x: start.x + (end.x - start.x) * progress,
+    y: start.y + (end.y - start.y) * progress
+  };
+}
+
+function clamp01(value) {
+  return Math.max(0, Math.min(1, value));
 }
 
 function toPercent(index, size) {

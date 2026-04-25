@@ -145,9 +145,9 @@ Permitir ativar/desativar regras opcionais e comparar o impacto delas com benchm
 ### Objetivo
 Melhorar bastante a percepção de qualidade sem tentar resolver todo o polimento de uma vez.
 
-- [~] Implementar movimento suave entre células com interpolação visual (interpolação curta + animação de curva/virada com arco curto já aplicadas; ainda falta aprofundar a sensação de trajetória)
+- [~] Implementar movimento suave entre células com interpolação visual (render contínuo frame-a-frame + aproximação suave antes de parada + curva com trajetória dedicada já aplicados; ainda falta aprofundar a sensação de trajetória)
 - [~] Separar tick lógico da taxa de atualização visual
-- [ ] Implementar aceleração e desaceleração mais graduais
+- [~] Implementar aceleração e desaceleração mais graduais (aproximação suave para parada iminente já aplicada; ainda falta modelagem mais rica de velocidade)
 - [x] Melhorar posicionamento visual por faixa/direção
 - [x] Introduzir sentido explícito nas vias do mapa bootstrap para evitar tráfego frontal em segmentos de célula única
 - [~] Melhorar espaçamento entre veículos em fila (offset por faixa corrigido e leve recuo visual dentro da célula já aplicados; ainda falta refinar filas densas)
@@ -157,7 +157,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster + eixo ativo mais óbvio já aplicados; ainda falta polimento fino/mais informação)
-- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + curva/virada visual já aplicadas; ainda falta polimento fino)
+- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + movimento contínuo/curva dedicada já aplicados; ainda falta polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
 - [~] Melhorar layout dos controles/configurações

@@ -23,9 +23,20 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
     ]
   });
 
+  world.events = [
+    { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-1', x: 2, y: 1, direction: 'south', laneKey: 'lane-south' } }
+  ];
+
   const html = buildWorldHtml(world, {
     summaryLines: ['Tick: 0', 'Vehicles: 2'],
-    animationDurationMs: 320
+    animationDurationMs: 320,
+    motionProgress: 0.5,
+    previousWorld: createWorldState({
+      vehicles: [
+        { id: 'vehicle-1', x: 2, y: 2, direction: 'south', status: 'active', spawnedAtTick: 0 },
+        { id: 'vehicle-2', x: 2, y: 0, direction: 'north', status: 'active', spawnedAtTick: 0 }
+      ]
+    })
   });
 
   assert.match(html, /world-grid-shell/);
@@ -48,8 +59,10 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   assert.match(html, /traffic-light--green/);
   assert.match(html, /vehicle-svg/);
   assert.match(html, /vehicle-body/);
-  assert.match(html, /--vehicle-start-x:/);
-  assert.match(html, /--lane-offset-x:(-?8|-?4|0)px; --lane-offset-y:(-?8|-?4|0)px;/);
+  assert.match(html, /data-motion-kind="straight"/);
+  assert.match(html, /--vehicle-render-offset-x:(-?8|-?4|0)/);
+  assert.match(html, /--vehicle-render-angle:/);
+  assert.match(html, /--vehicle-motion-progress:0.500/);
   assert.match(html, /--vehicle-color:hsl\(/);
   assert.match(html, /traffic light east-west/);
   assert.match(html, /road-direction/);
@@ -68,13 +81,13 @@ test('buildWorldHtml renders turning vehicles with start/end angle and lane offs
     { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-turn', x: 4, y: 3, direction: 'east', laneKey: 'lane-east' } }
   ];
 
-  const html = buildWorldHtml(world, { animationDurationMs: 320 });
+  const html = buildWorldHtml(world, { animationDurationMs: 320, motionProgress: 0.5, previousWorld: createWorldState({ vehicles: [{ id: 'vehicle-turn', x: 4, y: 2, direction: 'north', status: 'active', spawnedAtTick: 0 }] }) });
 
   assert.match(html, /vehicle--turning/);
-  assert.match(html, /--vehicle-angle-from:-90deg;/);
-  assert.match(html, /--vehicle-angle-to:0deg;/);
-  assert.match(html, /--lane-offset-start-x:-8px; --lane-offset-start-y:4px;/);
-  assert.match(html, /--lane-offset-x:-4px; --lane-offset-y:8px;/);
+  assert.match(html, /data-motion-kind="turn"/);
+  assert.match(html, /--vehicle-render-angle:/);
+  assert.match(html, /--vehicle-render-offset-x:/);
+  assert.match(html, /--vehicle-motion-progress:0.500/);
 });
 
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
@@ -89,10 +102,9 @@ test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', 
     { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-drift-fix', x: 4, y: 3, direction: 'north', laneKey: 'lane-north' } }
   ];
 
-  const html = buildWorldHtml(world, { animationDurationMs: 320 });
+  const html = buildWorldHtml(world, { animationDurationMs: 320, motionProgress: 0.5, previousWorld: createWorldState({ vehicles: [{ id: 'vehicle-drift-fix', x: 5, y: 3, direction: 'west', status: 'active', spawnedAtTick: 0 }] }) });
 
   assert.match(html, /vehicle--turning/);
-  assert.match(html, /--vehicle-angle-from:180deg;/);
-  assert.match(html, /--vehicle-angle-to:270deg;/);
-  assert.doesNotMatch(html, /--vehicle-angle-to:-90deg;/);
+  assert.match(html, /data-motion-kind="turn"/);
+  assert.match(html, /--vehicle-render-angle:180deg;/);
 });
