@@ -1,5 +1,11 @@
 import { getDirectionOffset, toPositionKey } from '../../core/map.js';
 
+const ROAD_DIRECTION_SET = {
+  horizontal: ['east', 'west'],
+  vertical: ['north', 'south'],
+  cross: ['north', 'east', 'south', 'west']
+};
+
 export function createRenderer(rootElement) {
   return {
     status: 'world renderer ready',
@@ -64,20 +70,11 @@ export function buildWorldHtml(world, options = {}) {
       if (vehicles.length > 0) classes.push('map-cell--occupied');
       if (lightPhase) classes.push(`map-cell--light-${slugify(lightPhase)}`);
 
-      let content = '';
+      let content = road ? renderRoadSurface({ road, intersection, spawnPoint, vehicles }) : '';
       if (vehicles.length > 0) {
-        content = vehicles
-          .map((vehicle) => {
-            const offset = getDirectionOffset(vehicle.direction);
-            return `<span class="vehicle vehicle--${escapeHtml(vehicle.direction)}" style="--lane-offset-x:${offset.x}%; --lane-offset-y:${offset.y}%;" title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}">${escapeHtml(directionGlyph(vehicle.direction))}</span>`;
-          })
+        content += vehicles
+          .map((vehicle) => renderVehicle(vehicle))
           .join('');
-      } else if (spawnPoint) {
-        content = `<span class="spawn-marker" title="spawn ${escapeHtml(spawnPoint.direction)}">◎</span>`;
-      } else if (intersection) {
-        content = `<span class="intersection-marker" title="${escapeHtml(formatDirections(road?.allowedDirections || []))}">╋</span>`;
-      } else if (road) {
-        content = `<span class="road-direction" title="${escapeHtml(formatDirections(road.allowedDirections || []))}">${escapeHtml(directionSetGlyph(road.allowedDirections || []))}</span>`;
       }
 
       cells.push(`
@@ -108,6 +105,59 @@ export function buildWorldHtml(world, options = {}) {
   `;
 }
 
+function renderRoadSurface({ road, intersection, spawnPoint, vehicles }) {
+  const roadType = getRoadType(road?.allowedDirections || []);
+  const laneMarkup = road ? renderLaneMarkers(roadType) : '';
+  const intersectionMarkup = intersection ? '<span class="intersection-core"></span>' : '';
+  const spawnMarkup = spawnPoint ? `<span class="spawn-marker" title="spawn ${escapeHtml(spawnPoint.direction)}"></span>` : '';
+  const hintMarkup = vehicles.length === 0 && road ? `<span class="road-direction road-direction--${roadType}" title="${escapeHtml(formatDirections(road.allowedDirections || []))}">${escapeHtml(directionSetGlyph(road.allowedDirections || []))}</span>` : '';
+
+  return `
+    <span class="road-surface road-surface--${roadType}">
+      ${laneMarkup}
+      ${intersectionMarkup}
+      ${spawnMarkup}
+      ${hintMarkup}
+    </span>
+  `;
+}
+
+function renderLaneMarkers(roadType) {
+  if (roadType === 'horizontal') {
+    return '<span class="lane-marker lane-marker--horizontal"></span>';
+  }
+
+  if (roadType === 'vertical') {
+    return '<span class="lane-marker lane-marker--vertical"></span>';
+  }
+
+  return `
+    <span class="lane-marker lane-marker--horizontal"></span>
+    <span class="lane-marker lane-marker--vertical"></span>
+  `;
+}
+
+function renderVehicle(vehicle) {
+  const offset = getDirectionOffset(vehicle.direction);
+  const color = getVehicleColor(vehicle.id);
+  return `
+    <span
+      class="vehicle vehicle--${escapeHtml(vehicle.direction)}"
+      style="--lane-offset-x:${offset.x}%; --lane-offset-y:${offset.y}%; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
+      title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"
+      aria-label="${escapeHtml(vehicle.id)}"
+    >
+      <span class="vehicle-svg">
+        <span class="vehicle-body"></span>
+        <span class="vehicle-cabin"></span>
+        <span class="vehicle-wheels vehicle-wheels--front"></span>
+        <span class="vehicle-wheels vehicle-wheels--rear"></span>
+        <span class="vehicle-windshield"></span>
+      </span>
+    </span>
+  `;
+}
+
 function directionGlyph(direction) {
   return {
     north: '↑',
@@ -123,6 +173,44 @@ function directionSetGlyph(directions) {
   }
 
   return directions.map((direction) => directionGlyph(direction)).join('');
+}
+
+function getRoadType(directions) {
+  if (matchesDirections(directions, ROAD_DIRECTION_SET.horizontal)) {
+    return 'horizontal';
+  }
+
+  if (matchesDirections(directions, ROAD_DIRECTION_SET.vertical)) {
+    return 'vertical';
+  }
+
+  if (matchesDirections(directions, ROAD_DIRECTION_SET.cross)) {
+    return 'cross';
+  }
+
+  return 'stub';
+}
+
+function matchesDirections(actual, expected) {
+  return actual.length === expected.length && expected.every((direction) => actual.includes(direction));
+}
+
+function getVehicleColor(vehicleId) {
+  const hue = hashString(vehicleId) % 360;
+  return {
+    fill: `hsl(${hue} 70% 58%)`,
+    shadow: `hsl(${hue} 65% 38%)`,
+    highlight: `hsl(${hue} 85% 78%)`
+  };
+}
+
+function hashString(value) {
+  let hash = 0;
+  for (const char of String(value)) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  }
+
+  return hash;
 }
 
 function formatDirections(directions) {

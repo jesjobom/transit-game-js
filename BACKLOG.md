@@ -157,7 +157,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos
-- [ ] Melhorar o visual dos carros com sprites/ícones mais profissionais
+- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cores determinísticas já aplicada; ainda falta animação/polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
 - [~] Melhorar layout dos controles/configurações
