@@ -58,11 +58,27 @@ export function buildRecentEventSummary(world, limit = 5) {
 
 function summarizeEventPayload(payload = {}) {
   if (payload.vehicleId) {
+    const parts = [];
+
     if (typeof payload.x === 'number' && typeof payload.y === 'number') {
-      return `${payload.vehicleId} @ ${payload.x},${payload.y}`;
+      parts.push(`${payload.vehicleId} @ ${payload.x},${payload.y}`);
+    } else {
+      parts.push(payload.vehicleId);
     }
 
-    return payload.vehicleId;
+    if (payload.reason) {
+      parts.push(`reason=${payload.reason}`);
+    }
+
+    if (payload.blockingVehicleId) {
+      parts.push(`by=${payload.blockingVehicleId}`);
+    }
+
+    if (payload.blockedByLightId && payload.blockedByPhase) {
+      parts.push(`light=${payload.blockedByLightId}/${payload.blockedByPhase}`);
+    }
+
+    return parts.join(' | ');
   }
 
   if (payload.lightId && payload.phaseName) {
@@ -70,14 +86,14 @@ function summarizeEventPayload(payload = {}) {
   }
 
   if (payload.spawnPointId) {
-    return payload.spawnPointId;
+    return payload.reason ? `${payload.spawnPointId} | reason=${payload.reason}` : payload.spawnPointId;
   }
 
   if (payload.from && payload.to) {
     return `${payload.from}→${payload.to}`;
   }
 
-  return '';
+  return payload.reason ? `reason=${payload.reason}` : '';
 }
 
 function formatDecimal(value) {

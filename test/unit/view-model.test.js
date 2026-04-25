@@ -66,7 +66,7 @@ test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics',
   });
 
   world.events = [
-    { tick: 3, type: 'vehicleMoved', payload: { vehicleId: 'vehicle-1', x: 2, y: 4 } },
+    { tick: 3, type: 'vehicleBlocked', payload: { vehicleId: 'vehicle-1', x: 2, y: 4, reason: 'red-light', blockedByLightId: 'main-crossing', blockedByPhase: 'east-west' } },
     { tick: 4, type: 'lightChanged', payload: { lightId: 'main-crossing', phaseName: 'east-west' } }
   ];
 
@@ -74,7 +74,9 @@ test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics',
   const eventLines = buildRecentEventSummary(world);
 
   assert.deepEqual(lightLines, ['main-crossing: east-west (2)']);
-  assert.match(eventLines[0], /vehicleMoved/);
+  assert.match(eventLines[0], /vehicleBlocked/);
   assert.match(eventLines[0], /vehicle-1 @ 2,4/);
+  assert.match(eventLines[0], /reason=red-light/);
+  assert.match(eventLines[0], /light=main-crossing\/east-west/);
   assert.match(eventLines[1], /main-crossing → east-west/);
 });

@@ -87,9 +87,15 @@ function maybeSpawnVehicle(world) {
     return;
   }
 
-  if (isPositionOccupied(world, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction)) {
+  const spawnBlockReason = getOccupancyBlockReason(world, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction);
+  if (spawnBlockReason) {
     world.metrics.blockedMoves += 1;
-    addWorldEvent(world, 'vehicleSpawnBlocked', { spawnPointId: selectedSpawn.id });
+    addWorldEvent(world, 'vehicleSpawnBlocked', {
+      spawnPointId: selectedSpawn.id,
+      reason: spawnBlockReason.reason,
+      blockingVehicleId: spawnBlockReason.blockingVehicleId,
+      laneKey: getLaneKey(selectedSpawn.direction)
+    });
     return;
   }
 
@@ -135,7 +141,8 @@ function moveVehicles(world) {
       continue;
     }
 
-    if (!canVehicleEnter(world, vehicle, nextPosition)) {
+    const block = getVehicleBlock(world, vehicle, nextPosition);
+    if (block) {
       world.metrics.blockedMoves += 1;
       addWorldEvent(world, 'vehicleBlocked', {
         vehicleId: vehicle.id,
@@ -143,7 +150,11 @@ function moveVehicles(world) {
         y: vehicle.y,
         nextX: nextPosition.x,
         nextY: nextPosition.y,
-        laneKey: getLaneKey(vehicle.direction)
+        laneKey: getLaneKey(vehicle.direction),
+        reason: block.reason,
+        blockingVehicleId: block.blockingVehicleId,
+        blockedByLightId: block.blockedByLightId,
+        blockedByPhase: block.blockedByPhase
       });
       survivors.push(vehicle);
       continue;
@@ -246,13 +257,14 @@ function getDirectionWeight(world, currentDirection, candidateDirection) {
   return world.config.routing.allowReverse ? 0.1 : 0;
 }
 
-function canVehicleEnter(world, vehicle, nextPosition) {
+function getVehicleBlock(world, vehicle, nextPosition) {
   if (!canTravelDirection(world.map, nextPosition.x, nextPosition.y, vehicle.direction)) {
-    return false;
+    return { reason: 'invalid-direction' };
   }
 
-  if (isPositionOccupied(world, nextPosition.x, nextPosition.y, vehicle.direction, vehicle.id)) {
-    return false;
+  const occupancyBlock = getOccupancyBlockReason(world, nextPosition.x, nextPosition.y, vehicle.direction, vehicle.id);
+  if (occupancyBlock) {
+    return occupancyBlock;
   }
 
   const controlledIntersection = world.map.intersections.find(
@@ -260,34 +272,50 @@ function canVehicleEnter(world, vehicle, nextPosition) {
   );
 
   if (!controlledIntersection) {
-    return true;
+    return null;
   }
 
   const light = world.entities.lights.find((entry) => entry.id === controlledIntersection.lightId);
 
   if (!light || !Array.isArray(light.phases) || light.phases.length === 0) {
-    return true;
+    return null;
   }
 
   const phase = light.phases[light.phaseIndex ?? 0];
 
   if (!phase?.allowedDirections) {
-    return true;
+    return null;
   }
 
-  return phase.allowedDirections.includes(vehicle.direction);
+  if (phase.allowedDirections.includes(vehicle.direction)) {
+    return null;
+  }
+
+  return {
+    reason: 'red-light',
+    blockedByLightId: light.id,
+    blockedByPhase: phase.name ?? 'unknown'
+  };
 }
 
-function isPositionOccupied(world, x, y, direction, ignoredVehicleId = null) {
+function getOccupancyBlockReason(world, x, y, direction, ignoredVehicleId = null) {
   const occupancyKey = getOccupancyKey(world, x, y, direction);
-
-  return world.entities.vehicles.some((vehicle) => {
+  const blockingVehicle = world.entities.vehicles.find((vehicle) => {
     if (ignoredVehicleId && vehicle.id === ignoredVehicleId) {
       return false;
     }
 
     return getOccupancyKey(world, vehicle.x, vehicle.y, vehicle.direction) === occupancyKey;
   });
+
+  if (!blockingVehicle) {
+    return null;
+  }
+
+  return {
+    reason: getIntersection(world.map, x, y) ? 'intersection-occupied' : 'lane-occupied',
+    blockingVehicleId: blockingVehicle.id
+  };
 }
 
 function getOccupancyKey(world, x, y, direction) {

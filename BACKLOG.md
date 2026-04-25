@@ -220,7 +220,7 @@ Facilitar entendimento do comportamento emergente e depuração dos resultados.
 - [ ] Permitir inspecionar células e cruzamentos pela UI
 - [ ] Destacar pontos de deadlock visualmente
 - [ ] Exibir trilhas/histórico curto de deslocamento dos veículos
-- [ ] Criar modo debug com overlays visuais
+- [~] Criar modo debug com overlays visuais (diagnósticos laterais, eventos recentes e motivos de bloqueio já expostos; faltam overlays/inspeção visual no grid)
 
 ---
 
