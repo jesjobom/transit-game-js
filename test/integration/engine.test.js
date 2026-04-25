@@ -40,13 +40,13 @@ test('engine spawns vehicles deterministically when benchmark mode is enabled', 
 test('engine moves vehicles forward and completes trips at map exits', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-1', x: 3, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-1', x: 7, y: 4, direction: 'east', status: 'active', spawnedAtTick: 0 }
     ]
   });
   const engine = createEngine(world);
 
   engine.tick();
-  assert.equal(world.entities.vehicles[0].x, 4);
+  assert.equal(world.entities.vehicles[0].x, 8);
   assert.equal(world.metrics.movedVehicles, 1);
 
   engine.tick();
@@ -59,7 +59,7 @@ test('engine moves vehicles forward and completes trips at map exits', () => {
 test('engine respects traffic light direction gating at controlled intersections', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-1', x: 1, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-1', x: 3, y: 4, direction: 'east', status: 'active', spawnedAtTick: 0 }
     ],
     lights: [
       {
@@ -77,7 +77,7 @@ test('engine respects traffic light direction gating at controlled intersections
 
   engine.tick();
 
-  assert.equal(world.entities.vehicles[0].x, 1);
+  assert.equal(world.entities.vehicles[0].x, 3);
   assert.equal(world.metrics.blockedMoves, 1);
   assert.equal(world.events[0].type, 'vehicleBlocked');
 });
@@ -92,7 +92,7 @@ test('engine can turn vehicles at intersections deterministically', () => {
       allowReverse: false
     },
     vehicles: [
-      { id: 'vehicle-1', x: 2, y: 2, direction: 'north', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-1', x: 4, y: 4, direction: 'north', status: 'active', spawnedAtTick: 0 }
     ]
   });
   const engine = createEngine(world);
@@ -100,7 +100,7 @@ test('engine can turn vehicles at intersections deterministically', () => {
   engine.tick();
 
   assert.equal(world.entities.vehicles[0].direction, 'west');
-  assert.deepEqual({ x: world.entities.vehicles[0].x, y: world.entities.vehicles[0].y }, { x: 1, y: 2 });
+  assert.deepEqual({ x: world.entities.vehicles[0].x, y: world.entities.vehicles[0].y }, { x: 3, y: 4 });
   assert.equal(world.metrics.turnsTaken, 1);
   assert.equal(world.events[0].type, 'vehicleTurned');
 });

@@ -10,7 +10,7 @@ test('createWorldState builds the Sprint 6 structure with defaults', () => {
   assert.equal(world.tick, 0);
   assert.equal(world.mapId, 'bootstrap-grid');
   assert.equal(world.map.id, 'bootstrap-grid');
-  assert.equal(world.map.roads.length, 9);
+  assert.equal(world.map.roads.length, 45);
   assert.equal(world.config.tickRate, 10);
   assert.equal(world.config.rules.freeRightOnRed, false);
   assert.equal(world.config.benchmark.mode, 'sandbox');

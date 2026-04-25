@@ -153,6 +153,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [~] Redesenhar a interface geral da aplicação
 - [x] Renderizar o mapa em tela, mesmo em visual cru
 - [x] Renderizar veículos em posições reais do grid
+- [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos
 - [ ] Melhorar o visual dos carros com sprites/ícones mais profissionais
@@ -228,6 +229,7 @@ Facilitar entendimento do comportamento emergente e depuração dos resultados.
 Dar mais variedade ao simulador e criar cenários úteis de comparação.
 
 - [ ] Permitir carregar mapas a partir de arquivo em vez de hardcode
+- [~] Evoluir o mapa bootstrap fixo para cobrir cenários mais interessantes antes dos mapas externos
 - [ ] Implementar geração procedural de mapas baseada em seed
 - [ ] Definir parâmetros controláveis da geração procedural (densidade, tamanho, cruzamentos, semáforos, etc.)
 - [ ] Garantir que mesma seed gere exatamente o mesmo mapa

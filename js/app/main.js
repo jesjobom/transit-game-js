@@ -85,8 +85,8 @@ function createSimulationState() {
     benchmark: {
       enabled: true,
       mode: 'benchmark',
-      spawnRate: 0.6,
-      durationTicks: 40
+      spawnRate: 0.55,
+      durationTicks: 60
     },
     routing: {
       straightWeight: 0.45,
@@ -96,7 +96,43 @@ function createSimulationState() {
     },
     lights: [
       {
+        id: 'north-crossing',
+        phaseIndex: 0,
+        remainingTicks: 2,
+        phases: [
+          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
+        ]
+      },
+      {
+        id: 'west-crossing',
+        phaseIndex: 1,
+        remainingTicks: 2,
+        phases: [
+          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
+        ]
+      },
+      {
         id: 'main-crossing',
+        phaseIndex: 0,
+        remainingTicks: 2,
+        phases: [
+          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
+        ]
+      },
+      {
+        id: 'east-crossing',
+        phaseIndex: 1,
+        remainingTicks: 2,
+        phases: [
+          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
+        ]
+      },
+      {
+        id: 'south-crossing',
         phaseIndex: 0,
         remainingTicks: 2,
         phases: [

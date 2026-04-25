@@ -19,17 +19,21 @@ export function createMapDefinition(options = {}) {
 
 export function createBootstrapMap(options = {}) {
   const mapSeed = normalizeSeed(options.mapSeed ?? options.seed);
-  const width = 5;
-  const height = 5;
+  const width = 9;
+  const height = 9;
   const roads = [];
+  const roadColumns = [2, 4, 6];
+  const roadRows = [2, 4, 6];
 
-  for (let x = 0; x < width; x += 1) {
-    roads.push(createRoadCell(x, 2));
+  for (const y of roadRows) {
+    for (let x = 0; x < width; x += 1) {
+      roads.push(createRoadCell(x, y));
+    }
   }
 
-  for (let y = 0; y < height; y += 1) {
-    if (y !== 2) {
-      roads.push(createRoadCell(2, y));
+  for (const x of roadColumns) {
+    for (let y = 0; y < height; y += 1) {
+      roads.push(createRoadCell(x, y));
     }
   }
 
@@ -40,12 +44,30 @@ export function createBootstrapMap(options = {}) {
     width,
     height,
     roads,
-    intersections: [{ x: 2, y: 2, lightId: 'main-crossing' }],
+    intersections: [
+      { x: 2, y: 2 },
+      { x: 4, y: 2, lightId: 'north-crossing' },
+      { x: 6, y: 2 },
+      { x: 2, y: 4, lightId: 'west-crossing' },
+      { x: 4, y: 4, lightId: 'main-crossing' },
+      { x: 6, y: 4, lightId: 'east-crossing' },
+      { x: 2, y: 6 },
+      { x: 4, y: 6, lightId: 'south-crossing' },
+      { x: 6, y: 6 }
+    ],
     spawnPoints: [
-      { id: 'west-entry', x: 0, y: 2, direction: 'east' },
-      { id: 'east-entry', x: 4, y: 2, direction: 'west' },
-      { id: 'north-entry', x: 2, y: 0, direction: 'south' },
-      { id: 'south-entry', x: 2, y: 4, direction: 'north' }
+      { id: 'north-west-entry', x: 2, y: 0, direction: 'south' },
+      { id: 'north-main-entry', x: 4, y: 0, direction: 'south' },
+      { id: 'north-east-entry', x: 6, y: 0, direction: 'south' },
+      { id: 'south-west-entry', x: 2, y: 8, direction: 'north' },
+      { id: 'south-main-entry', x: 4, y: 8, direction: 'north' },
+      { id: 'south-east-entry', x: 6, y: 8, direction: 'north' },
+      { id: 'west-north-entry', x: 0, y: 2, direction: 'east' },
+      { id: 'west-main-entry', x: 0, y: 4, direction: 'east' },
+      { id: 'west-south-entry', x: 0, y: 6, direction: 'east' },
+      { id: 'east-north-entry', x: 8, y: 2, direction: 'west' },
+      { id: 'east-main-entry', x: 8, y: 4, direction: 'west' },
+      { id: 'east-south-entry', x: 8, y: 6, direction: 'west' }
     ]
   });
 }
