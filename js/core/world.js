@@ -34,7 +34,7 @@ export function createWorldState(options = {}) {
   });
 
   const world = {
-    version: 'next-sprint-6',
+    version: 'next-sprint-8',
     tick: 0,
     seed: simulationSeed,
     simulationSeed,

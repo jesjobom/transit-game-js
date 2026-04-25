@@ -4,6 +4,7 @@ import {
   getAvailableDirections,
   getCell,
   getIntersection,
+  getLaneKey,
   getNextPosition,
   isInsideMap,
   reverseDirection,
@@ -86,7 +87,7 @@ function maybeSpawnVehicle(world) {
     return;
   }
 
-  if (isPositionOccupied(world, selectedSpawn.x, selectedSpawn.y)) {
+  if (isPositionOccupied(world, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction)) {
     world.metrics.blockedMoves += 1;
     addWorldEvent(world, 'vehicleSpawnBlocked', { spawnPointId: selectedSpawn.id });
     return;
@@ -108,7 +109,8 @@ function maybeSpawnVehicle(world) {
     x: vehicle.x,
     y: vehicle.y,
     direction: vehicle.direction,
-    spawnPointId: selectedSpawn.id
+    spawnPointId: selectedSpawn.id,
+    laneKey: getLaneKey(vehicle.direction)
   });
 }
 
@@ -127,7 +129,8 @@ function moveVehicles(world) {
         vehicleId: vehicle.id,
         x: vehicle.x,
         y: vehicle.y,
-        direction: vehicle.direction
+        direction: vehicle.direction,
+        laneKey: getLaneKey(vehicle.direction)
       });
       continue;
     }
@@ -139,7 +142,8 @@ function moveVehicles(world) {
         x: vehicle.x,
         y: vehicle.y,
         nextX: nextPosition.x,
-        nextY: nextPosition.y
+        nextY: nextPosition.y,
+        laneKey: getLaneKey(vehicle.direction)
       });
       survivors.push(vehicle);
       continue;
@@ -152,7 +156,8 @@ function moveVehicles(world) {
       vehicleId: vehicle.id,
       x: vehicle.x,
       y: vehicle.y,
-      direction: vehicle.direction
+      direction: vehicle.direction,
+      laneKey: getLaneKey(vehicle.direction)
     });
     survivors.push(vehicle);
   }
@@ -246,7 +251,7 @@ function canVehicleEnter(world, vehicle, nextPosition) {
     return false;
   }
 
-  if (isPositionOccupied(world, nextPosition.x, nextPosition.y, vehicle.id)) {
+  if (isPositionOccupied(world, nextPosition.x, nextPosition.y, vehicle.direction, vehicle.id)) {
     return false;
   }
 
@@ -273,15 +278,24 @@ function canVehicleEnter(world, vehicle, nextPosition) {
   return phase.allowedDirections.includes(vehicle.direction);
 }
 
-function isPositionOccupied(world, x, y, ignoredVehicleId = null) {
-  const key = toPositionKey(x, y);
+function isPositionOccupied(world, x, y, direction, ignoredVehicleId = null) {
+  const occupancyKey = getOccupancyKey(world, x, y, direction);
+
   return world.entities.vehicles.some((vehicle) => {
     if (ignoredVehicleId && vehicle.id === ignoredVehicleId) {
       return false;
     }
 
-    return toPositionKey(vehicle.x, vehicle.y) === key;
+    return getOccupancyKey(world, vehicle.x, vehicle.y, vehicle.direction) === occupancyKey;
   });
+}
+
+function getOccupancyKey(world, x, y, direction) {
+  if (getIntersection(world.map, x, y)) {
+    return `intersection:${toPositionKey(x, y)}`;
+  }
+
+  return `lane:${toPositionKey(x, y)}:${getLaneKey(direction)}`;
 }
 
 function advanceTrafficLights(world) {

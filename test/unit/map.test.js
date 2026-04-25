@@ -7,7 +7,10 @@ import {
   getAllowedDirections,
   getAvailableDirections,
   getCell,
+  getDirectionOffset,
   getIntersection,
+  getLaneDirections,
+  getLaneKey,
   getNextPosition,
   isInsideMap,
   isRoad,
@@ -16,19 +19,19 @@ import {
   turnRight
 } from '../../js/core/map.js';
 
-test('createBootstrapMap builds a larger city-style grid with directional roads', () => {
+test('createBootstrapMap builds a larger city-style grid with bidirectional roads', () => {
   const map = createBootstrapMap({ mapSeed: 20260425 });
 
   assert.equal(map.id, 'bootstrap-grid');
   assert.equal(map.width, 9);
   assert.equal(map.height, 9);
   assert.equal(map.roads.length, 45);
-  assert.equal(map.spawnPoints.length, 6);
+  assert.equal(map.spawnPoints.length, 12);
   assert.equal(map.intersections.length, 9);
   assert.deepEqual(getIntersection(map, 4, 4), { x: 4, y: 4, lightId: 'main-crossing' });
 });
 
-test('map helpers resolve roads, directionality, and movement correctly', () => {
+test('map helpers resolve roads, lane directions, and movement correctly', () => {
   const map = createBootstrapMap();
 
   assert.ok(isRoad(map, 4, 0));
@@ -37,16 +40,22 @@ test('map helpers resolve roads, directionality, and movement correctly', () => 
   assert.deepEqual(getNextPosition({ x: 0, y: 2 }, 'east'), { x: 1, y: 2 });
   assert.equal(isInsideMap(map, 8, 8), true);
   assert.equal(isInsideMap(map, 9, 8), false);
-  assert.deepEqual(getAllowedDirections(map, 4, 4), ['north', 'west']);
+  assert.deepEqual(getAllowedDirections(map, 4, 4), ['north', 'east', 'south', 'west']);
   assert.equal(canTravelDirection(map, 4, 4, 'west'), true);
-  assert.equal(canTravelDirection(map, 4, 4, 'east'), false);
+  assert.equal(canTravelDirection(map, 4, 4, 'east'), true);
+  assert.deepEqual(
+    getLaneDirections(map, 4, 4).map((lane) => lane.key),
+    ['lane-north', 'lane-east', 'lane-south', 'lane-west']
+  );
+  assert.equal(getLaneKey('north'), 'lane-north');
+  assert.deepEqual(getDirectionOffset('north'), { x: -18, y: 18 });
 });
 
-test('intersection helpers expose only lane-compatible directions and turning relations', () => {
+test('intersection helpers expose compatible outbound directions and turning relations', () => {
   const map = createBootstrapMap();
 
   assert.deepEqual(getIntersection(map, 4, 4), { x: 4, y: 4, lightId: 'main-crossing' });
-  assert.deepEqual(getAvailableDirections(map, 4, 4), ['north', 'west']);
+  assert.deepEqual(getAvailableDirections(map, 4, 4), ['north', 'east', 'south', 'west']);
   assert.equal(turnLeft('north'), 'west');
   assert.equal(turnRight('north'), 'east');
   assert.equal(reverseDirection('north'), 'south');

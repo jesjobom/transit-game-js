@@ -56,17 +56,29 @@ test('engine moves vehicles forward and completes trips at map exits', () => {
   assert.equal(world.events.at(-1).type, 'vehicleExited');
 });
 
-test('engine blocks movement that violates road direction', () => {
+test('engine blocks movement that violates road direction on a custom one-way map', () => {
   const world = createWorldState({
+    mapMode: 'custom',
+    map: {
+      id: 'one-way-test',
+      width: 3,
+      height: 1,
+      roads: [
+        { x: 0, y: 0, allowedDirections: ['east'] },
+        { x: 1, y: 0, allowedDirections: ['east'] },
+        { x: 2, y: 0, allowedDirections: ['east'] }
+      ],
+      spawnPoints: []
+    },
     vehicles: [
-      { id: 'vehicle-1', x: 7, y: 2, direction: 'west', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-1', x: 1, y: 0, direction: 'west', status: 'active', spawnedAtTick: 0 }
     ]
   });
   const engine = createEngine(world);
 
   engine.tick();
 
-  assert.equal(world.entities.vehicles[0].x, 7);
+  assert.equal(world.entities.vehicles[0].x, 1);
   assert.equal(world.metrics.blockedMoves, 1);
   assert.equal(world.events[0].type, 'vehicleBlocked');
 });
@@ -95,6 +107,44 @@ test('engine respects traffic light direction gating at controlled intersections
   assert.equal(world.entities.vehicles[0].x, 5);
   assert.equal(world.metrics.blockedMoves, 1);
   assert.equal(world.events[0].type, 'vehicleBlocked');
+});
+
+test('engine allows opposite-direction vehicles to share a bidirectional road cell in separate lanes', () => {
+  const world = createWorldState({
+    mapMode: 'custom',
+    map: {
+      id: 'bidirectional-lane-test',
+      width: 3,
+      height: 1,
+      roads: [
+        { x: 0, y: 0, allowedDirections: ['east', 'west'] },
+        { x: 1, y: 0, allowedDirections: ['east', 'west'] },
+        { x: 2, y: 0, allowedDirections: ['east', 'west'] }
+      ],
+      spawnPoints: []
+    },
+    vehicles: [
+      { id: 'vehicle-east', x: 0, y: 0, direction: 'east', status: 'active', spawnedAtTick: 0 },
+      { id: 'vehicle-west', x: 2, y: 0, direction: 'west', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  const positions = world.entities.vehicles.map((vehicle) => ({
+    id: vehicle.id,
+    x: vehicle.x,
+    y: vehicle.y,
+    direction: vehicle.direction
+  }));
+
+  assert.deepEqual(positions, [
+    { id: 'vehicle-east', x: 1, y: 0, direction: 'east' },
+    { id: 'vehicle-west', x: 1, y: 0, direction: 'west' }
+  ]);
+  assert.equal(world.metrics.movedVehicles, 2);
+  assert.equal(world.metrics.blockedMoves, 0);
 });
 
 test('engine can turn vehicles at intersections deterministically', () => {

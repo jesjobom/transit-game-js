@@ -1,4 +1,4 @@
-import { toPositionKey } from '../../core/map.js';
+import { getDirectionOffset, toPositionKey } from '../../core/map.js';
 
 export function createRenderer(rootElement) {
   return {
@@ -31,9 +31,15 @@ export function createRenderer(rootElement) {
 
 export function buildWorldHtml(world, options = {}) {
   const map = world.map;
-  const vehiclesByPosition = new Map(
-    world.entities.vehicles.map((vehicle) => [toPositionKey(vehicle.x, vehicle.y), vehicle])
-  );
+  const vehiclesByPosition = new Map();
+
+  for (const vehicle of world.entities.vehicles) {
+    const key = toPositionKey(vehicle.x, vehicle.y);
+    const vehiclesAtCell = vehiclesByPosition.get(key) ?? [];
+    vehiclesAtCell.push(vehicle);
+    vehiclesByPosition.set(key, vehiclesAtCell);
+  }
+
   const intersectionsByPosition = new Map(
     map.intersections.map((intersection) => [toPositionKey(intersection.x, intersection.y), intersection])
   );
@@ -45,7 +51,7 @@ export function buildWorldHtml(world, options = {}) {
     for (let x = 0; x < map.width; x += 1) {
       const positionKey = toPositionKey(x, y);
       const road = map.roadsByKey[positionKey];
-      const vehicle = vehiclesByPosition.get(positionKey);
+      const vehicles = vehiclesByPosition.get(positionKey) ?? [];
       const intersection = intersectionsByPosition.get(positionKey);
       const light = intersection?.lightId ? lightsById.get(intersection.lightId) : null;
       const lightPhase = light?.phases?.[light.phaseIndex ?? 0]?.name ?? null;
@@ -55,12 +61,17 @@ export function buildWorldHtml(world, options = {}) {
       if (road) classes.push('map-cell--road');
       if (intersection) classes.push('map-cell--intersection');
       if (spawnPoint) classes.push('map-cell--spawn');
-      if (vehicle) classes.push('map-cell--occupied');
+      if (vehicles.length > 0) classes.push('map-cell--occupied');
       if (lightPhase) classes.push(`map-cell--light-${slugify(lightPhase)}`);
 
       let content = '';
-      if (vehicle) {
-        content = `<span class="vehicle vehicle--${escapeHtml(vehicle.direction)}" title="${escapeHtml(vehicle.id)}">${escapeHtml(directionGlyph(vehicle.direction))}</span>`;
+      if (vehicles.length > 0) {
+        content = vehicles
+          .map((vehicle) => {
+            const offset = getDirectionOffset(vehicle.direction);
+            return `<span class="vehicle vehicle--${escapeHtml(vehicle.direction)}" style="--lane-offset-x:${offset.x}%; --lane-offset-y:${offset.y}%;" title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}">${escapeHtml(directionGlyph(vehicle.direction))}</span>`;
+          })
+          .join('');
       } else if (spawnPoint) {
         content = `<span class="spawn-marker" title="spawn ${escapeHtml(spawnPoint.direction)}">◎</span>`;
       } else if (intersection) {

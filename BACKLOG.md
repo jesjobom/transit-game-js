@@ -75,8 +75,8 @@ Eliminar problemas do modelo atual antes de empilhar melhorias em cima dele.
 - [ ] Revisar lógica de colisão em cruzamentos complexos
 - [ ] Revisar geração inicial de direção nos pontos de entrada
 - [ ] Revisar spawn de carros para evitar padrões ruins ou enviesados
-- [ ] Revisar representação de múltiplos carros na mesma célula
-- [~] Revisar semântica de pistas opostas e paralelas
+- [~] Revisar representação de múltiplos carros na mesma célula
+- [x] Revisar semântica de pistas opostas e paralelas
 - [ ] Definir comportamento claro para deadlocks e travamentos
 
 ---
@@ -119,7 +119,7 @@ Garantir evolução segura da nova engine sem depender de validação manual con
 - [x] Criar primeiros testes de integração para cenários pequenos
 - [x] Criar primeiro teste de regressão de benchmark com seed fixa
 - [x] Garantir que mesma seed + mesma config produz o mesmo resultado lógico
-- [~] Definir fluxo padrão para rodar testes antes de fechar features importantes
+- [x] Definir fluxo padrão para rodar testes antes de fechar features importantes
 
 ---
 
@@ -148,7 +148,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Implementar movimento suave entre células com interpolação visual
 - [~] Separar tick lógico da taxa de atualização visual
 - [ ] Implementar aceleração e desaceleração mais graduais
-- [~] Melhorar posicionamento visual por faixa/direção
+- [x] Melhorar posicionamento visual por faixa/direção
 - [x] Introduzir sentido explícito nas vias do mapa bootstrap para evitar tráfego frontal em segmentos de célula única
 - [ ] Melhorar espaçamento entre veículos em fila
 - [~] Redesenhar a interface geral da aplicação
@@ -175,7 +175,7 @@ Aumentar o poder experimental da simulação depois que a base estiver estável.
 - [ ] Adicionar limite de velocidade por trecho
 - [ ] Adicionar proibição de conversão à esquerda em vias selecionadas
 - [ ] Adicionar faixa exclusiva de conversão
-- [~] Adicionar suporte a mão única / mão dupla (base de mão única/direção explícita já aplicada no mapa bootstrap; falta generalizar e suportar mão dupla real)
+- [~] Adicionar suporte a mão única / mão dupla (base de mão dupla com ocupação por faixa já aplicada no mapa bootstrap; ainda falta generalizar mudanças de faixa e regras mais ricas)
 - [ ] Adicionar rotatórias
 - [ ] Adicionar faixas de pedestre
 - [ ] Adicionar pedestres simulados

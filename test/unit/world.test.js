@@ -3,14 +3,16 @@ import assert from 'node:assert/strict';
 
 import { addWorldEvent, createWorldState, nextRandomFloat } from '../../js/core/world.js';
 
-test('createWorldState builds the Sprint 6 structure with defaults', () => {
+test('createWorldState builds the Sprint 8 structure with defaults', () => {
   const world = createWorldState();
 
-  assert.equal(world.version, 'next-sprint-6');
+  assert.equal(world.version, 'next-sprint-8');
   assert.equal(world.tick, 0);
   assert.equal(world.mapId, 'bootstrap-grid');
   assert.equal(world.map.id, 'bootstrap-grid');
   assert.equal(world.map.roads.length, 45);
+  assert.equal(world.map.spawnPoints.length, 12);
+  assert.equal(world.map.roadsByKey['4,4'].laneCount, 4);
   assert.equal(world.config.tickRate, 10);
   assert.equal(world.config.rules.freeRightOnRed, false);
   assert.equal(world.config.benchmark.mode, 'sandbox');
