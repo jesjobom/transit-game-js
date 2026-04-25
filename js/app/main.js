@@ -1,17 +1,87 @@
-import { createAppShell } from './ui/app-shell.js';
-import { createRenderer } from './render/renderer.js';
 import { createBenchmarkShell } from './benchmark/benchmark-shell.js';
-import { createWorldState } from '../core/world.js';
+import { createRenderer } from './render/renderer.js';
+import { createAppShell } from './ui/app-shell.js';
+import { buildSimulationSummary } from './ui/view-model.js';
+import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
+import { createWorldState } from '../core/world.js';
+
+const TICK_INTERVAL_MS = 350;
 
 function boot() {
+  let state = createSimulationState();
+  const renderer = createRenderer(document.getElementById('simulation-root'));
+  const benchmark = createBenchmarkShell();
+  const appShell = createAppShell({
+    world: state.world,
+    engine: state.engine,
+    renderer,
+    benchmark,
+    appVersion: `${APP_VERSION} (${BUILD_TAG})`
+  });
+
+  let timerId = null;
+
+  appShell.bindControls({
+    onPlayPause() {
+      if (timerId) {
+        stopLoop();
+      } else {
+        startLoop();
+      }
+    },
+    onReset() {
+      stopLoop();
+      state = createSimulationState();
+      render();
+    }
+  });
+
+  render();
+  startLoop();
+
+  function startLoop() {
+    if (timerId || state.world.status === 'completed') {
+      appShell.setRunningState(false);
+      return;
+    }
+
+    appShell.setRunningState(true);
+    timerId = window.setInterval(() => {
+      state.engine.tick();
+      render();
+
+      if (state.world.status === 'completed') {
+        stopLoop();
+      }
+    }, TICK_INTERVAL_MS);
+  }
+
+  function stopLoop() {
+    if (timerId) {
+      window.clearInterval(timerId);
+      timerId = null;
+    }
+
+    appShell.setRunningState(false);
+  }
+
+  function render() {
+    const report = state.engine.getReport();
+    renderer.renderWorld(state.world, {
+      summaryLines: buildSimulationSummary(state.world, benchmark.summarize(report))
+    });
+  }
+}
+
+function createSimulationState() {
   const world = createWorldState({
     seed: 20260425,
     benchmark: {
       enabled: true,
       mode: 'benchmark',
       spawnRate: 0.6,
-      durationTicks: 12
+      durationTicks: 40
     },
     lights: [
       {
@@ -25,23 +95,11 @@ function boot() {
       }
     ]
   });
-  const engine = createEngine(world);
-  const renderer = createRenderer(document.getElementById('simulation-root'));
-  const benchmark = createBenchmarkShell();
 
-  createAppShell({ world, engine, renderer, benchmark });
-
-  engine.runTicks(world.config.benchmark.durationTicks);
-  const report = engine.getReport();
-
-  renderer.renderWorld(world, {
-    summaryLines: [
-      `Simulation seed: ${world.simulationSeed}`,
-      `Map seed: ${world.mapSeed}`,
-      `Tick: ${world.tick}`,
-      ...benchmark.summarize(report)
-    ]
-  });
+  return {
+    world,
+    engine: createEngine(world)
+  };
 }
 
 boot();

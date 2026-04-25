@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="css/app.css?v=s5-live-loop" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,17 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 4</div>
+        <div class="version-badge">Sprint 5</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: raw visual rendering of the new simulation model.</p>
+          <p>Current focus: live grid rendering with simple playback controls.</p>
+          <div class="control-buttons">
+            <button id="control-play-pause" type="button">Pause</button>
+            <button id="control-reset" type="button">Reset</button>
+          </div>
           <ul>
             <li>Legacy version lives under <code>legacy/</code></li>
             <li>Core engine lives under <code>js/core/</code></li>
@@ -41,8 +45,12 @@
           </dl>
         </aside>
       </main>
+
+      <footer class="app-footer">
+        <span>Version: <strong id="app-version">loading…</strong></span>
+      </footer>
     </div>
 
-    <script type="module" src="js/app/main.js"></script>
+    <script type="module" src="js/app/main.js?v=s5-live-loop"></script>
   </body>
 </html>

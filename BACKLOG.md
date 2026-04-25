@@ -115,6 +115,7 @@ Garantir evolução segura da nova engine sem depender de validação manual con
 - [ ] Criar primeiros testes unitários para regras de trânsito isoladas
 - [x] Criar primeiros testes unitários para métricas e score
 - [x] Criar primeiros testes unitários para renderização base do mapa/veículos
+- [x] Criar primeiros testes unitários para resumo/estado da UI
 - [x] Criar primeiros testes de integração para cenários pequenos
 - [x] Criar primeiro teste de regressão de benchmark com seed fixa
 - [x] Garantir que mesma seed + mesma config produz o mesmo resultado lógico
@@ -145,7 +146,7 @@ Permitir ativar/desativar regras opcionais e comparar o impacto delas com benchm
 Melhorar bastante a percepção de qualidade sem tentar resolver todo o polimento de uma vez.
 
 - [ ] Implementar movimento suave entre células com interpolação visual
-- [ ] Separar tick lógico da taxa de atualização visual
+- [~] Separar tick lógico da taxa de atualização visual
 - [ ] Implementar aceleração e desaceleração mais graduais
 - [ ] Melhorar posicionamento visual por faixa/direção
 - [ ] Melhorar espaçamento entre veículos em fila
@@ -157,7 +158,9 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Melhorar o visual dos carros com sprites/ícones mais profissionais
 - [ ] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
-- [ ] Melhorar layout dos controles/configurações
+- [~] Melhorar layout dos controles/configurações
+- [x] Exibir informação de versão na UI para ajudar a detectar cache antigo
+- [x] Permitir play/pause e reset básicos da simulação na UI
 
 ---
 
