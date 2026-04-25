@@ -158,7 +158,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos
 - [ ] Melhorar o visual dos carros com sprites/ícones mais profissionais
-- [ ] Criar painel lateral ou superior com métricas em tempo real
+- [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
 - [~] Melhorar layout dos controles/configurações
 - [x] Exibir informação de versão na UI para ajudar a detectar cache antigo
@@ -216,7 +216,7 @@ Facilitar entendimento do comportamento emergente e depuração dos resultados.
 - [ ] Criar modo replay de simulação
 - [ ] Mostrar estado interno de veículos selecionados
 - [ ] Mostrar intenção atual do carro (seguir, virar, parar, aguardar)
-- [ ] Mostrar estado atual dos semáforos e próxima transição
+- [~] Mostrar estado atual dos semáforos e próxima transição
 - [ ] Permitir inspecionar células e cruzamentos pela UI
 - [ ] Destacar pontos de deadlock visualmente
 - [ ] Exibir trilhas/histórico curto de deslocamento dos veículos

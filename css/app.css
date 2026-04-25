@@ -84,6 +84,16 @@ button {
   margin-top: 0;
 }
 
+.panel h3 {
+  margin: 20px 0 10px;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+.panel h3:first-of-type {
+  margin-top: 22px;
+}
+
 .panel--controls ul {
   padding-left: 18px;
   color: var(--muted);
@@ -189,6 +199,7 @@ button {
   color: #7dd3fc;
   border: 1px solid rgba(56, 189, 248, 0.55);
   font-weight: 700;
+  transform: translate(var(--lane-offset-x, 0%), var(--lane-offset-y, 0%));
 }
 
 .spawn-marker,
@@ -200,6 +211,14 @@ button {
   display: grid;
   gap: 14px;
   margin: 0;
+}
+
+.status-list--compact {
+  gap: 10px;
+}
+
+.status-list--compact div {
+  padding: 10px 12px;
 }
 
 .status-list div {
@@ -222,6 +241,18 @@ button {
 
 .status-ok {
   color: #86efac;
+}
+
+.info-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+}
+
+.info-list li {
+  line-height: 1.35;
 }
 
 .app-footer {

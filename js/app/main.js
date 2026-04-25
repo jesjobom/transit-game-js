@@ -1,7 +1,12 @@
 import { createBenchmarkShell } from './benchmark/benchmark-shell.js';
 import { createRenderer } from './render/renderer.js';
 import { createAppShell } from './ui/app-shell.js';
-import { buildSimulationSummary } from './ui/view-model.js';
+import {
+  buildLightPhaseSummary,
+  buildLiveMetrics,
+  buildRecentEventSummary,
+  buildSimulationSummary
+} from './ui/view-model.js';
 import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
 import { createWorldState } from '../core/world.js';
@@ -75,6 +80,11 @@ function boot() {
     const report = state.engine.getReport();
     renderer.renderWorld(state.world, {
       summaryLines: buildSimulationSummary(state.world, benchmark.summarize(report))
+    });
+    appShell.renderDiagnostics({
+      metrics: buildLiveMetrics(state.world, report),
+      lights: buildLightPhaseSummary(state.world),
+      events: buildRecentEventSummary(state.world)
     });
   }
 }
