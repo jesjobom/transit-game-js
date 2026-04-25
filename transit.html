@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transit Game JS - Next</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Transit Game JS</h1>
+          <p class="subtitle">Next-generation simulation bootstrap</p>
+        </div>
+        <div class="version-badge">Sprint 0</div>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel--controls">
+          <h2>Controls</h2>
+          <p>This is the new root application shell.</p>
+          <ul>
+            <li>Legacy version lives under <code>legacy/</code></li>
+            <li>New engine will be implemented under <code>js/core/</code></li>
+            <li>UI and rendering will be implemented under <code>js/app/</code></li>
+          </ul>
+        </section>
+
+        <section class="panel panel--viewport">
+          <h2>Simulation View</h2>
+          <div id="simulation-root" class="simulation-root"></div>
+        </section>
+
+        <aside class="panel panel--status">
+          <h2>Status</h2>
+          <dl class="status-list">
+            <div><dt>App</dt><dd id="status-app">booting</dd></div>
+            <div><dt>Renderer</dt><dd id="status-renderer">pending</dd></div>
+            <div><dt>Engine</dt><dd id="status-engine">pending</dd></div>
+          </dl>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="js/app/main.js"></script>
+  </body>
+</html>
