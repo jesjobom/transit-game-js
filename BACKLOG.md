@@ -96,10 +96,10 @@ Permitir comparação objetiva entre diferentes conjuntos de regras/configuraç�
 - [ ] Medir tempo médio de travessia
 - [ ] Medir tempo médio parado
 - [ ] Medir velocidade média efetiva
-- [ ] Medir colisões
-- [ ] Definir um score inicial simples de eficiência + penalidades
-- [ ] Separar resultado em dimensões mínimas: eficiência, segurança e fluidez
-- [ ] Gerar relatório resumido por execução
+- [x] Medir colisões
+- [x] Definir um score inicial simples de eficiência + penalidades
+- [~] Separar resultado em dimensões mínimas: eficiência, segurança e fluidez
+- [~] Gerar relatório resumido por execução
 
 ---
 
@@ -113,7 +113,7 @@ Garantir evolução segura da nova engine sem depender de validação manual con
 - [x] Criar primeiros testes unitários para RNG com seed
 - [ ] Criar primeiros testes unitários para semáforos
 - [ ] Criar primeiros testes unitários para regras de trânsito isoladas
-- [ ] Criar primeiros testes unitários para métricas e score
+- [x] Criar primeiros testes unitários para métricas e score
 - [x] Criar primeiros testes de integração para cenários pequenos
 - [x] Criar primeiro teste de regressão de benchmark com seed fixa
 - [x] Garantir que mesma seed + mesma config produz o mesmo resultado lógico
@@ -149,6 +149,8 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Melhorar posicionamento visual por faixa/direção
 - [ ] Melhorar espaçamento entre veículos em fila
 - [~] Redesenhar a interface geral da aplicação
+- [ ] Renderizar o mapa em tela, mesmo em visual cru
+- [ ] Renderizar veículos em posições reais do grid
 - [ ] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [ ] Melhorar a aparência visual dos semáforos
 - [ ] Melhorar o visual dos carros com sprites/ícones mais profissionais
