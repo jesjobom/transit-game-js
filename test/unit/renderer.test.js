@@ -55,3 +55,24 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   assert.match(html, /road-direction/);
   assert.match(html, /allowed: /);
 });
+
+test('buildWorldHtml renders turning vehicles with start/end angle and lane offsets', () => {
+  const world = createWorldState({
+    vehicles: [
+      { id: 'vehicle-turn', x: 4, y: 3, direction: 'east', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+
+  world.events = [
+    { type: 'vehicleTurned', tick: 1, payload: { vehicleId: 'vehicle-turn', from: 'north', to: 'east', x: 4, y: 2 } },
+    { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-turn', x: 4, y: 3, direction: 'east', laneKey: 'lane-east' } }
+  ];
+
+  const html = buildWorldHtml(world, { animationDurationMs: 320 });
+
+  assert.match(html, /vehicle--turning/);
+  assert.match(html, /--vehicle-angle-from:-90deg;/);
+  assert.match(html, /--vehicle-angle-to:0deg;/);
+  assert.match(html, /--lane-offset-start-x:-8px; --lane-offset-start-y:4px;/);
+  assert.match(html, /--lane-offset-x:-4px; --lane-offset-y:8px;/);
+});

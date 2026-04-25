@@ -167,18 +167,25 @@ function renderTrafficLightBulb(direction, state = 'red') {
 }
 
 function renderVehicle(world, vehicle, map) {
-  const offset = getVehicleRenderOffset(vehicle.direction);
-  const startPosition = getVehicleStartPosition(world, vehicle);
+  const animationMeta = getVehicleAnimationMeta(world, vehicle);
+  const endOffset = animationMeta.endOffset;
+  const startOffset = animationMeta.startOffset;
+  const startPosition = animationMeta.startPosition;
   const endX = toPercent(vehicle.x, map.width);
   const endY = toPercent(vehicle.y, map.height);
   const startX = toPercent(startPosition.x, map.width);
   const startY = toPercent(startPosition.y, map.height);
   const color = vehicle.color ?? getVehicleColor(world, vehicle);
+  const classes = ['vehicle', `vehicle--${escapeHtml(vehicle.direction)}`];
+
+  if (animationMeta.isTurning) {
+    classes.push('vehicle--turning');
+  }
 
   return `
     <span
-      class="vehicle vehicle--${escapeHtml(vehicle.direction)}"
-      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-x:${offset.x}px; --lane-offset-y:${offset.y}px; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
+      class="${classes.join(' ')}"
+      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-start-x:${startOffset.x}px; --lane-offset-start-y:${startOffset.y}px; --lane-offset-x:${endOffset.x}px; --lane-offset-y:${endOffset.y}px; --vehicle-angle-from:${getDirectionAngle(animationMeta.fromDirection)}deg; --vehicle-angle-to:${getDirectionAngle(vehicle.direction)}deg; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
       title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"
       aria-label="${escapeHtml(vehicle.id)}"
     >
@@ -191,6 +198,41 @@ function renderVehicle(world, vehicle, map) {
       </span>
     </span>
   `;
+}
+
+function getVehicleAnimationMeta(world, vehicle) {
+  const movedEvent = world.events.find((event) => event.type === 'vehicleMoved' && event.payload.vehicleId === vehicle.id);
+  if (!movedEvent) {
+    const restingOffset = getVehicleRenderOffset(vehicle.direction);
+    return {
+      isTurning: false,
+      fromDirection: vehicle.direction,
+      startOffset: restingOffset,
+      endOffset: restingOffset,
+      startPosition: { x: vehicle.x, y: vehicle.y }
+    };
+  }
+
+  const turnEvent = world.events.find((event) => event.type === 'vehicleTurned' && event.payload.vehicleId === vehicle.id);
+  if (turnEvent) {
+    return {
+      isTurning: true,
+      fromDirection: turnEvent.payload.from,
+      startOffset: getVehicleRenderOffset(turnEvent.payload.from),
+      endOffset: getVehicleRenderOffset(vehicle.direction),
+      startPosition: { x: turnEvent.payload.x, y: turnEvent.payload.y }
+    };
+  }
+
+  const restingOffset = getVehicleRenderOffset(vehicle.direction);
+
+  return {
+    isTurning: false,
+    fromDirection: vehicle.direction,
+    startOffset: restingOffset,
+    endOffset: restingOffset,
+    startPosition: getVehicleStartPosition(world, vehicle)
+  };
 }
 
 function getVehicleStartPosition(world, vehicle) {
@@ -230,6 +272,15 @@ function getVehicleRenderOffset(direction) {
     x: laneOffset.x + queueOffset.x,
     y: laneOffset.y + queueOffset.y
   };
+}
+
+function getDirectionAngle(direction) {
+  return {
+    north: -90,
+    east: 0,
+    south: 90,
+    west: 180
+  }[direction] ?? 0;
 }
 
 function toPercent(index, size) {

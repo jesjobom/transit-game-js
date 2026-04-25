@@ -381,35 +381,70 @@ button {
       calc(-50% + var(--lane-offset-x, 0px)),
       calc(-50% + var(--lane-offset-y, 0px))
     )
-    rotate(var(--vehicle-angle, 0deg));
+    rotate(var(--vehicle-angle-to, 0deg));
   animation: vehicle-slide var(--vehicle-animation-duration, 240ms) ease-out;
   z-index: 2;
 }
 
-.vehicle--north {
-  --vehicle-angle: -90deg;
-}
-
-.vehicle--east {
-  --vehicle-angle: 0deg;
-}
-
-.vehicle--south {
-  --vehicle-angle: 90deg;
-}
-
-.vehicle--west {
-  --vehicle-angle: 180deg;
+.vehicle--turning {
+  animation-name: vehicle-turn;
+  animation-timing-function: cubic-bezier(0.3, 0.05, 0.25, 1);
 }
 
 @keyframes vehicle-slide {
   from {
     left: var(--vehicle-start-x);
     top: var(--vehicle-start-y);
+    transform:
+      translate(
+        calc(-50% + var(--lane-offset-start-x, var(--lane-offset-x, 0px))),
+        calc(-50% + var(--lane-offset-start-y, var(--lane-offset-y, 0px)))
+      )
+      rotate(var(--vehicle-angle-from, var(--vehicle-angle-to, 0deg)));
   }
   to {
     left: var(--vehicle-x);
     top: var(--vehicle-y);
+    transform:
+      translate(
+        calc(-50% + var(--lane-offset-x, 0px)),
+        calc(-50% + var(--lane-offset-y, 0px))
+      )
+      rotate(var(--vehicle-angle-to, 0deg));
+  }
+}
+
+@keyframes vehicle-turn {
+  0% {
+    left: var(--vehicle-start-x);
+    top: var(--vehicle-start-y);
+    transform:
+      translate(
+        calc(-50% + var(--lane-offset-start-x, var(--lane-offset-x, 0px))),
+        calc(-50% + var(--lane-offset-start-y, var(--lane-offset-y, 0px)))
+      )
+      rotate(var(--vehicle-angle-from, var(--vehicle-angle-to, 0deg)));
+  }
+  45% {
+    left: calc((var(--vehicle-start-x) + var(--vehicle-x)) / 2);
+    top: calc((var(--vehicle-start-y) + var(--vehicle-y)) / 2);
+    transform:
+      translate(
+        calc(-50% + ((var(--lane-offset-start-x, 0px) + var(--lane-offset-x, 0px)) / 2)),
+        calc(-50% + ((var(--lane-offset-start-y, 0px) + var(--lane-offset-y, 0px)) / 2))
+      )
+      rotate(calc((var(--vehicle-angle-from, 0deg) + var(--vehicle-angle-to, 0deg)) / 2))
+      scale(0.98);
+  }
+  100% {
+    left: var(--vehicle-x);
+    top: var(--vehicle-y);
+    transform:
+      translate(
+        calc(-50% + var(--lane-offset-x, 0px)),
+        calc(-50% + var(--lane-offset-y, 0px))
+      )
+      rotate(var(--vehicle-angle-to, 0deg));
   }
 }
 

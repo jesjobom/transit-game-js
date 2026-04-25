@@ -145,7 +145,7 @@ Permitir ativar/desativar regras opcionais e comparar o impacto delas com benchm
 ### Objetivo
 Melhorar bastante a percepção de qualidade sem tentar resolver todo o polimento de uma vez.
 
-- [ ] Implementar movimento suave entre células com interpolação visual
+- [~] Implementar movimento suave entre células com interpolação visual (interpolação curta + animação de curva/virada já aplicadas; ainda falta aprofundar a sensação de trajetória)
 - [~] Separar tick lógico da taxa de atualização visual
 - [ ] Implementar aceleração e desaceleração mais graduais
 - [x] Melhorar posicionamento visual por faixa/direção
@@ -157,7 +157,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster + eixo ativo mais óbvio já aplicados; ainda falta polimento fino/mais informação)
-- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente por carro + animação curta já aplicada; ainda falta polimento fino)
+- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + curva/virada visual já aplicadas; ainda falta polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
 - [~] Melhorar layout dos controles/configurações
