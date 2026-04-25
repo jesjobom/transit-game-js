@@ -114,6 +114,7 @@ Garantir evolução segura da nova engine sem depender de validação manual con
 - [ ] Criar primeiros testes unitários para semáforos
 - [ ] Criar primeiros testes unitários para regras de trânsito isoladas
 - [x] Criar primeiros testes unitários para métricas e score
+- [x] Criar primeiros testes unitários para renderização base do mapa/veículos
 - [x] Criar primeiros testes de integração para cenários pequenos
 - [x] Criar primeiro teste de regressão de benchmark com seed fixa
 - [x] Garantir que mesma seed + mesma config produz o mesmo resultado lógico
@@ -149,10 +150,10 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Melhorar posicionamento visual por faixa/direção
 - [ ] Melhorar espaçamento entre veículos em fila
 - [~] Redesenhar a interface geral da aplicação
-- [ ] Renderizar o mapa em tela, mesmo em visual cru
-- [ ] Renderizar veículos em posições reais do grid
-- [ ] Melhorar o estilo visual do grid/ruas/cruzamentos
-- [ ] Melhorar a aparência visual dos semáforos
+- [x] Renderizar o mapa em tela, mesmo em visual cru
+- [x] Renderizar veículos em posições reais do grid
+- [~] Melhorar o estilo visual do grid/ruas/cruzamentos
+- [~] Melhorar a aparência visual dos semáforos
 - [ ] Melhorar o visual dos carros com sprites/ícones mais profissionais
 - [ ] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas

@@ -34,9 +34,8 @@ function boot() {
   engine.runTicks(world.config.benchmark.durationTicks);
   const report = engine.getReport();
 
-  renderer.renderPlaceholder({
-    title: 'Sprint 3 benchmark foundations ready',
-    lines: [
+  renderer.renderWorld(world, {
+    summaryLines: [
       `Simulation seed: ${world.simulationSeed}`,
       `Map seed: ${world.mapSeed}`,
       `Tick: ${world.tick}`,

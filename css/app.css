@@ -88,16 +88,89 @@ code {
 .simulation-root {
   min-height: 520px;
   border-radius: 14px;
-  border: 1px dashed rgba(148, 163, 184, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   background:
     linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.4)),
     radial-gradient(circle at top, rgba(56, 189, 248, 0.15), transparent 50%);
+  color: var(--muted);
+  padding: 20px;
+}
+
+.world-view {
+  display: grid;
+  gap: 18px;
+}
+
+.world-summary {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.world-grid {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(71, 85, 105, 0.7);
+}
+
+.map-cell {
+  aspect-ratio: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(51, 65, 85, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--muted);
-  text-align: center;
-  padding: 24px;
+  background: rgba(15, 23, 42, 0.65);
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.map-cell--road {
+  background: #374151;
+  color: #cbd5e1;
+}
+
+.map-cell--intersection {
+  background: #475569;
+}
+
+.map-cell--spawn {
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.55);
+}
+
+.map-cell--occupied {
+  background: #1e293b;
+}
+
+.map-cell--light-north-south {
+  border-color: rgba(34, 197, 94, 0.9);
+}
+
+.map-cell--light-east-west {
+  border-color: rgba(234, 179, 8, 0.9);
+}
+
+.vehicle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  font-weight: 700;
+}
+
+.spawn-marker,
+.intersection-marker {
+  opacity: 0.8;
 }
 
 .status-list {
