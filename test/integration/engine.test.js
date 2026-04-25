@@ -34,6 +34,8 @@ test('engine spawns vehicles deterministically when benchmark mode is enabled', 
   assert.equal(world.entities.vehicles.length, 3);
   assert.equal(world.metrics.spawnedVehicles, 3);
   assert.equal(world.entities.vehicles[0].status, 'active');
+  assert.ok(world.entities.vehicles[0].color);
+  assert.notDeepEqual(world.entities.vehicles[0].color, world.entities.vehicles[1].color);
   assert.equal(world.events.at(-1).type, 'vehicleSpawned');
 });
 

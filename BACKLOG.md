@@ -150,14 +150,14 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Implementar aceleração e desaceleração mais graduais
 - [x] Melhorar posicionamento visual por faixa/direção
 - [x] Introduzir sentido explícito nas vias do mapa bootstrap para evitar tráfego frontal em segmentos de célula única
-- [~] Melhorar espaçamento entre veículos em fila
+- [~] Melhorar espaçamento entre veículos em fila (veículos menores e melhor encaixados nas lanes já aplicados; ainda falta refinar filas densas)
 - [~] Redesenhar a interface geral da aplicação
 - [x] Renderizar o mapa em tela, mesmo em visual cru
 - [x] Renderizar veículos em posições reais do grid
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos (semáforos dedicados no grid já aplicados; ainda falta polimento fino/mais legibilidade)
-- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cores pseudoaleatórias por carro + animação curta já aplicada; ainda falta polimento fino)
+- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente por carro + animação curta já aplicada; ainda falta polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
 - [~] Melhorar layout dos controles/configurações
@@ -213,7 +213,7 @@ Facilitar entendimento do comportamento emergente e depuração dos resultados.
 
 - [ ] Criar heatmap de congestionamento
 - [ ] Exibir fluxo médio por via
-- [~] Criar modo replay de simulação (movimento interpolado curto por tick já aplicado como base visual; replay real ainda não existe)
+- [~] Criar modo replay de simulação (scheduler visual com requestAnimationFrame + movimento interpolado curto por tick já aplicado como base; replay real ainda não existe)
 - [ ] Mostrar estado interno de veículos selecionados
 - [ ] Mostrar intenção atual do carro (seguir, virar, parar, aguardar)
 - [~] Mostrar estado atual dos semáforos e próxima transição

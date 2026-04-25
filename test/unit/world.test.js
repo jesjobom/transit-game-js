@@ -49,6 +49,20 @@ test('createWorldState merges custom configuration and seeds', () => {
   assert.equal(world.config.benchmark.spawnRate, 0.5);
 });
 
+test('createWorldState hydrates custom vehicles with persistent individual colors', () => {
+  const world = createWorldState({
+    seed: 42,
+    vehicles: [
+      { id: 'vehicle-a', x: 0, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 },
+      { id: 'vehicle-b', x: 1, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+
+  assert.ok(world.entities.vehicles[0].color);
+  assert.ok(world.entities.vehicles[1].color);
+  assert.notDeepEqual(world.entities.vehicles[0].color, world.entities.vehicles[1].color);
+});
+
 test('world random helper updates rng state and addWorldEvent records the current tick', () => {
   const world = createWorldState({ seed: 123 });
   const before = world.rngState;

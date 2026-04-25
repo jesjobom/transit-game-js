@@ -12,7 +12,7 @@ import {
   turnLeft,
   turnRight
 } from './map.js';
-import { addWorldEvent, nextRandomFloat, syncWorldRngState } from './world.js';
+import { addWorldEvent, createVehicleColor, nextRandomFloat, syncWorldRngState } from './world.js';
 
 export function createEngine(world) {
   return {
@@ -105,7 +105,8 @@ function maybeSpawnVehicle(world) {
     x: selectedSpawn.x,
     y: selectedSpawn.y,
     direction: selectedSpawn.direction,
-    status: 'active'
+    status: 'active',
+    color: createVehicleColor(world, `spawn-${world.metrics.spawnedVehicles + 1}`)
   };
 
   vehicles.push(vehicle);

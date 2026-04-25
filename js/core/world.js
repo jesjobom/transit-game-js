@@ -61,7 +61,7 @@ export function createWorldState(options = {}) {
       }
     },
     entities: {
-      vehicles: Array.isArray(options.vehicles) ? structuredClone(options.vehicles) : [],
+      vehicles: Array.isArray(options.vehicles) ? structuredClone(options.vehicles).map((vehicle) => hydrateVehicle(worldLike(simulationSeed), vehicle)) : [],
       lights: Array.isArray(options.lights) ? structuredClone(options.lights) : []
     },
     metrics: {
@@ -109,4 +109,36 @@ export function addWorldEvent(world, type, payload = {}) {
 
   world.events.push(event);
   return event;
+}
+
+export function createVehicleColor(world, token) {
+  const hue = hashString(`${world.simulationSeed}:${token}:h`) % 360;
+  const saturation = 60 + (hashString(`${world.simulationSeed}:${token}:s`) % 21);
+  const lightness = 48 + (hashString(`${world.simulationSeed}:${token}:l`) % 14);
+
+  return {
+    fill: `hsl(${hue}, ${saturation}%, ${lightness}%)`,
+    shadow: `hsl(${hue}, ${Math.max(42, saturation - 14)}%, ${Math.max(28, lightness - 18)}%)`,
+    highlight: `hsl(${hue}, ${Math.min(95, saturation + 8)}%, ${Math.min(84, lightness + 18)}%)`
+  };
+}
+
+export function hydrateVehicle(world, vehicle) {
+  return {
+    ...vehicle,
+    color: vehicle.color ?? createVehicleColor(world, vehicle.id ?? `${vehicle.x},${vehicle.y},${vehicle.direction}`)
+  };
+}
+
+function worldLike(simulationSeed) {
+  return { simulationSeed };
+}
+
+function hashString(value) {
+  let hash = 0;
+  for (const char of String(value)) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  }
+
+  return hash;
 }

@@ -24,10 +24,12 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   });
 
   const html = buildWorldHtml(world, {
-    summaryLines: ['Tick: 0', 'Vehicles: 2']
+    summaryLines: ['Tick: 0', 'Vehicles: 2'],
+    animationDurationMs: 320
   });
 
   assert.match(html, /world-grid-shell/);
+  assert.match(html, /--vehicle-animation-duration:320ms/);
   assert.match(html, /vehicle-layer/);
   assert.match(html, /Tick: 0/);
   assert.match(html, /Vehicles: 2/);
@@ -42,6 +44,7 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   assert.match(html, /vehicle-body/);
   assert.match(html, /--vehicle-start-x:/);
   assert.match(html, /--vehicle-color:hsl\(/);
+  assert.match(html, /traffic light east-west/);
   assert.match(html, /road-direction/);
   assert.match(html, /allowed: /);
 });

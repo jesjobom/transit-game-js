@@ -12,6 +12,7 @@ import { createEngine } from '../core/engine.js';
 import { createWorldState } from '../core/world.js';
 
 const TICK_INTERVAL_MS = 350;
+const ANIMATION_DURATION_MS = 320;
 
 function boot() {
   let state = createSimulationState();
@@ -25,11 +26,14 @@ function boot() {
     appVersion: `${APP_VERSION} (${BUILD_TAG})`
   });
 
-  let timerId = null;
+  let animationFrameId = null;
+  let isRunning = false;
+  let lastFrameAt = 0;
+  let tickAccumulatorMs = 0;
 
   appShell.bindControls({
     onPlayPause() {
-      if (timerId) {
+      if (isRunning) {
         stopLoop();
       } else {
         startLoop();
@@ -47,7 +51,7 @@ function boot() {
   startLoop();
 
   function startLoop() {
-    if (timerId) {
+    if (isRunning) {
       return;
     }
 
@@ -56,21 +60,45 @@ function boot() {
       return;
     }
 
+    isRunning = true;
+    lastFrameAt = 0;
+    tickAccumulatorMs = 0;
     appShell.setRunningState(true);
-    timerId = window.setInterval(() => {
-      state.engine.tick();
-      render();
+    animationFrameId = window.requestAnimationFrame(frameLoop);
+  }
 
-      if (state.world.status === 'completed') {
-        stopLoop();
-      }
-    }, TICK_INTERVAL_MS);
+  function frameLoop(frameAt) {
+    if (!isRunning) {
+      return;
+    }
+
+    if (!lastFrameAt) {
+      lastFrameAt = frameAt;
+    }
+
+    const deltaMs = frameAt - lastFrameAt;
+    lastFrameAt = frameAt;
+    tickAccumulatorMs += deltaMs;
+
+    while (tickAccumulatorMs >= TICK_INTERVAL_MS && state.world.status !== 'completed') {
+      state.engine.tick();
+      tickAccumulatorMs -= TICK_INTERVAL_MS;
+      render();
+    }
+
+    if (state.world.status === 'completed') {
+      stopLoop();
+      return;
+    }
+
+    animationFrameId = window.requestAnimationFrame(frameLoop);
   }
 
   function stopLoop() {
-    if (timerId) {
-      window.clearInterval(timerId);
-      timerId = null;
+    isRunning = false;
+    if (animationFrameId) {
+      window.cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
     }
 
     appShell.setRunningState(false);
@@ -79,7 +107,8 @@ function boot() {
   function render() {
     const report = state.engine.getReport();
     renderer.renderWorld(state.world, {
-      summaryLines: buildSimulationSummary(state.world, benchmark.summarize(report))
+      summaryLines: buildSimulationSummary(state.world, benchmark.summarize(report)),
+      animationDurationMs: ANIMATION_DURATION_MS
     });
     appShell.renderDiagnostics({
       metrics: buildLiveMetrics(state.world, report),

@@ -88,12 +88,14 @@ export function buildWorldHtml(world, options = {}) {
   const vehicles = world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map));
   const summary = options.summaryLines || [];
 
+  const animationDurationMs = options.animationDurationMs ?? 240;
+
   return `
     <div class="world-view">
       <div class="world-summary">
         ${summary.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}
       </div>
-      <div class="world-grid-shell">
+      <div class="world-grid-shell" style="--vehicle-animation-duration:${animationDurationMs}ms;">
         <div
           class="world-grid"
           style="grid-template-columns: repeat(${map.width}, minmax(0, 1fr));"
@@ -166,7 +168,7 @@ function renderVehicle(world, vehicle, map) {
   const endY = toPercent(vehicle.y, map.height);
   const startX = toPercent(startPosition.x, map.width);
   const startY = toPercent(startPosition.y, map.height);
-  const color = getVehicleColor(world, vehicle);
+  const color = vehicle.color ?? getVehicleColor(world, vehicle);
 
   return `
     <span
@@ -259,24 +261,12 @@ function matchesDirections(actual, expected) {
 }
 
 function getVehicleColor(world, vehicle) {
-  const hue = hashString(`${world.simulationSeed}:${vehicle.id}`) % 360;
-  const saturation = 62 + (hashString(`${vehicle.id}:sat`) % 18);
-  const lightness = 50 + (hashString(`${vehicle.id}:light`) % 12);
-
+  const fallbackHue = 200 + ((world.simulationSeed + String(vehicle.id).length) % 40);
   return {
-    fill: `hsl(${hue} ${saturation}% ${lightness}%)`,
-    shadow: `hsl(${hue} ${Math.max(45, saturation - 12)}% ${Math.max(30, lightness - 18)}%)`,
-    highlight: `hsl(${hue} ${Math.min(95, saturation + 8)}% ${Math.min(84, lightness + 18)}%)`
+    fill: `hsl(${fallbackHue}, 70%, 58%)`,
+    shadow: `hsl(${fallbackHue}, 55%, 36%)`,
+    highlight: `hsl(${fallbackHue}, 88%, 80%)`
   };
-}
-
-function hashString(value) {
-  let hash = 0;
-  for (const char of String(value)) {
-    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  }
-
-  return hash;
 }
 
 function formatDirections(directions) {

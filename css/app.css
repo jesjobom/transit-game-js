@@ -325,7 +325,7 @@ button {
       calc(-50% + var(--lane-offset-y, 0%))
     )
     rotate(var(--vehicle-angle, 0deg));
-  animation: vehicle-slide 240ms ease-out;
+  animation: vehicle-slide var(--vehicle-animation-duration, 240ms) ease-out;
   z-index: 2;
 }
 
