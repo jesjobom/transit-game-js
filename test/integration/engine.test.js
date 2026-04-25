@@ -82,6 +82,29 @@ test('engine respects traffic light direction gating at controlled intersections
   assert.equal(world.events[0].type, 'vehicleBlocked');
 });
 
+test('engine can turn vehicles at intersections deterministically', () => {
+  const world = createWorldState({
+    seed: 8,
+    routing: {
+      straightWeight: 0,
+      leftWeight: 1,
+      rightWeight: 0,
+      allowReverse: false
+    },
+    vehicles: [
+      { id: 'vehicle-1', x: 2, y: 2, direction: 'north', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  assert.equal(world.entities.vehicles[0].direction, 'west');
+  assert.deepEqual({ x: world.entities.vehicles[0].x, y: world.entities.vehicles[0].y }, { x: 1, y: 2 });
+  assert.equal(world.metrics.turnsTaken, 1);
+  assert.equal(world.events[0].type, 'vehicleTurned');
+});
+
 test('engine finalizes benchmark report when duration is reached', () => {
   const world = createWorldState({
     seed: 2,

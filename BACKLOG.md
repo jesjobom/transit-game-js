@@ -111,7 +111,7 @@ Garantir evolução segura da nova engine sem depender de validação manual con
 - [x] Escolher e configurar o runner de testes em Node.js
 - [x] Criar estrutura inicial de testes (`unit`, `integration`, `regression`)
 - [x] Criar primeiros testes unitários para RNG com seed
-- [ ] Criar primeiros testes unitários para semáforos
+- [x] Criar primeiros testes unitários para semáforos
 - [ ] Criar primeiros testes unitários para regras de trânsito isoladas
 - [x] Criar primeiros testes unitários para métricas e score
 - [x] Criar primeiros testes unitários para renderização base do mapa/veículos
@@ -148,7 +148,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Implementar movimento suave entre células com interpolação visual
 - [~] Separar tick lógico da taxa de atualização visual
 - [ ] Implementar aceleração e desaceleração mais graduais
-- [ ] Melhorar posicionamento visual por faixa/direção
+- [~] Melhorar posicionamento visual por faixa/direção
 - [ ] Melhorar espaçamento entre veículos em fila
 - [~] Redesenhar a interface geral da aplicação
 - [x] Renderizar o mapa em tela, mesmo em visual cru
@@ -161,6 +161,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [~] Melhorar layout dos controles/configurações
 - [x] Exibir informação de versão na UI para ajudar a detectar cache antigo
 - [x] Permitir play/pause e reset básicos da simulação na UI
+- [x] Fazer veículos tomarem decisões básicas em interseções
 
 ---
 
@@ -180,6 +181,7 @@ Aumentar o poder experimental da simulação depois que a base estiver estável.
 - [ ] Adicionar obstruções temporárias / veículos quebrados
 - [ ] Adicionar veículos especiais com prioridade
 - [ ] Adicionar semáforos adaptativos baseados no fluxo
+- [~] Evoluir heurística de roteamento dos veículos além da escolha básica em interseções
 
 ---
 

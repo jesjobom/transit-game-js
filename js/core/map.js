@@ -7,6 +7,8 @@ const DIRECTION_VECTORS = {
   west: { x: -1, y: 0 }
 };
 
+const DIRECTION_ORDER = ['north', 'east', 'south', 'west'];
+
 export function createMapDefinition(options = {}) {
   if (options.mode === 'custom' && options.map) {
     return normalizeMap(options.map);
@@ -50,6 +52,8 @@ export function createBootstrapMap(options = {}) {
 
 export function normalizeMap(map) {
   const roadsByKey = Object.create(null);
+  const intersections = Array.isArray(map.intersections) ? structuredClone(map.intersections) : [];
+  const intersectionsByKey = Object.create(null);
 
   for (const road of map.roads || []) {
     roadsByKey[toPositionKey(road.x, road.y)] = {
@@ -57,6 +61,10 @@ export function normalizeMap(map) {
       y: road.y,
       type: road.type ?? 'road'
     };
+  }
+
+  for (const intersection of intersections) {
+    intersectionsByKey[toPositionKey(intersection.x, intersection.y)] = intersection;
   }
 
   return {
@@ -67,7 +75,8 @@ export function normalizeMap(map) {
     height: map.height,
     roads: Object.values(roadsByKey),
     roadsByKey,
-    intersections: Array.isArray(map.intersections) ? structuredClone(map.intersections) : [],
+    intersections,
+    intersectionsByKey,
     spawnPoints: Array.isArray(map.spawnPoints) ? structuredClone(map.spawnPoints) : []
   };
 }
@@ -76,8 +85,16 @@ export function getCell(map, x, y) {
   return map.roadsByKey[toPositionKey(x, y)] ?? null;
 }
 
+export function getIntersection(map, x, y) {
+  return map.intersectionsByKey?.[toPositionKey(x, y)] ?? null;
+}
+
 export function isRoad(map, x, y) {
   return Boolean(getCell(map, x, y));
+}
+
+export function isIntersection(map, x, y) {
+  return Boolean(getIntersection(map, x, y));
 }
 
 export function getNextPosition(position, direction) {
@@ -91,6 +108,25 @@ export function getNextPosition(position, direction) {
     x: position.x + delta.x,
     y: position.y + delta.y
   };
+}
+
+export function getAvailableDirections(map, x, y) {
+  return DIRECTION_ORDER.filter((direction) => {
+    const next = getNextPosition({ x, y }, direction);
+    return isInsideMap(map, next.x, next.y) && isRoad(map, next.x, next.y);
+  });
+}
+
+export function turnLeft(direction) {
+  return DIRECTION_ORDER[(DIRECTION_ORDER.indexOf(direction) + 3) % 4];
+}
+
+export function turnRight(direction) {
+  return DIRECTION_ORDER[(DIRECTION_ORDER.indexOf(direction) + 1) % 4];
+}
+
+export function reverseDirection(direction) {
+  return DIRECTION_ORDER[(DIRECTION_ORDER.indexOf(direction) + 2) % 4];
 }
 
 export function isInsideMap(map, x, y) {

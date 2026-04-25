@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 5';
-export const BUILD_TAG = 's5-live-loop';
+export const APP_VERSION = 'Sprint 6';
+export const BUILD_TAG = 's6-routing';

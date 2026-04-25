@@ -15,6 +15,12 @@ function runScenario(seed, mapSeed = seed) {
       spawnRate: 0.4,
       durationTicks: 8
     },
+    routing: {
+      straightWeight: 0.45,
+      leftWeight: 0.25,
+      rightWeight: 0.3,
+      allowReverse: false
+    },
     lights: [
       {
         id: 'main-crossing',
@@ -40,6 +46,7 @@ function runScenario(seed, mapSeed = seed) {
     movedVehicles: world.metrics.movedVehicles,
     completedTrips: world.metrics.completedTrips,
     blockedMoves: world.metrics.blockedMoves,
+    turnsTaken: world.metrics.turnsTaken,
     score: world.report?.score.total,
     lightPhase: world.entities.lights[0].phaseIndex,
     lightRemainingTicks: world.entities.lights[0].remainingTicks,

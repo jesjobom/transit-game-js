@@ -34,6 +34,7 @@ function boot() {
       stopLoop();
       state = createSimulationState();
       render();
+      startLoop();
     }
   });
 
@@ -41,7 +42,11 @@ function boot() {
   startLoop();
 
   function startLoop() {
-    if (timerId || state.world.status === 'completed') {
+    if (timerId) {
+      return;
+    }
+
+    if (state.world.status === 'completed') {
       appShell.setRunningState(false);
       return;
     }
@@ -82,6 +87,12 @@ function createSimulationState() {
       mode: 'benchmark',
       spawnRate: 0.6,
       durationTicks: 40
+    },
+    routing: {
+      straightWeight: 0.45,
+      leftWeight: 0.25,
+      rightWeight: 0.3,
+      allowReverse: false
     },
     lights: [
       {

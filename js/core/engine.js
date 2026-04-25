@@ -1,5 +1,15 @@
 import { finalizeBenchmark } from './benchmark.js';
-import { getCell, getNextPosition, isInsideMap, toPositionKey } from './map.js';
+import {
+  getAvailableDirections,
+  getCell,
+  getIntersection,
+  getNextPosition,
+  isInsideMap,
+  reverseDirection,
+  toPositionKey,
+  turnLeft,
+  turnRight
+} from './map.js';
 import { addWorldEvent, nextRandomFloat, syncWorldRngState } from './world.js';
 
 export function createEngine(world) {
@@ -100,6 +110,8 @@ function moveVehicles(world) {
   const survivors = [];
 
   for (const vehicle of world.entities.vehicles) {
+    maybeChooseVehicleDirection(world, vehicle);
+
     const nextPosition = getNextPosition(vehicle, vehicle.direction);
 
     if (!isInsideMap(world.map, nextPosition.x, nextPosition.y) || !getCell(world.map, nextPosition.x, nextPosition.y)) {
@@ -140,6 +152,87 @@ function moveVehicles(world) {
   }
 
   world.entities.vehicles = survivors;
+}
+
+function maybeChooseVehicleDirection(world, vehicle) {
+  if (!getIntersection(world.map, vehicle.x, vehicle.y)) {
+    return;
+  }
+
+  const choices = getRouteChoices(world, vehicle);
+  if (choices.length <= 1) {
+    return;
+  }
+
+  const currentDirection = vehicle.direction;
+  const selectedDirection = chooseWeightedDirection(world, choices, currentDirection);
+
+  if (selectedDirection === currentDirection) {
+    return;
+  }
+
+  vehicle.direction = selectedDirection;
+  world.metrics.turnsTaken += 1;
+  addWorldEvent(world, 'vehicleTurned', {
+    vehicleId: vehicle.id,
+    from: currentDirection,
+    to: selectedDirection,
+    x: vehicle.x,
+    y: vehicle.y
+  });
+}
+
+function getRouteChoices(world, vehicle) {
+  const availableDirections = getAvailableDirections(world.map, vehicle.x, vehicle.y);
+  const reverse = reverseDirection(vehicle.direction);
+  const filtered = availableDirections.filter((direction) => {
+    if (direction === reverse && !world.config.routing.allowReverse) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return filtered.length > 0 ? filtered : [vehicle.direction];
+}
+
+function chooseWeightedDirection(world, choices, currentDirection) {
+  const weightedChoices = choices.map((direction) => ({
+    direction,
+    weight: getDirectionWeight(world, currentDirection, direction)
+  }));
+
+  const totalWeight = weightedChoices.reduce((sum, entry) => sum + entry.weight, 0);
+  if (totalWeight <= 0) {
+    return currentDirection;
+  }
+
+  let cursor = nextRandomFloat(world) * totalWeight;
+
+  for (const entry of weightedChoices) {
+    cursor -= entry.weight;
+    if (cursor <= 0) {
+      return entry.direction;
+    }
+  }
+
+  return weightedChoices.at(-1)?.direction ?? currentDirection;
+}
+
+function getDirectionWeight(world, currentDirection, candidateDirection) {
+  if (candidateDirection === currentDirection) {
+    return world.config.routing.straightWeight;
+  }
+
+  if (candidateDirection === turnLeft(currentDirection)) {
+    return world.config.routing.leftWeight;
+  }
+
+  if (candidateDirection === turnRight(currentDirection)) {
+    return world.config.routing.rightWeight;
+  }
+
+  return world.config.routing.allowReverse ? 0.1 : 0;
 }
 
 function canVehicleEnter(world, vehicle, nextPosition) {

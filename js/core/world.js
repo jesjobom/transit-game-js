@@ -14,6 +14,13 @@ const DEFAULT_BENCHMARK = {
   mode: 'sandbox'
 };
 
+const DEFAULT_ROUTING = {
+  straightWeight: 0.5,
+  leftWeight: 0.25,
+  rightWeight: 0.25,
+  allowReverse: false
+};
+
 export function createWorldState(options = {}) {
   const simulationSeed = normalizeSeed(options.seed);
   const mapSeed = normalizeSeed(options.mapSeed ?? simulationSeed);
@@ -27,7 +34,7 @@ export function createWorldState(options = {}) {
   });
 
   const world = {
-    version: 'next-sprint-3',
+    version: 'next-sprint-6',
     tick: 0,
     seed: simulationSeed,
     simulationSeed,
@@ -40,6 +47,10 @@ export function createWorldState(options = {}) {
     config: {
       tickRate: options.tickRate ?? 10,
       maxVehicles: options.maxVehicles ?? 25,
+      routing: {
+        ...DEFAULT_ROUTING,
+        ...(options.routing || {})
+      },
       rules: {
         ...DEFAULT_RULES,
         ...(options.rules || {})
@@ -61,7 +72,8 @@ export function createWorldState(options = {}) {
       spawnedVehicles: 0,
       movedVehicles: 0,
       blockedMoves: 0,
-      completedTripTicks: 0
+      completedTripTicks: 0,
+      turnsTaken: 0
     },
     report: null,
     events: []
