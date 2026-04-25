@@ -93,6 +93,7 @@ Representação serializável de:
 - semáforos
 - configuração ativa
 - seed e estado do RNG
+- seed do mapa / parâmetros de geração procedural
 - tempo atual da simulação
 
 ### C. Rules Layer
@@ -146,6 +147,7 @@ Adicionar um RNG controlado por seed.
 - replay
 - benchmark em lote
 - depuração reproduzível
+- geração procedural de mapas reproduzível
 
 ## 5.3. Estado serializável
 Definir um objeto central de estado, por exemplo:
@@ -166,6 +168,7 @@ Não precisa ser exatamente esse formato, mas a ideia é essa.
 
 ## 5.4. Eventos da simulação
 A engine deve emitir eventos simples, como:
+- mapGenerated
 - vehicleSpawned
 - vehicleMoved
 - vehicleStopped
@@ -178,6 +181,44 @@ Isso ajuda em:
 - métricas
 - replay
 - debug visual
+
+## 5.5. Geração procedural de mapas
+
+A arquitetura deve permitir dois modos de mapa:
+
+1. **mapa fixo/predefinido**
+2. **mapa procedural gerado a partir de seed**
+
+A recomendação é que o modo procedural use:
+- uma `mapSeed`
+- um conjunto de parâmetros explícitos
+- um gerador determinístico
+
+Exemplo conceitual de configuração:
+
+```js
+{
+  map: {
+    mode: 'procedural',
+    mapSeed: 20260425,
+    width: 20,
+    height: 14,
+    roadDensity: 0.35,
+    intersectionDensity: 0.12,
+    trafficLightRate: 0.25
+  }
+}
+```
+
+### Requisitos técnicos da geração procedural
+- mesma `mapSeed` + mesmos parâmetros = mesmo mapa
+- seeds diferentes devem poder gerar mapas diferentes
+- benchmark deve registrar a seed do mapa usada
+- o mapa gerado deve ser serializável
+- deve ser possível salvar o mapa final gerado para replay/debug
+
+### Observação importante
+No começo, o projeto pode continuar usando uma seed padrão fixa, de forma que o mapa procedural inicial continue sendo sempre o mesmo. Isso mantém reprodutibilidade e permite depois um botão/ação de “gerar novo mapa” apenas trocando a seed.
 
 ---
 
@@ -257,6 +298,12 @@ Cobrem cenários fixos com seed fixa, por exemplo:
 - mesmas regras
 - comparação de métricas e score esperados
 
+### D. Testes de regressão de geração procedural
+Cobrem a geração determinística do mapa, por exemplo:
+- mesma `mapSeed` gera o mesmo layout
+- seed diferente gera layout diferente
+- mesmos parâmetros + mesma seed preservam cruzamentos e elementos esperados
+
 Esses testes são especialmente importantes para detectar quando uma feature nova piora throughput, segurança ou fluidez sem querer.
 
 ## 7.3. O que deve ser testado primeiro
@@ -269,7 +316,8 @@ Prioridade inicial:
 5. colisões e bloqueios
 6. métricas mínimas
 7. benchmark reproduzível
-8. flags de regras opcionais
+8. geração procedural determinística de mapas
+9. flags de regras opcionais
 
 ## 7.4. O que não precisa ser prioridade de teste no início
 
@@ -385,6 +433,27 @@ Dar poder real de exploração e comparação.
 - mapas externos
 - comparação A/B
 - histórico de benchmark
+- geração procedural determinística de mapas
+
+---
+
+## 8.1. Estratégia recomendada para mapas procedurais
+
+Implementar em camadas:
+
+1. gerador procedural simples baseado em grade
+2. validação estrutural do mapa gerado
+3. serialização do mapa gerado
+4. uso do mapa procedural no benchmark
+5. controles de UI para trocar seed e regenerar
+
+A recomendação é começar simples:
+- gerar vias principais
+- conectar cruzamentos
+- marcar entradas/saídas
+- adicionar semáforos em interseções elegíveis
+
+Evitar, no início, tentar criar cidades realistas demais. Melhor um gerador simples, determinístico e testável.
 
 ---
 

@@ -1,3 +1,4 @@
+import { createMapDefinition } from './map.js';
 import { createSeededRng, normalizeSeed } from './rng.js';
 
 const DEFAULT_RULES = {
@@ -13,16 +14,27 @@ const DEFAULT_BENCHMARK = {
 };
 
 export function createWorldState(options = {}) {
-  const seed = normalizeSeed(options.seed);
-  const rng = createSeededRng(seed);
+  const simulationSeed = normalizeSeed(options.seed);
+  const mapSeed = normalizeSeed(options.mapSeed ?? simulationSeed);
+  const rng = createSeededRng(simulationSeed);
+  const map = createMapDefinition({
+    id: options.mapId ?? 'bootstrap-grid',
+    mode: options.mapMode,
+    seed: mapSeed,
+    mapSeed,
+    map: options.map
+  });
 
   const world = {
-    version: 'next-sprint-1',
+    version: 'next-sprint-2',
     tick: 0,
-    seed,
+    seed: simulationSeed,
+    simulationSeed,
+    mapSeed,
     rng,
     rngState: rng.getState(),
-    mapId: options.mapId ?? 'bootstrap-grid',
+    mapId: map.id,
+    map,
     status: 'idle',
     config: {
       tickRate: options.tickRate ?? 10,
@@ -45,12 +57,20 @@ export function createWorldState(options = {}) {
       collisions: 0,
       deadlocks: 0,
       ticksSimulated: 0,
-      spawnedVehicles: 0
+      spawnedVehicles: 0,
+      movedVehicles: 0,
+      blockedMoves: 0
     },
     events: []
   };
 
   syncWorldRngState(world);
+  addWorldEvent(world, 'mapGenerated', {
+    mapId: world.map.id,
+    mapSeed: world.map.mapSeed,
+    roadCount: world.map.roads.length
+  });
+
   return world;
 }
 

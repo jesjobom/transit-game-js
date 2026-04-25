@@ -60,6 +60,7 @@ Criar uma base que permita evoluir regras, visual e benchmark sem quebrar tudo a
 - [ ] Remover dependências diretas da lógica de negócio com o DOM
 - [ ] Definir um formato base para configuração da simulação
 - [ ] Definir um formato base para mapas/cenários
+- [ ] Definir contrato para geração procedural de mapas baseada em seed
 - [ ] Padronizar a organização dos arquivos do projeto
 
 ---
@@ -219,6 +220,11 @@ Facilitar entendimento do comportamento emergente e depuração dos resultados.
 Dar mais variedade ao simulador e criar cenários úteis de comparação.
 
 - [ ] Permitir carregar mapas a partir de arquivo em vez de hardcode
+- [ ] Implementar geração procedural de mapas baseada em seed
+- [ ] Definir parâmetros controláveis da geração procedural (densidade, tamanho, cruzamentos, semáforos, etc.)
+- [ ] Garantir que mesma seed gere exatamente o mesmo mapa
+- [ ] Permitir gerar novo mapa randômico a partir de nova seed
+- [ ] Permitir benchmark com mapa procedural reproduzível
 - [ ] Criar presets de cenários prontos
 - [ ] Criar mapas pequenos de validação/tutoriais
 - [ ] Criar mapas maiores e mais realistas
@@ -290,6 +296,7 @@ Levar o projeto para um modo mais completo de laboratório e exploração.
 - [ ] Adicionar mais regras de trânsito
 - [ ] Adicionar heatmap, replay e debug visual
 - [ ] Adicionar mapas e cenários mais ricos
+- [ ] Adicionar geração procedural de mapas por seed
 - [ ] Adicionar comparação A/B
 
 ### Fase 5 — Laboratório mais completo
@@ -306,4 +313,5 @@ Levar o projeto para um modo mais completo de laboratório e exploração.
 - Não adicionar regras novas sem garantir comparabilidade com seed fixa.
 - Não deixar visual bonito mascarar métricas ruins ou bugs estruturais.
 - Preferir melhorias que aumentem reprodutibilidade e capacidade de análise.
+- Geração procedural de mapas deve ser determinística quando a seed for fixa.
 - Evitar reescrever o stack inteiro cedo demais só para parecer moderno.

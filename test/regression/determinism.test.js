@@ -4,9 +4,10 @@ import assert from 'node:assert/strict';
 import { createEngine } from '../../js/core/engine.js';
 import { createWorldState } from '../../js/core/world.js';
 
-function runScenario(seed) {
+function runScenario(seed, mapSeed = seed) {
   const world = createWorldState({
     seed,
+    mapSeed,
     maxVehicles: 10,
     benchmark: {
       enabled: true,
@@ -14,12 +15,12 @@ function runScenario(seed) {
     },
     lights: [
       {
-        id: 'main',
+        id: 'main-crossing',
         phaseIndex: 0,
         remainingTicks: 2,
         phases: [
-          { name: 'a', durationTicks: 2 },
-          { name: 'b', durationTicks: 2 }
+          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
         ]
       }
     ]
@@ -31,12 +32,22 @@ function runScenario(seed) {
   return {
     tick: world.tick,
     rngState: world.rngState,
+    mapSeed: world.map.mapSeed,
+    roadCount: world.map.roads.length,
     spawnedVehicles: world.metrics.spawnedVehicles,
+    movedVehicles: world.metrics.movedVehicles,
+    completedTrips: world.metrics.completedTrips,
     lightPhase: world.entities.lights[0].phaseIndex,
-    lightRemainingTicks: world.entities.lights[0].remainingTicks
+    lightRemainingTicks: world.entities.lights[0].remainingTicks,
+    activeVehicles: world.entities.vehicles.map(({ id, x, y, direction }) => ({ id, x, y, direction }))
   };
 }
 
 test('same seed and config produce the same deterministic outcome', () => {
   assert.deepEqual(runScenario(20260425), runScenario(20260425));
+});
+
+test('same map seed preserves the generated map characteristics', () => {
+  assert.deepEqual(runScenario(20260425, 42).roadCount, runScenario(7, 42).roadCount);
+  assert.deepEqual(runScenario(20260425, 42).mapSeed, runScenario(7, 42).mapSeed);
 });

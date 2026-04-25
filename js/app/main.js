@@ -9,7 +9,7 @@ function boot() {
     seed: 20260425,
     benchmark: {
       enabled: true,
-      spawnRate: 0.2,
+      spawnRate: 0.6,
       durationTicks: 300
     },
     lights: [
@@ -18,8 +18,8 @@ function boot() {
         phaseIndex: 0,
         remainingTicks: 2,
         phases: [
-          { name: 'north-south', durationTicks: 2 },
-          { name: 'east-west', durationTicks: 2 }
+          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
         ]
       }
     ]
@@ -30,15 +30,18 @@ function boot() {
 
   createAppShell({ world, engine, renderer, benchmark });
 
-  engine.runTicks(3);
+  engine.runTicks(6);
 
   renderer.renderPlaceholder({
-    title: 'Sprint 1 foundations ready',
+    title: 'Sprint 2 movement foundations ready',
     lines: [
-      `Seed: ${world.seed}`,
+      `Simulation seed: ${world.simulationSeed}`,
+      `Map seed: ${world.mapSeed}`,
       `Tick: ${world.tick}`,
-      `RNG state: ${world.rngState}`,
-      `Spawned vehicles: ${world.metrics.spawnedVehicles}`,
+      `Roads: ${world.map.roads.length}`,
+      `Active vehicles: ${world.entities.vehicles.length}`,
+      `Completed trips: ${world.metrics.completedTrips}`,
+      `Moved vehicles: ${world.metrics.movedVehicles}`,
       `Events in last tick: ${world.events.length}`
     ]
   });
