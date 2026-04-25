@@ -146,11 +146,14 @@ function renderLaneMarkers(roadType) {
 
 function renderTrafficLight(lightPhase) {
   const meta = LIGHT_PHASE_META[lightPhase] ?? {};
+  const isNorthSouthActive = lightPhase === 'north-south';
+  const phaseLabel = isNorthSouthActive ? 'NS' : 'EW';
 
   return `
-    <span class="traffic-light-cluster" aria-label="traffic light ${escapeHtml(lightPhase)}">
-      <span class="traffic-light-housing traffic-light-housing--vertical"></span>
-      <span class="traffic-light-housing traffic-light-housing--horizontal"></span>
+    <span class="traffic-light-cluster traffic-light-cluster--${escapeHtml(slugify(lightPhase))}" aria-label="traffic light ${escapeHtml(lightPhase)}">
+      <span class="traffic-light-housing traffic-light-housing--vertical ${isNorthSouthActive ? 'traffic-light-housing--active' : 'traffic-light-housing--inactive'}"></span>
+      <span class="traffic-light-housing traffic-light-housing--horizontal ${isNorthSouthActive ? 'traffic-light-housing--inactive' : 'traffic-light-housing--active'}"></span>
+      <span class="traffic-light-phase-badge">${phaseLabel}</span>
       ${renderTrafficLightBulb('north', meta.north)}
       ${renderTrafficLightBulb('east', meta.east)}
       ${renderTrafficLightBulb('south', meta.south)}
@@ -164,7 +167,7 @@ function renderTrafficLightBulb(direction, state = 'red') {
 }
 
 function renderVehicle(world, vehicle, map) {
-  const offset = getDirectionOffset(vehicle.direction);
+  const offset = getVehicleRenderOffset(vehicle.direction);
   const startPosition = getVehicleStartPosition(world, vehicle);
   const endX = toPercent(vehicle.x, map.width);
   const endY = toPercent(vehicle.y, map.height);
@@ -211,6 +214,21 @@ function getVehicleStartPosition(world, vehicle) {
   return {
     x: vehicle.x + backDelta.x,
     y: vehicle.y + backDelta.y
+  };
+}
+
+function getVehicleRenderOffset(direction) {
+  const laneOffset = getDirectionOffset(direction);
+  const queueOffset = {
+    north: { x: 0, y: 4 },
+    south: { x: 0, y: -4 },
+    east: { x: -4, y: 0 },
+    west: { x: 4, y: 0 }
+  }[direction] ?? { x: 0, y: 0 };
+
+  return {
+    x: laneOffset.x + queueOffset.x,
+    y: laneOffset.y + queueOffset.y
   };
 }
 

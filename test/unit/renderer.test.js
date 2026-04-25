@@ -39,13 +39,17 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   assert.match(html, /map-cell--intersection/);
   assert.match(html, /road-surface--vertical/);
   assert.match(html, /traffic-light-cluster/);
+  assert.match(html, /traffic-light-cluster--east-west/);
   assert.match(html, /traffic-light-housing--vertical/);
   assert.match(html, /traffic-light-housing--horizontal/);
+  assert.match(html, /traffic-light-housing--active/);
+  assert.match(html, /traffic-light-phase-badge/);
+  assert.match(html, />EW</);
   assert.match(html, /traffic-light--green/);
   assert.match(html, /vehicle-svg/);
   assert.match(html, /vehicle-body/);
   assert.match(html, /--vehicle-start-x:/);
-  assert.match(html, /--lane-offset-x:(-?8|0)px; --lane-offset-y:(-?8|0)px;/);
+  assert.match(html, /--lane-offset-x:(-?8|-?4|0)px; --lane-offset-y:(-?8|-?4|0)px;/);
   assert.match(html, /--vehicle-color:hsl\(/);
   assert.match(html, /traffic light east-west/);
   assert.match(html, /road-direction/);

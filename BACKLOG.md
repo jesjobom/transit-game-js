@@ -150,13 +150,13 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [ ] Implementar aceleração e desaceleração mais graduais
 - [x] Melhorar posicionamento visual por faixa/direção
 - [x] Introduzir sentido explícito nas vias do mapa bootstrap para evitar tráfego frontal em segmentos de célula única
-- [~] Melhorar espaçamento entre veículos em fila (offset por faixa corrigido para não invadir a listra central; ainda falta refinar filas densas)
+- [~] Melhorar espaçamento entre veículos em fila (offset por faixa corrigido e leve recuo visual dentro da célula já aplicados; ainda falta refinar filas densas)
 - [~] Redesenhar a interface geral da aplicação
 - [x] Renderizar o mapa em tela, mesmo em visual cru
 - [x] Renderizar veículos em posições reais do grid
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
-- [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster mais legível já aplicados; ainda falta polimento fino/mais informação)
+- [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster + eixo ativo mais óbvio já aplicados; ainda falta polimento fino/mais informação)
 - [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente por carro + animação curta já aplicada; ainda falta polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas

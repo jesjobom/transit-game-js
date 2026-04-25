@@ -275,6 +275,7 @@ button {
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
   border: 1px solid rgba(148, 163, 184, 0.28);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: box-shadow 120ms ease-out, border-color 120ms ease-out, background 120ms ease-out;
 }
 
 .traffic-light-housing--vertical {
@@ -291,6 +292,38 @@ button {
   top: calc(50% - 7px);
   height: 14px;
   border-radius: 999px;
+}
+
+.traffic-light-housing--active {
+  border-color: rgba(34, 197, 94, 0.65);
+  background: linear-gradient(180deg, rgba(20, 83, 45, 0.96), rgba(22, 101, 52, 0.92));
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.32), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.traffic-light-housing--inactive {
+  border-color: rgba(239, 68, 68, 0.28);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.traffic-light-phase-badge {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 .traffic-light {
@@ -341,8 +374,8 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 14px;
+  width: 26px;
+  height: 13px;
   transform:
     translate(
       calc(-50% + var(--lane-offset-x, 0px)),
@@ -398,9 +431,9 @@ button {
 .vehicle-cabin {
   position: absolute;
   right: 5px;
-  top: 3px;
-  width: 10px;
-  height: 8px;
+  top: 2px;
+  width: 9px;
+  height: 7px;
   border-radius: 4px 5px 5px 4px;
   background: linear-gradient(180deg, rgba(226, 232, 240, 0.95), rgba(148, 163, 184, 0.85));
   border: 1px solid rgba(51, 65, 85, 0.75);
@@ -408,17 +441,17 @@ button {
 
 .vehicle-windshield {
   position: absolute;
-  right: 8px;
-  top: 4px;
+  right: 7px;
+  top: 3px;
   width: 4px;
-  height: 6px;
+  height: 5px;
   border-radius: 2px 3px 3px 2px;
   background: rgba(191, 219, 254, 0.9);
 }
 
 .vehicle-wheels {
   position: absolute;
-  width: 6px;
+  width: 5px;
   height: 2px;
   background: #111827;
   border-radius: 999px;
@@ -427,13 +460,13 @@ button {
 .vehicle-wheels--front {
   right: 5px;
   top: 0;
-  box-shadow: 0 12px 0 #111827;
+  box-shadow: 0 11px 0 #111827;
 }
 
 .vehicle-wheels--rear {
   left: 5px;
   top: 0;
-  box-shadow: 0 12px 0 #111827;
+  box-shadow: 0 11px 0 #111827;
 }
 
 .status-list {
