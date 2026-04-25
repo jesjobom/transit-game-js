@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { addWorldEvent, createWorldState, nextRandomFloat, restoreWorldState, snapshotWorldState } from '../../js/core/world.js';
+import { addWorldEvent, createWorldState, nextRandomFloat } from '../../js/core/world.js';
 
 test('createWorldState builds the Sprint 8 structure with defaults', () => {
   const world = createWorldState();
@@ -79,30 +79,4 @@ test('world random helper updates rng state and addWorldEvent records the curren
     type: 'customEvent',
     payload: { ok: true }
   });
-});
-
-test('snapshotWorldState and restoreWorldState preserve rng progress and serializable state', () => {
-  const world = createWorldState({ seed: 20260425 });
-  world.tick = 4;
-  world.status = 'running';
-  world.entities.vehicles.push({
-    id: 'vehicle-1',
-    x: 2,
-    y: 0,
-    direction: 'south',
-    status: 'active',
-    spawnedAtTick: 1,
-    color: { fill: 'a', shadow: 'b', highlight: 'c' }
-  });
-  nextRandomFloat(world);
-
-  const snapshot = snapshotWorldState(world);
-  const restoredA = restoreWorldState(snapshot);
-  const restoredB = restoreWorldState(snapshot);
-
-  assert.equal(restoredA.tick, 4);
-  assert.equal(restoredA.status, 'running');
-  assert.equal(restoredA.entities.vehicles[0].id, 'vehicle-1');
-  assert.equal(typeof restoredA.rng.nextFloat, 'function');
-  assert.equal(nextRandomFloat(restoredA), nextRandomFloat(restoredB));
 });

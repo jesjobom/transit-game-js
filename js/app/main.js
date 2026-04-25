@@ -9,15 +9,13 @@ import {
 } from './ui/view-model.js';
 import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
-import { createWorldState, restoreWorldState, snapshotWorldState } from '../core/world.js';
+import { createWorldState } from '../core/world.js';
 
 const TICK_INTERVAL_MS = 350;
 const ANIMATION_DURATION_MS = 320;
-const MAX_HISTORY_SNAPSHOTS = 240;
 
 function boot() {
   let state = createSimulationState();
-  let history = [];
   const renderer = createRenderer(document.getElementById('simulation-root'));
   const benchmark = createBenchmarkShell();
   const appShell = createAppShell({
@@ -41,29 +39,18 @@ function boot() {
         startLoop();
       }
     },
-    onStepBack() {
-      if (isRunning || history.length === 0) {
-        return;
-      }
-
-      state = createSimulationStateFromSnapshot(history.pop());
-      render();
-      appShell.setRunningState(false, { canStepBack: history.length > 0 });
-    },
     onStep() {
       if (isRunning || state.world.status === 'completed') {
         return;
       }
 
-      captureHistorySnapshot();
       state.engine.tick();
       render();
-      appShell.setRunningState(false, { canStepBack: history.length > 0 });
+      appShell.setRunningState(false);
     },
     onReset() {
       stopLoop();
       state = createSimulationState();
-      history = [];
       render();
       startLoop();
     }
@@ -78,14 +65,14 @@ function boot() {
     }
 
     if (state.world.status === 'completed') {
-      appShell.setRunningState(false, { canStepBack: history.length > 0 });
+      appShell.setRunningState(false);
       return;
     }
 
     isRunning = true;
     lastFrameAt = 0;
     tickAccumulatorMs = 0;
-    appShell.setRunningState(true, { canStepBack: history.length > 0 });
+    appShell.setRunningState(true);
     animationFrameId = window.requestAnimationFrame(frameLoop);
   }
 
@@ -103,7 +90,6 @@ function boot() {
     tickAccumulatorMs += deltaMs;
 
     while (tickAccumulatorMs >= TICK_INTERVAL_MS && state.world.status !== 'completed') {
-      captureHistorySnapshot();
       state.engine.tick();
       tickAccumulatorMs -= TICK_INTERVAL_MS;
       render();
@@ -124,14 +110,7 @@ function boot() {
       animationFrameId = null;
     }
 
-    appShell.setRunningState(false, { canStepBack: history.length > 0 });
-  }
-
-  function captureHistorySnapshot() {
-    history.push(snapshotWorldState(state.world));
-    if (history.length > MAX_HISTORY_SNAPSHOTS) {
-      history.shift();
-    }
+    appShell.setRunningState(false);
   }
 
   function render() {
@@ -212,11 +191,6 @@ function createSimulationState() {
     ]
   });
 
-  return createSimulationStateFromSnapshot(world);
-}
-
-function createSimulationStateFromSnapshot(worldSnapshot) {
-  const world = restoreWorldState(worldSnapshot);
   return {
     world,
     engine: createEngine(world)
