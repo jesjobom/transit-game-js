@@ -11,7 +11,9 @@ function runScenario(seed, mapSeed = seed) {
     maxVehicles: 10,
     benchmark: {
       enabled: true,
-      spawnRate: 0.4
+      mode: 'benchmark',
+      spawnRate: 0.4,
+      durationTicks: 8
     },
     lights: [
       {
@@ -37,6 +39,8 @@ function runScenario(seed, mapSeed = seed) {
     spawnedVehicles: world.metrics.spawnedVehicles,
     movedVehicles: world.metrics.movedVehicles,
     completedTrips: world.metrics.completedTrips,
+    blockedMoves: world.metrics.blockedMoves,
+    score: world.report?.score.total,
     lightPhase: world.entities.lights[0].phaseIndex,
     lightRemainingTicks: world.entities.lights[0].remainingTicks,
     activeVehicles: world.entities.vehicles.map(({ id, x, y, direction }) => ({ id, x, y, direction }))

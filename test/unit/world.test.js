@@ -3,19 +3,21 @@ import assert from 'node:assert/strict';
 
 import { addWorldEvent, createWorldState, nextRandomFloat } from '../../js/core/world.js';
 
-test('createWorldState builds the Sprint 2 structure with defaults', () => {
+test('createWorldState builds the Sprint 3 structure with defaults', () => {
   const world = createWorldState();
 
-  assert.equal(world.version, 'next-sprint-2');
+  assert.equal(world.version, 'next-sprint-3');
   assert.equal(world.tick, 0);
   assert.equal(world.mapId, 'bootstrap-grid');
   assert.equal(world.map.id, 'bootstrap-grid');
   assert.equal(world.map.roads.length, 9);
   assert.equal(world.config.tickRate, 10);
   assert.equal(world.config.rules.freeRightOnRed, false);
+  assert.equal(world.config.benchmark.mode, 'sandbox');
   assert.deepEqual(world.entities.vehicles, []);
   assert.equal(world.metrics.ticksSimulated, 0);
   assert.equal(world.metrics.movedVehicles, 0);
+  assert.equal(world.metrics.completedTripTicks, 0);
   assert.equal(world.events[0].type, 'mapGenerated');
 });
 
@@ -26,7 +28,7 @@ test('createWorldState merges custom configuration and seeds', () => {
     mapId: 'test-map',
     tickRate: 20,
     rules: { freeRightOnRed: true },
-    benchmark: { enabled: true, spawnRate: 0.5 }
+    benchmark: { enabled: true, mode: 'benchmark', spawnRate: 0.5 }
   });
 
   assert.equal(world.seed, 99);
@@ -36,6 +38,7 @@ test('createWorldState merges custom configuration and seeds', () => {
   assert.equal(world.config.tickRate, 20);
   assert.equal(world.config.rules.freeRightOnRed, true);
   assert.equal(world.config.benchmark.enabled, true);
+  assert.equal(world.config.benchmark.mode, 'benchmark');
   assert.equal(world.config.benchmark.spawnRate, 0.5);
 });
 

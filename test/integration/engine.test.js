@@ -22,7 +22,9 @@ test('engine spawns vehicles deterministically when benchmark mode is enabled', 
     maxVehicles: 5,
     benchmark: {
       enabled: true,
-      spawnRate: 1
+      mode: 'benchmark',
+      spawnRate: 1,
+      durationTicks: 20
     }
   });
   const engine = createEngine(world);
@@ -38,7 +40,7 @@ test('engine spawns vehicles deterministically when benchmark mode is enabled', 
 test('engine moves vehicles forward and completes trips at map exits', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-1', x: 3, y: 2, direction: 'east', status: 'active' }
+      { id: 'vehicle-1', x: 3, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }
     ]
   });
   const engine = createEngine(world);
@@ -50,13 +52,14 @@ test('engine moves vehicles forward and completes trips at map exits', () => {
   engine.tick();
   assert.equal(world.entities.vehicles.length, 0);
   assert.equal(world.metrics.completedTrips, 1);
+  assert.equal(world.metrics.completedTripTicks, 2);
   assert.equal(world.events.at(-1).type, 'vehicleExited');
 });
 
 test('engine respects traffic light direction gating at controlled intersections', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-1', x: 1, y: 2, direction: 'east', status: 'active' }
+      { id: 'vehicle-1', x: 1, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }
     ],
     lights: [
       {
@@ -77,4 +80,25 @@ test('engine respects traffic light direction gating at controlled intersections
   assert.equal(world.entities.vehicles[0].x, 1);
   assert.equal(world.metrics.blockedMoves, 1);
   assert.equal(world.events[0].type, 'vehicleBlocked');
+});
+
+test('engine finalizes benchmark report when duration is reached', () => {
+  const world = createWorldState({
+    seed: 2,
+    benchmark: {
+      enabled: true,
+      mode: 'benchmark',
+      spawnRate: 1,
+      durationTicks: 2
+    }
+  });
+  const engine = createEngine(world);
+
+  engine.runTicks(5);
+
+  assert.equal(world.tick, 2);
+  assert.equal(world.status, 'completed');
+  assert.ok(world.report);
+  assert.equal(world.report.metrics.ticksSimulated, 2);
+  assert.equal(world.events.at(-1).type, 'benchmarkCompleted');
 });

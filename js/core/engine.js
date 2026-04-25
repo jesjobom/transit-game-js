@@ -1,3 +1,4 @@
+import { finalizeBenchmark } from './benchmark.js';
 import { getCell, getNextPosition, isInsideMap, toPositionKey } from './map.js';
 import { addWorldEvent, nextRandomFloat, syncWorldRngState } from './world.js';
 
@@ -15,17 +16,39 @@ export function createEngine(world) {
       moveVehicles(world);
       maybeSpawnVehicle(world);
 
+      if (shouldFinalizeBenchmark(world)) {
+        world.report = finalizeBenchmark(world);
+        world.status = 'completed';
+        addWorldEvent(world, 'benchmarkCompleted', { score: world.report.score.total });
+      }
+
       syncWorldRngState(world);
       return world.tick;
     },
     runTicks(totalTicks) {
       for (let index = 0; index < totalTicks; index += 1) {
+        if (world.status === 'completed') {
+          break;
+        }
+
         this.tick();
       }
 
       return world.tick;
+    },
+    getReport() {
+      if (!world.report) {
+        world.report = finalizeBenchmark(world);
+      }
+
+      return world.report;
     }
   };
+}
+
+function shouldFinalizeBenchmark(world) {
+  const { benchmark } = world.config;
+  return benchmark.enabled && benchmark.durationTicks > 0 && world.tick >= benchmark.durationTicks;
 }
 
 function maybeSpawnVehicle(world) {
@@ -81,6 +104,7 @@ function moveVehicles(world) {
 
     if (!isInsideMap(world.map, nextPosition.x, nextPosition.y) || !getCell(world.map, nextPosition.x, nextPosition.y)) {
       world.metrics.completedTrips += 1;
+      world.metrics.completedTripTicks += world.tick - vehicle.spawnedAtTick;
       addWorldEvent(world, 'vehicleExited', {
         vehicleId: vehicle.id,
         x: vehicle.x,

@@ -9,8 +9,9 @@ function boot() {
     seed: 20260425,
     benchmark: {
       enabled: true,
+      mode: 'benchmark',
       spawnRate: 0.6,
-      durationTicks: 300
+      durationTicks: 12
     },
     lights: [
       {
@@ -30,19 +31,16 @@ function boot() {
 
   createAppShell({ world, engine, renderer, benchmark });
 
-  engine.runTicks(6);
+  engine.runTicks(world.config.benchmark.durationTicks);
+  const report = engine.getReport();
 
   renderer.renderPlaceholder({
-    title: 'Sprint 2 movement foundations ready',
+    title: 'Sprint 3 benchmark foundations ready',
     lines: [
       `Simulation seed: ${world.simulationSeed}`,
       `Map seed: ${world.mapSeed}`,
       `Tick: ${world.tick}`,
-      `Roads: ${world.map.roads.length}`,
-      `Active vehicles: ${world.entities.vehicles.length}`,
-      `Completed trips: ${world.metrics.completedTrips}`,
-      `Moved vehicles: ${world.metrics.movedVehicles}`,
-      `Events in last tick: ${world.events.length}`
+      ...benchmark.summarize(report)
     ]
   });
 }

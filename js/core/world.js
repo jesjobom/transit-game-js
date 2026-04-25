@@ -10,7 +10,8 @@ const DEFAULT_RULES = {
 const DEFAULT_BENCHMARK = {
   enabled: false,
   durationTicks: 0,
-  spawnRate: 0
+  spawnRate: 0,
+  mode: 'sandbox'
 };
 
 export function createWorldState(options = {}) {
@@ -26,7 +27,7 @@ export function createWorldState(options = {}) {
   });
 
   const world = {
-    version: 'next-sprint-2',
+    version: 'next-sprint-3',
     tick: 0,
     seed: simulationSeed,
     simulationSeed,
@@ -59,8 +60,10 @@ export function createWorldState(options = {}) {
       ticksSimulated: 0,
       spawnedVehicles: 0,
       movedVehicles: 0,
-      blockedMoves: 0
+      blockedMoves: 0,
+      completedTripTicks: 0
     },
+    report: null,
     events: []
   };
 
