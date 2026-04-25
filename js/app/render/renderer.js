@@ -228,7 +228,7 @@ function getVehicleRenderState(world, vehicle, map, options) {
   const endPoint = { x: vehicle.x + 0.5, y: vehicle.y + 0.5 };
 
   if (motionKind === 'turn') {
-    const curve = sampleTurnCurve(startPoint, endPoint, fromDirection, vehicle.direction, progress);
+    const curve = sampleTurnCurve(turnEvent, startPoint, endPoint, fromDirection, vehicle.direction, progress);
     return {
       motionKind,
       progress,
@@ -341,44 +341,103 @@ function shapeStraightMotionProgress(progress, shouldSlowDown) {
   return Math.min(0.94, eased * 0.94);
 }
 
-function sampleTurnCurve(startPoint, endPoint, fromDirection, toDirection, progress) {
-  const control = getTurnControlPoint(startPoint, fromDirection, toDirection);
-  const point = quadraticBezier(startPoint, control, endPoint, progress);
-  const tangent = quadraticBezierTangent(startPoint, control, endPoint, progress);
+function sampleTurnCurve(turnEvent, startPoint, endPoint, fromDirection, toDirection, progress) {
+  const intersectionPoint = {
+    x: (turnEvent?.payload?.x ?? startPoint.x) + 0.5,
+    y: (turnEvent?.payload?.y ?? startPoint.y) + 0.5
+  };
+  const entryPoint = getIntersectionEntryPoint(intersectionPoint, fromDirection);
+  const exitPoint = getIntersectionExitPoint(intersectionPoint, toDirection);
+  const preArcRatio = 0.1;
+  const postArcRatio = 0.1;
+
+  if (progress <= preArcRatio) {
+    const stageProgress = progress / preArcRatio;
+    const point = lerpPoint(startPoint, entryPoint, stageProgress);
+    const tangent = subtractPoint(entryPoint, startPoint);
+
+    return {
+      point,
+      angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
+    };
+  }
+
+  if (progress >= 1 - postArcRatio) {
+    const stageProgress = (progress - (1 - postArcRatio)) / postArcRatio;
+    const point = lerpPoint(exitPoint, endPoint, stageProgress);
+    const tangent = subtractPoint(endPoint, exitPoint);
+
+    return {
+      point,
+      angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
+    };
+  }
+
+  const arcProgress = (progress - preArcRatio) / (1 - preArcRatio - postArcRatio);
+  return sampleIntersectionTurnArc(intersectionPoint, fromDirection, toDirection, arcProgress);
+}
+
+function getIntersectionEntryPoint(intersectionCenter, direction) {
+  const vector = getDirectionVector(direction);
+  return {
+    x: intersectionCenter.x - vector.x * 0.5,
+    y: intersectionCenter.y - vector.y * 0.5
+  };
+}
+
+function getIntersectionExitPoint(intersectionCenter, direction) {
+  const vector = getDirectionVector(direction);
+  return {
+    x: intersectionCenter.x + vector.x * 0.5,
+    y: intersectionCenter.y + vector.y * 0.5
+  };
+}
+
+function sampleIntersectionTurnArc(intersectionCenter, fromDirection, toDirection, progress) {
+  const fromVector = getDirectionVector(fromDirection);
+  const toVector = getDirectionVector(toDirection);
+  const startPoint = getIntersectionEntryPoint(intersectionCenter, fromDirection);
+  const endPoint = getIntersectionExitPoint(intersectionCenter, toDirection);
+  const arcCenter = {
+    x: intersectionCenter.x + (toVector.x - fromVector.x) * 0.5,
+    y: intersectionCenter.y + (toVector.y - fromVector.y) * 0.5
+  };
+  const startAngle = Math.atan2(startPoint.y - arcCenter.y, startPoint.x - arcCenter.x);
+  const endAngle = Math.atan2(endPoint.y - arcCenter.y, endPoint.x - arcCenter.x);
+  const delta = normalizeAngleDeltaRadians(endAngle - startAngle);
+  const angle = startAngle + delta * progress;
+  const radius = 0.5;
+  const tangent = {
+    x: -Math.sin(angle) * delta,
+    y: Math.cos(angle) * delta
+  };
 
   return {
-    point,
+    point: {
+      x: arcCenter.x + Math.cos(angle) * radius,
+      y: arcCenter.y + Math.sin(angle) * radius
+    },
     angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
   };
 }
 
-function getTurnControlPoint(startPoint, fromDirection, toDirection) {
-  const bias = {
-    north: { east: { x: 0, y: 0.7 }, west: { x: 0, y: 0.7 } },
-    south: { east: { x: 0, y: -0.7 }, west: { x: 0, y: -0.7 } },
-    east: { north: { x: -0.7, y: 0 }, south: { x: -0.7, y: 0 } },
-    west: { north: { x: 0.7, y: 0 }, south: { x: 0.7, y: 0 } }
-  }[fromDirection]?.[toDirection] ?? { x: 0, y: 0 };
-
+function getDirectionVector(direction) {
   return {
-    x: startPoint.x + bias.x,
-    y: startPoint.y + bias.y
-  };
+    north: { x: 0, y: -1 },
+    east: { x: 1, y: 0 },
+    south: { x: 0, y: 1 },
+    west: { x: -1, y: 0 }
+  }[direction] ?? { x: 0, y: 0 };
 }
 
-function quadraticBezier(start, control, end, t) {
-  const oneMinusT = 1 - t;
-  return {
-    x: oneMinusT * oneMinusT * start.x + 2 * oneMinusT * t * control.x + t * t * end.x,
-    y: oneMinusT * oneMinusT * start.y + 2 * oneMinusT * t * control.y + t * t * end.y
-  };
-}
+function normalizeAngleDeltaRadians(delta) {
+  let normalized = ((delta + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
 
-function quadraticBezierTangent(start, control, end, t) {
-  return {
-    x: 2 * (1 - t) * (control.x - start.x) + 2 * t * (end.x - control.x),
-    y: 2 * (1 - t) * (control.y - start.y) + 2 * t * (end.y - control.y)
-  };
+  if (normalized === -Math.PI) {
+    normalized = Math.PI;
+  }
+
+  return normalized;
 }
 
 function toPercentPoint(point, map) {
@@ -399,6 +458,13 @@ function lerpPoint(start, end, progress) {
   return {
     x: start.x + (end.x - start.x) * progress,
     y: start.y + (end.y - start.y) * progress
+  };
+}
+
+function subtractPoint(end, start) {
+  return {
+    x: end.x - start.x,
+    y: end.y - start.y
   };
 }
 

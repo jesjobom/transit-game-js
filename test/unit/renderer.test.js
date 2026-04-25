@@ -85,7 +85,7 @@ test('buildWorldHtml renders turning vehicles with start/end angle and lane offs
 
   assert.match(html, /vehicle--turning/);
   assert.match(html, /data-motion-kind="turn"/);
-  assert.match(html, /--vehicle-render-angle:/);
+  assert.match(html, /--vehicle-render-angle:-45/);
   assert.match(html, /--vehicle-render-offset-x:/);
   assert.match(html, /--vehicle-motion-progress:0.500/);
 });
@@ -106,5 +106,5 @@ test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', 
 
   assert.match(html, /vehicle--turning/);
   assert.match(html, /data-motion-kind="turn"/);
-  assert.match(html, /--vehicle-render-angle:180deg;/);
+  assert.match(html, /--vehicle-render-angle:-135deg;/);
 });

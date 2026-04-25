@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 17';
-export const BUILD_TAG = 's17-continuous-motion';
+export const APP_VERSION = 'Sprint 18';
+export const BUILD_TAG = 's18-intersection-turn-geometry';

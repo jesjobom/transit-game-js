@@ -145,7 +145,7 @@ Permitir ativar/desativar regras opcionais e comparar o impacto delas com benchm
 ### Objetivo
 Melhorar bastante a percepção de qualidade sem tentar resolver todo o polimento de uma vez.
 
-- [~] Implementar movimento suave entre células com interpolação visual (render contínuo frame-a-frame + aproximação suave antes de parada + curva com trajetória dedicada já aplicados; ainda falta aprofundar a sensação de trajetória)
+- [~] Implementar movimento suave entre células com interpolação visual (render contínuo frame-a-frame + aproximação suave antes de parada + curva ancorada na geometria da interseção já aplicados; ainda falta aprofundar a sensação de trajetória)
 - [~] Separar tick lógico da taxa de atualização visual
 - [~] Implementar aceleração e desaceleração mais graduais (aproximação suave para parada iminente já aplicada; ainda falta modelagem mais rica de velocidade)
 - [x] Melhorar posicionamento visual por faixa/direção
@@ -157,7 +157,7 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster + eixo ativo mais óbvio já aplicados; ainda falta polimento fino/mais informação)
-- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + movimento contínuo/curva dedicada já aplicados; ainda falta polimento fino)
+- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + movimento contínuo/curva ancorada na interseção já aplicados; ainda falta polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
 - [~] Melhorar layout dos controles/configurações
@@ -213,7 +213,7 @@ Facilitar entendimento do comportamento emergente e depuração dos resultados.
 
 - [ ] Criar heatmap de congestionamento
 - [ ] Exibir fluxo médio por via
-- [~] Criar modo replay de simulação (scheduler visual com requestAnimationFrame + movimento interpolado curto por tick já aplicado como base; replay real ainda não existe)
+- [~] Criar modo replay de simulação (scheduler visual com requestAnimationFrame + movimento contínuo frame-a-frame e curva ancorada na interseção já aplicados como base; replay real ainda não existe)
 - [ ] Mostrar estado interno de veículos selecionados
 - [ ] Mostrar intenção atual do carro (seguir, virar, parar, aguardar)
 - [~] Mostrar estado atual dos semáforos e próxima transição
