@@ -6,6 +6,21 @@ const ROAD_DIRECTION_SET = {
   cross: ['north', 'east', 'south', 'west']
 };
 
+const LIGHT_PHASE_META = {
+  'north-south': {
+    north: 'green',
+    south: 'green',
+    east: 'red',
+    west: 'red'
+  },
+  'east-west': {
+    north: 'red',
+    south: 'red',
+    east: 'green',
+    west: 'green'
+  }
+};
+
 export function createRenderer(rootElement) {
   return {
     status: 'world renderer ready',
@@ -14,9 +29,7 @@ export function createRenderer(rootElement) {
         return;
       }
 
-      const lines = (payload.lines || [])
-        .map((line) => `<div>${escapeHtml(line)}</div>`)
-        .join('');
+      const lines = (payload.lines || []).map((line) => `<div>${escapeHtml(line)}</div>`).join('');
 
       rootElement.innerHTML = `
         <div>
@@ -37,15 +50,6 @@ export function createRenderer(rootElement) {
 
 export function buildWorldHtml(world, options = {}) {
   const map = world.map;
-  const vehiclesByPosition = new Map();
-
-  for (const vehicle of world.entities.vehicles) {
-    const key = toPositionKey(vehicle.x, vehicle.y);
-    const vehiclesAtCell = vehiclesByPosition.get(key) ?? [];
-    vehiclesAtCell.push(vehicle);
-    vehiclesByPosition.set(key, vehiclesAtCell);
-  }
-
   const intersectionsByPosition = new Map(
     map.intersections.map((intersection) => [toPositionKey(intersection.x, intersection.y), intersection])
   );
@@ -57,7 +61,6 @@ export function buildWorldHtml(world, options = {}) {
     for (let x = 0; x < map.width; x += 1) {
       const positionKey = toPositionKey(x, y);
       const road = map.roadsByKey[positionKey];
-      const vehicles = vehiclesByPosition.get(positionKey) ?? [];
       const intersection = intersectionsByPosition.get(positionKey);
       const light = intersection?.lightId ? lightsById.get(intersection.lightId) : null;
       const lightPhase = light?.phases?.[light.phaseIndex ?? 0]?.name ?? null;
@@ -67,15 +70,9 @@ export function buildWorldHtml(world, options = {}) {
       if (road) classes.push('map-cell--road');
       if (intersection) classes.push('map-cell--intersection');
       if (spawnPoint) classes.push('map-cell--spawn');
-      if (vehicles.length > 0) classes.push('map-cell--occupied');
       if (lightPhase) classes.push(`map-cell--light-${slugify(lightPhase)}`);
 
-      let content = road ? renderRoadSurface({ road, intersection, spawnPoint, vehicles }) : '';
-      if (vehicles.length > 0) {
-        content += vehicles
-          .map((vehicle) => renderVehicle(vehicle))
-          .join('');
-      }
+      const content = road ? renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) : '';
 
       cells.push(`
         <div
@@ -88,6 +85,7 @@ export function buildWorldHtml(world, options = {}) {
     }
   }
 
+  const vehicles = world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map));
   const summary = options.summaryLines || [];
 
   return `
@@ -95,22 +93,28 @@ export function buildWorldHtml(world, options = {}) {
       <div class="world-summary">
         ${summary.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}
       </div>
-      <div
-        class="world-grid"
-        style="grid-template-columns: repeat(${map.width}, minmax(0, 1fr));"
-      >
-        ${cells.join('')}
+      <div class="world-grid-shell">
+        <div
+          class="world-grid"
+          style="grid-template-columns: repeat(${map.width}, minmax(0, 1fr));"
+        >
+          ${cells.join('')}
+        </div>
+        <div class="vehicle-layer" style="--grid-width:${map.width}; --grid-height:${map.height};">
+          ${vehicles.join('')}
+        </div>
       </div>
     </div>
   `;
 }
 
-function renderRoadSurface({ road, intersection, spawnPoint, vehicles }) {
+function renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) {
   const roadType = getRoadType(road?.allowedDirections || []);
   const laneMarkup = road ? renderLaneMarkers(roadType) : '';
   const intersectionMarkup = intersection ? '<span class="intersection-core"></span>' : '';
   const spawnMarkup = spawnPoint ? `<span class="spawn-marker" title="spawn ${escapeHtml(spawnPoint.direction)}"></span>` : '';
-  const hintMarkup = vehicles.length === 0 && road ? `<span class="road-direction road-direction--${roadType}" title="${escapeHtml(formatDirections(road.allowedDirections || []))}">${escapeHtml(directionSetGlyph(road.allowedDirections || []))}</span>` : '';
+  const hintMarkup = road ? `<span class="road-direction road-direction--${roadType}" title="${escapeHtml(formatDirections(road.allowedDirections || []))}">${escapeHtml(directionSetGlyph(road.allowedDirections || []))}</span>` : '';
+  const lightMarkup = intersection && lightPhase ? renderTrafficLight(lightPhase) : '';
 
   return `
     <span class="road-surface road-surface--${roadType}">
@@ -118,6 +122,7 @@ function renderRoadSurface({ road, intersection, spawnPoint, vehicles }) {
       ${intersectionMarkup}
       ${spawnMarkup}
       ${hintMarkup}
+      ${lightMarkup}
     </span>
   `;
 }
@@ -137,13 +142,36 @@ function renderLaneMarkers(roadType) {
   `;
 }
 
-function renderVehicle(vehicle) {
-  const offset = getDirectionOffset(vehicle.direction);
-  const color = getVehicleColor(vehicle.id);
+function renderTrafficLight(lightPhase) {
+  const meta = LIGHT_PHASE_META[lightPhase] ?? {};
+
+  return `
+    <span class="traffic-light-cluster" aria-label="traffic light ${escapeHtml(lightPhase)}">
+      ${renderTrafficLightBulb('north', meta.north)}
+      ${renderTrafficLightBulb('east', meta.east)}
+      ${renderTrafficLightBulb('south', meta.south)}
+      ${renderTrafficLightBulb('west', meta.west)}
+    </span>
+  `;
+}
+
+function renderTrafficLightBulb(direction, state = 'red') {
+  return `<span class="traffic-light traffic-light--${escapeHtml(direction)} traffic-light--${escapeHtml(state)}"></span>`;
+}
+
+function renderVehicle(world, vehicle, map) {
+  const offset = scaleOffset(getDirectionOffset(vehicle.direction), 0.7);
+  const startPosition = getVehicleStartPosition(world, vehicle);
+  const endX = toPercent(vehicle.x, map.width);
+  const endY = toPercent(vehicle.y, map.height);
+  const startX = toPercent(startPosition.x, map.width);
+  const startY = toPercent(startPosition.y, map.height);
+  const color = getVehicleColor(world, vehicle);
+
   return `
     <span
       class="vehicle vehicle--${escapeHtml(vehicle.direction)}"
-      style="--lane-offset-x:${offset.x}%; --lane-offset-y:${offset.y}%; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
+      style="--vehicle-x:${endX}%; --vehicle-y:${endY}%; --vehicle-start-x:${startX}%; --vehicle-start-y:${startY}%; --lane-offset-x:${offset.x}%; --lane-offset-y:${offset.y}%; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
       title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"
       aria-label="${escapeHtml(vehicle.id)}"
     >
@@ -156,6 +184,41 @@ function renderVehicle(vehicle) {
       </span>
     </span>
   `;
+}
+
+function getVehicleStartPosition(world, vehicle) {
+  const movedEvent = world.events.find((event) => event.type === 'vehicleMoved' && event.payload.vehicleId === vehicle.id);
+  if (!movedEvent) {
+    return { x: vehicle.x, y: vehicle.y };
+  }
+
+  const turnEvent = world.events.find((event) => event.type === 'vehicleTurned' && event.payload.vehicleId === vehicle.id);
+  if (turnEvent) {
+    return { x: turnEvent.payload.x, y: turnEvent.payload.y };
+  }
+
+  const backDelta = {
+    north: { x: 0, y: 1 },
+    east: { x: -1, y: 0 },
+    south: { x: 0, y: -1 },
+    west: { x: 1, y: 0 }
+  }[vehicle.direction] ?? { x: 0, y: 0 };
+
+  return {
+    x: vehicle.x + backDelta.x,
+    y: vehicle.y + backDelta.y
+  };
+}
+
+function scaleOffset(offset, scale) {
+  return {
+    x: offset.x * scale,
+    y: offset.y * scale
+  };
+}
+
+function toPercent(index, size) {
+  return ((index + 0.5) / size) * 100;
 }
 
 function directionGlyph(direction) {
@@ -195,12 +258,15 @@ function matchesDirections(actual, expected) {
   return actual.length === expected.length && expected.every((direction) => actual.includes(direction));
 }
 
-function getVehicleColor(vehicleId) {
-  const hue = hashString(vehicleId) % 360;
+function getVehicleColor(world, vehicle) {
+  const hue = hashString(`${world.simulationSeed}:${vehicle.id}`) % 360;
+  const saturation = 62 + (hashString(`${vehicle.id}:sat`) % 18);
+  const lightness = 50 + (hashString(`${vehicle.id}:light`) % 12);
+
   return {
-    fill: `hsl(${hue} 70% 58%)`,
-    shadow: `hsl(${hue} 65% 38%)`,
-    highlight: `hsl(${hue} 85% 78%)`
+    fill: `hsl(${hue} ${saturation}% ${lightness}%)`,
+    shadow: `hsl(${hue} ${Math.max(45, saturation - 12)}% ${Math.max(30, lightness - 18)}%)`,
+    highlight: `hsl(${hue} ${Math.min(95, saturation + 8)}% ${Math.min(84, lightness + 18)}%)`
   };
 }
 

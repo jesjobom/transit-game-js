@@ -141,6 +141,10 @@ button {
   font-size: 0.95rem;
 }
 
+.world-grid-shell {
+  position: relative;
+}
+
 .world-grid {
   display: grid;
   gap: 0;
@@ -151,18 +155,23 @@ button {
   overflow: hidden;
 }
 
+.vehicle-layer {
+  position: absolute;
+  inset: 12px;
+  pointer-events: none;
+}
+
 .map-cell {
   position: relative;
   aspect-ratio: 1;
-  min-height: 52px;
+  min-height: 54px;
   border: 1px solid rgba(15, 23, 42, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at center, rgba(22, 101, 52, 0.22), rgba(15, 23, 42, 0.08) 65%),
+    radial-gradient(circle at center, rgba(22, 101, 52, 0.24), rgba(15, 23, 42, 0.08) 65%),
     linear-gradient(180deg, #1f4d2c, #1b4332);
-  color: #64748b;
   overflow: hidden;
 }
 
@@ -176,23 +185,7 @@ button {
 }
 
 .map-cell--spawn {
-  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.4);
-}
-
-.map-cell--light-north-south::after,
-.map-cell--light-east-west::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.map-cell--light-north-south::after {
-  box-shadow: inset 0 3px 0 rgba(34, 197, 94, 0.95), inset 0 -3px 0 rgba(34, 197, 94, 0.95);
-}
-
-.map-cell--light-east-west::after {
-  box-shadow: inset 3px 0 0 rgba(234, 179, 8, 0.95), inset -3px 0 0 rgba(234, 179, 8, 0.95);
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.38);
 }
 
 .road-surface {
@@ -203,18 +196,24 @@ button {
 }
 
 .road-surface--horizontal {
-  inset: 18% 0;
+  inset: 20% 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 22%, transparent 78%, rgba(0, 0, 0, 0.16)),
+    #555f6e;
 }
 
 .road-surface--vertical {
-  inset: 0 18%;
+  inset: 0 20%;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 22%, transparent 78%, rgba(0, 0, 0, 0.16)),
+    #555f6e;
 }
 
 .road-surface--cross {
   inset: 0;
   background:
-    linear-gradient(90deg, transparent 0 18%, #4b5563 18% 82%, transparent 82%),
-    linear-gradient(180deg, transparent 0 18%, #4b5563 18% 82%, transparent 82%);
+    linear-gradient(90deg, transparent 0 20%, #555f6e 20% 80%, transparent 80%),
+    linear-gradient(180deg, transparent 0 20%, #555f6e 20% 80%, transparent 80%);
 }
 
 .road-surface--stub {
@@ -223,66 +222,139 @@ button {
 
 .lane-marker {
   position: absolute;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .lane-marker--horizontal {
   left: 0;
   right: 0;
   top: calc(50% - 1px);
-  border-top: 2px dashed rgba(250, 204, 21, 0.75);
+  border-top: 2px dashed rgba(250, 204, 21, 0.82);
 }
 
 .lane-marker--vertical {
   top: 0;
   bottom: 0;
   left: calc(50% - 1px);
-  border-left: 2px dashed rgba(250, 204, 21, 0.75);
+  border-left: 2px dashed rgba(250, 204, 21, 0.82);
 }
 
 .intersection-core {
   position: absolute;
-  inset: 18%;
+  inset: 20%;
   background:
-    radial-gradient(circle at center, rgba(148, 163, 184, 0.12), rgba(0, 0, 0, 0) 70%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.04));
+    radial-gradient(circle at center, rgba(148, 163, 184, 0.14), rgba(0, 0, 0, 0) 70%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.05));
 }
 
 .road-direction {
   position: absolute;
   right: 4px;
   bottom: 2px;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   letter-spacing: -0.08em;
-  color: rgba(226, 232, 240, 0.5);
+  color: rgba(226, 232, 240, 0.42);
   text-shadow: 0 1px 0 rgba(15, 23, 42, 0.9);
 }
 
 .spawn-marker {
   position: absolute;
-  inset: 6px;
-  border: 2px solid rgba(125, 211, 252, 0.55);
+  inset: 8px;
+  border: 2px solid rgba(125, 211, 252, 0.6);
   border-radius: 999px;
-  box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.8);
+  box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.82);
+}
+
+.traffic-light-cluster {
+  position: absolute;
+  inset: 0;
+}
+
+.traffic-light {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.75);
+  background: rgba(71, 85, 105, 0.85);
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.4);
+}
+
+.traffic-light--north {
+  top: 6px;
+  left: calc(50% - 4px);
+}
+
+.traffic-light--east {
+  right: 6px;
+  top: calc(50% - 4px);
+}
+
+.traffic-light--south {
+  bottom: 6px;
+  left: calc(50% - 4px);
+}
+
+.traffic-light--west {
+  left: 6px;
+  top: calc(50% - 4px);
+}
+
+.traffic-light--green {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.75);
+}
+
+.traffic-light--red {
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.55);
 }
 
 .vehicle {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: var(--vehicle-x);
+  top: var(--vehicle-y);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 18px;
-  transform: translate(calc(-50% + var(--lane-offset-x, 0%)), calc(-50% + var(--lane-offset-y, 0%))) rotate(var(--vehicle-angle, 0deg));
+  width: 28px;
+  height: 14px;
+  transform:
+    translate(
+      calc(-50% + var(--lane-offset-x, 0%)),
+      calc(-50% + var(--lane-offset-y, 0%))
+    )
+    rotate(var(--vehicle-angle, 0deg));
+  animation: vehicle-slide 240ms ease-out;
   z-index: 2;
 }
 
-.vehicle--north { --vehicle-angle: -90deg; }
-.vehicle--east { --vehicle-angle: 0deg; }
-.vehicle--south { --vehicle-angle: 90deg; }
-.vehicle--west { --vehicle-angle: 180deg; }
+.vehicle--north {
+  --vehicle-angle: -90deg;
+}
+
+.vehicle--east {
+  --vehicle-angle: 0deg;
+}
+
+.vehicle--south {
+  --vehicle-angle: 90deg;
+}
+
+.vehicle--west {
+  --vehicle-angle: 180deg;
+}
+
+@keyframes vehicle-slide {
+  from {
+    left: var(--vehicle-start-x);
+    top: var(--vehicle-start-y);
+  }
+  to {
+    left: var(--vehicle-x);
+    top: var(--vehicle-y);
+  }
+}
 
 .vehicle-svg {
   position: relative;
@@ -293,51 +365,51 @@ button {
 
 .vehicle-body {
   position: absolute;
-  inset: 2px 2px 2px 0;
-  border-radius: 999px 8px 8px 999px;
+  inset: 1px 2px 1px 0;
+  border-radius: 999px 7px 7px 999px;
   background: linear-gradient(180deg, var(--vehicle-color-light), var(--vehicle-color));
   border: 1px solid var(--vehicle-color-dark);
 }
 
 .vehicle-cabin {
   position: absolute;
-  right: 6px;
-  top: 4px;
-  width: 13px;
-  height: 10px;
-  border-radius: 5px 6px 6px 5px;
+  right: 5px;
+  top: 3px;
+  width: 10px;
+  height: 8px;
+  border-radius: 4px 5px 5px 4px;
   background: linear-gradient(180deg, rgba(226, 232, 240, 0.95), rgba(148, 163, 184, 0.85));
   border: 1px solid rgba(51, 65, 85, 0.75);
 }
 
 .vehicle-windshield {
   position: absolute;
-  right: 10px;
-  top: 5px;
-  width: 6px;
-  height: 8px;
-  border-radius: 2px 4px 4px 2px;
+  right: 8px;
+  top: 4px;
+  width: 4px;
+  height: 6px;
+  border-radius: 2px 3px 3px 2px;
   background: rgba(191, 219, 254, 0.9);
 }
 
 .vehicle-wheels {
   position: absolute;
-  width: 8px;
-  height: 3px;
+  width: 6px;
+  height: 2px;
   background: #111827;
   border-radius: 999px;
 }
 
 .vehicle-wheels--front {
-  right: 7px;
+  right: 5px;
   top: 0;
-  box-shadow: 0 15px 0 #111827;
+  box-shadow: 0 12px 0 #111827;
 }
 
 .vehicle-wheels--rear {
-  left: 6px;
+  left: 5px;
   top: 0;
-  box-shadow: 0 15px 0 #111827;
+  box-shadow: 0 12px 0 #111827;
 }
 
 .status-list {

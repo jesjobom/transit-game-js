@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 8';
-export const BUILD_TAG = 's8-lane-groundwork';
+export const APP_VERSION = 'Sprint 9';
+export const BUILD_TAG = 's9-visual-refresh';
