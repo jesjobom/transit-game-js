@@ -79,7 +79,7 @@ export function buildWorldHtml(world, options = {}) {
       if (spawnPoint) classes.push('map-cell--spawn');
       if (lightPhase) classes.push(`map-cell--light-${slugify(lightPhase)}`);
 
-      const content = road ? renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) : '';
+      const content = road ? renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) : renderLotSurface(x, y, map);
 
       cells.push(`
         <div
@@ -134,6 +134,68 @@ function renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) {
       ${lightMarkup}
     </span>
   `;
+}
+
+function renderLotSurface(x, y, map) {
+  const lotType = getLotType(x, y, map);
+
+  if (lotType === 'park') {
+    return `
+      <span class="city-lot city-lot--park">
+        <span class="park-ring"></span>
+        <span class="park-tree park-tree--a"></span>
+        <span class="park-tree park-tree--b"></span>
+        <span class="park-tree park-tree--c"></span>
+      </span>
+    `;
+  }
+
+  if (lotType === 'plaza') {
+    return `
+      <span class="city-lot city-lot--plaza">
+        <span class="plaza-tile plaza-tile--a"></span>
+        <span class="plaza-tile plaza-tile--b"></span>
+        <span class="plaza-fountain"></span>
+      </span>
+    `;
+  }
+
+  if (lotType === 'water') {
+    return `
+      <span class="city-lot city-lot--water">
+        <span class="water-wave water-wave--a"></span>
+        <span class="water-wave water-wave--b"></span>
+      </span>
+    `;
+  }
+
+  const skylineLevel = ((x * 7) + (y * 11) + map.width) % 3;
+  return `
+    <span class="city-lot city-lot--building city-lot--building-${skylineLevel}">
+      <span class="building-mass"></span>
+      <span class="building-roof"></span>
+      <span class="building-windows"></span>
+    </span>
+  `;
+}
+
+function getLotType(x, y, map) {
+  const signature = (x * 31 + y * 17 + map.width * 13 + map.height) % 10;
+  const nearCenter = Math.abs(x - Math.floor(map.width / 2)) <= 1 && Math.abs(y - Math.floor(map.height / 2)) <= 1;
+
+  if (nearCenter && signature % 3 === 0) {
+    return 'plaza';
+  }
+
+  if ((x <= 1 && y >= map.height - 3) || signature === 2) {
+    return 'park';
+  }
+
+  if ((x >= map.width - 2 && y <= 2) || signature === 7) {
+    return 'water';
+  }
+
+  return 'building';
 }
 
 function renderLaneMarkers(roadType) {

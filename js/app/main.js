@@ -62,10 +62,12 @@ function boot() {
     onSpeedChange(nextSpeedMultiplier) {
       speedMultiplier = nextSpeedMultiplier;
       tickAccumulatorMs = Math.min(tickAccumulatorMs, getTickIntervalMs());
+      appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
       render();
     }
   });
 
+  appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
   render();
   startLoop();
 

@@ -49,6 +49,7 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   assert.match(html, /map-cell--road/);
   assert.match(html, /map-cell--intersection/);
   assert.match(html, /road-surface--vertical/);
+  assert.match(html, /city-lot--(?:building|park|plaza|water)/);
   assert.match(html, /traffic-light-cluster/);
   assert.match(html, /traffic-light-cluster--east-west/);
   assert.match(html, /traffic-light-housing--vertical/);

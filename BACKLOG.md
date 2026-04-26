@@ -156,12 +156,12 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [x] Renderizar veículos em posições reais do grid
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
 - [x] Expandir o mapa bootstrap com quadras maiores e layout menos simétrico
-- [~] Melhorar o estilo visual do grid/ruas/cruzamentos
+- [~] Melhorar o estilo visual do grid/ruas/cruzamentos (mapa agora inclui lotes urbanos decorativos como prédios/parques/praça/água; ainda falta polimento fino e hierarquia visual mais rica)
 - [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster + eixo ativo mais óbvio já aplicados; ainda falta polimento fino/mais informação)
 - [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + movimento contínuo/curva ancorada na interseção já aplicados; ainda falta polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
-- [~] Melhorar layout dos controles/configurações (controle de velocidade e resumo movido para baixo do mapa já aplicados; ainda falta mais organização)
+- [~] Melhorar layout dos controles/configurações (controle de velocidade agora usa slider com leitura instantânea e resumo abaixo do mapa; ainda falta mais organização)
 - [x] Exibir informação de versão na UI para ajudar a detectar cache antigo
 - [x] Permitir play/pause, reset e avanço manual de 1 tick na UI
 - [x] Fazer veículos tomarem decisões básicas em interseções

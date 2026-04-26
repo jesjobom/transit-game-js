@@ -105,17 +105,34 @@ button {
   margin: 14px 0 18px;
 }
 
+.control-field__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
 .control-field label {
   font-size: 0.92rem;
   color: #cbd5e1;
 }
 
-.control-field select {
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  background: rgba(15, 23, 42, 0.92);
-  color: #e2e8f0;
-  border-radius: 10px;
-  padding: 10px 12px;
+.control-value {
+  color: #7dd3fc;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.control-field input[type="range"] {
+  width: 100%;
+  accent-color: #38bdf8;
+}
+
+.control-scale {
+  display: flex;
+  justify-content: space-between;
+  color: #94a3b8;
+  font-size: 0.76rem;
 }
 
 .control-buttons {
@@ -190,8 +207,8 @@ button {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at center, rgba(22, 101, 52, 0.24), rgba(15, 23, 42, 0.08) 65%),
-    linear-gradient(180deg, #1f4d2c, #1b4332);
+    radial-gradient(circle at center, rgba(34, 197, 94, 0.14), rgba(15, 23, 42, 0.04) 68%),
+    linear-gradient(180deg, #244b33, #1a3527);
   overflow: hidden;
 }
 
@@ -239,6 +256,113 @@ button {
 .road-surface--stub {
   inset: 12%;
 }
+
+.city-lot {
+  position: absolute;
+  inset: 0;
+}
+
+.city-lot--building {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.18), rgba(15, 23, 42, 0));
+}
+
+.building-mass {
+  position: absolute;
+  inset: 18% 16% 12%;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, #64748b, #334155);
+  box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.08);
+}
+
+.building-roof {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: 14%;
+  height: 10%;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.7);
+}
+
+.building-windows {
+  position: absolute;
+  inset: 24% 22% 18%;
+  background:
+    radial-gradient(circle, rgba(251, 191, 36, 0.55) 0 1px, transparent 2px) 0 0 / 10px 10px,
+    radial-gradient(circle, rgba(191, 219, 254, 0.3) 0 1px, transparent 2px) 5px 5px / 10px 10px;
+  opacity: 0.7;
+}
+
+.city-lot--building-1 .building-mass {
+  inset: 12% 22% 10%;
+}
+
+.city-lot--building-2 .building-mass {
+  inset: 22% 10% 10%;
+}
+
+.city-lot--park {
+  background: radial-gradient(circle at center, rgba(74, 222, 128, 0.22), rgba(0, 0, 0, 0) 72%);
+}
+
+.park-ring {
+  position: absolute;
+  inset: 18%;
+  border-radius: 999px;
+  border: 2px solid rgba(187, 247, 208, 0.4);
+}
+
+.park-tree {
+  position: absolute;
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, #bbf7d0, #15803d 72%);
+  box-shadow: 0 0 0 3px rgba(20, 83, 45, 0.28);
+}
+
+.park-tree--a { left: 20%; top: 26%; }
+.park-tree--b { right: 18%; top: 34%; }
+.park-tree--c { left: 40%; bottom: 18%; }
+
+.city-lot--plaza {
+  background: linear-gradient(180deg, rgba(226, 232, 240, 0.1), rgba(148, 163, 184, 0.04));
+}
+
+.plaza-tile {
+  position: absolute;
+  inset: 18%;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.14);
+}
+
+.plaza-tile--b {
+  inset: 28%;
+}
+
+.plaza-fountain {
+  position: absolute;
+  inset: 36%;
+  border-radius: 999px;
+  background: radial-gradient(circle at center, #7dd3fc, #1d4ed8 68%);
+  box-shadow: 0 0 0 4px rgba(125, 211, 252, 0.18);
+}
+
+.city-lot--water {
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.4), rgba(30, 64, 175, 0.48));
+}
+
+.water-wave {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  height: 12%;
+  border-top: 2px solid rgba(186, 230, 253, 0.6);
+  border-radius: 999px;
+}
+
+.water-wave--a { top: 34%; }
+.water-wave--b { top: 56%; }
 
 .lane-marker {
   position: absolute;

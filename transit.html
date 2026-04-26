@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s19-speed-control-bigger-map" />
+    <link rel="stylesheet" href="css/app.css?v=s20-map-polish-speed-slider" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,22 +13,24 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 19</div>
+        <div class="version-badge">Sprint 20</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: speed control, a larger less-symmetric city map, and cleaner simulation layout.</p>
+          <p>Current focus: richer city-map presentation and smoother simulation-speed control.</p>
           <div class="control-field">
-            <label for="control-speed">Simulation speed</label>
-            <select id="control-speed">
-              <option value="0.5">0.5×</option>
-              <option value="0.75" selected>0.75×</option>
-              <option value="1">1.0×</option>
-              <option value="1.5">1.5×</option>
-              <option value="2">2.0×</option>
-            </select>
+            <div class="control-field__header">
+              <label for="control-speed">Simulation speed</label>
+              <span id="control-speed-value" class="control-value">0.75×</span>
+            </div>
+            <input id="control-speed" type="range" min="0.5" max="2" step="0.25" value="0.75" />
+            <div class="control-scale">
+              <span>0.5×</span>
+              <span>1.0×</span>
+              <span>2.0×</span>
+            </div>
           </div>
           <div class="control-buttons">
             <button id="control-play-pause" type="button">Pause</button>
@@ -75,6 +77,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s19-speed-control-bigger-map"></script>
+    <script type="module" src="js/app/main.js?v=s20-map-polish-speed-slider"></script>
   </body>
 </html>

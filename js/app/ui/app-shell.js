@@ -13,7 +13,13 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindButton('control-play-pause', onPlayPause);
       bindButton('control-step', onStep);
       bindButton('control-reset', onReset);
-      bindSelect('control-speed', onSpeedChange);
+      bindSpeedControl('control-speed', onSpeedChange);
+    },
+    setSpeedState(speedMultiplier, tickIntervalMs) {
+      const speedValue = document.getElementById('control-speed-value');
+      if (speedValue) {
+        speedValue.textContent = `${formatSpeedMultiplier(speedMultiplier)}× · ${tickIntervalMs}ms/tick`;
+      }
     },
     setRunningState(isRunning) {
       const playPauseButton = document.getElementById('control-play-pause');
@@ -55,13 +61,13 @@ function bindButton(id, handler) {
   element.onclick = handler;
 }
 
-function bindSelect(id, handler) {
+function bindSpeedControl(id, handler) {
   const element = document.getElementById(id);
   if (!element || typeof handler !== 'function') {
     return;
   }
 
-  element.onchange = () => {
+  const emitValue = () => {
     const nextValue = Number(element.value);
     if (!Number.isFinite(nextValue) || nextValue <= 0) {
       return;
@@ -70,10 +76,13 @@ function bindSelect(id, handler) {
     handler(nextValue);
   };
 
-  const initialValue = Number(element.value);
-  if (Number.isFinite(initialValue) && initialValue > 0) {
-    handler(initialValue);
-  }
+  element.oninput = emitValue;
+  element.onchange = emitValue;
+  emitValue();
+}
+
+function formatSpeedMultiplier(value) {
+  return Number(value).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
 }
 
 function setVersion(value) {
