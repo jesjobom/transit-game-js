@@ -99,9 +99,6 @@ export function buildWorldHtml(world, options = {}) {
 
   return `
     <div class="world-view">
-      <div class="world-summary">
-        ${summary.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}
-      </div>
       <div class="world-grid-shell" style="--vehicle-animation-duration:${animationDurationMs}ms;">
         <div
           class="world-grid"
@@ -112,6 +109,9 @@ export function buildWorldHtml(world, options = {}) {
         <div class="vehicle-layer" style="--grid-width:${map.width}; --grid-height:${map.height};">
           ${vehicles.join('')}
         </div>
+      </div>
+      <div class="world-summary">
+        ${summary.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}
       </div>
     </div>
   `;

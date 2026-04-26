@@ -72,16 +72,16 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
 test('buildWorldHtml renders turning vehicles with start/end angle and lane offsets', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-turn', x: 4, y: 3, direction: 'east', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-turn', x: 7, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }
     ]
   });
 
   world.events = [
-    { type: 'vehicleTurned', tick: 1, payload: { vehicleId: 'vehicle-turn', from: 'north', to: 'east', x: 4, y: 2 } },
-    { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-turn', x: 4, y: 3, direction: 'east', laneKey: 'lane-east' } }
+    { type: 'vehicleTurned', tick: 1, payload: { vehicleId: 'vehicle-turn', from: 'north', to: 'east', x: 6, y: 2 } },
+    { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-turn', x: 7, y: 2, direction: 'east', laneKey: 'lane-east' } }
   ];
 
-  const html = buildWorldHtml(world, { animationDurationMs: 320, motionProgress: 0.5, previousWorld: createWorldState({ vehicles: [{ id: 'vehicle-turn', x: 4, y: 2, direction: 'north', status: 'active', spawnedAtTick: 0 }] }) });
+  const html = buildWorldHtml(world, { animationDurationMs: 320, motionProgress: 0.5, previousWorld: createWorldState({ vehicles: [{ id: 'vehicle-turn', x: 6, y: 2, direction: 'north', status: 'active', spawnedAtTick: 0 }] }) });
 
   assert.match(html, /vehicle--turning/);
   assert.match(html, /data-motion-kind="turn"/);
@@ -93,16 +93,16 @@ test('buildWorldHtml renders turning vehicles with start/end angle and lane offs
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
   const world = createWorldState({
     vehicles: [
-      { id: 'vehicle-drift-fix', x: 4, y: 3, direction: 'north', status: 'active', spawnedAtTick: 0 }
+      { id: 'vehicle-drift-fix', x: 6, y: 4, direction: 'north', status: 'active', spawnedAtTick: 0 }
     ]
   });
 
   world.events = [
-    { type: 'vehicleTurned', tick: 1, payload: { vehicleId: 'vehicle-drift-fix', from: 'west', to: 'north', x: 5, y: 3 } },
-    { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-drift-fix', x: 4, y: 3, direction: 'north', laneKey: 'lane-north' } }
+    { type: 'vehicleTurned', tick: 1, payload: { vehicleId: 'vehicle-drift-fix', from: 'west', to: 'north', x: 6, y: 5 } },
+    { type: 'vehicleMoved', tick: 1, payload: { vehicleId: 'vehicle-drift-fix', x: 6, y: 4, direction: 'north', laneKey: 'lane-north' } }
   ];
 
-  const html = buildWorldHtml(world, { animationDurationMs: 320, motionProgress: 0.5, previousWorld: createWorldState({ vehicles: [{ id: 'vehicle-drift-fix', x: 5, y: 3, direction: 'west', status: 'active', spawnedAtTick: 0 }] }) });
+  const html = buildWorldHtml(world, { animationDurationMs: 320, motionProgress: 0.5, previousWorld: createWorldState({ vehicles: [{ id: 'vehicle-drift-fix', x: 6, y: 5, direction: 'west', status: 'active', spawnedAtTick: 0 }] }) });
 
   assert.match(html, /vehicle--turning/);
   assert.match(html, /data-motion-kind="turn"/);

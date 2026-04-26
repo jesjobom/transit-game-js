@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s18-intersection-turn-geometry" />
+    <link rel="stylesheet" href="css/app.css?v=s19-speed-control-bigger-map" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,23 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 18</div>
+        <div class="version-badge">Sprint 19</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: turn geometry anchored to intersection cells, plus continuous vehicle motion and smoother approach before stops.</p>
+          <p>Current focus: speed control, a larger less-symmetric city map, and cleaner simulation layout.</p>
+          <div class="control-field">
+            <label for="control-speed">Simulation speed</label>
+            <select id="control-speed">
+              <option value="0.5">0.5×</option>
+              <option value="0.75" selected>0.75×</option>
+              <option value="1">1.0×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2.0×</option>
+            </select>
+          </div>
           <div class="control-buttons">
             <button id="control-play-pause" type="button">Pause</button>
             <button id="control-step" type="button">+1 Tick</button>
@@ -65,6 +75,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s18-intersection-turn-geometry"></script>
+    <script type="module" src="js/app/main.js?v=s19-speed-control-bigger-map"></script>
   </body>
 </html>

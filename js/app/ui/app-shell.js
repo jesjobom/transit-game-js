@@ -9,10 +9,11 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
     engine,
     renderer,
     benchmark,
-    bindControls({ onPlayPause, onStep, onReset } = {}) {
+    bindControls({ onPlayPause, onStep, onReset, onSpeedChange } = {}) {
       bindButton('control-play-pause', onPlayPause);
       bindButton('control-step', onStep);
       bindButton('control-reset', onReset);
+      bindSelect('control-speed', onSpeedChange);
     },
     setRunningState(isRunning) {
       const playPauseButton = document.getElementById('control-play-pause');
@@ -52,6 +53,27 @@ function bindButton(id, handler) {
   }
 
   element.onclick = handler;
+}
+
+function bindSelect(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  element.onchange = () => {
+    const nextValue = Number(element.value);
+    if (!Number.isFinite(nextValue) || nextValue <= 0) {
+      return;
+    }
+
+    handler(nextValue);
+  };
+
+  const initialValue = Number(element.value);
+  if (Number.isFinite(initialValue) && initialValue > 0) {
+    handler(initialValue);
+  }
 }
 
 function setVersion(value) {

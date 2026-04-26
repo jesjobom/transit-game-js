@@ -7,6 +7,7 @@ function createElement(id) {
   return {
     id,
     textContent: '',
+    value: '',
     classList: {
       values: new Set(),
       add(value) {
@@ -16,11 +17,12 @@ function createElement(id) {
     dataset: {},
     disabled: false,
     onclick: null,
+    onchange: null,
     innerHTML: ''
   };
 }
 
-test('createAppShell binds step control and disables it while running', () => {
+test('createAppShell binds step control, speed control, and disables step while running', () => {
   const elements = new Map([
     ['status-app', createElement('status-app')],
     ['status-renderer', createElement('status-renderer')],
@@ -29,6 +31,7 @@ test('createAppShell binds step control and disables it while running', () => {
     ['control-play-pause', createElement('control-play-pause')],
     ['control-step', createElement('control-step')],
     ['control-reset', createElement('control-reset')],
+    ['control-speed', Object.assign(createElement('control-speed'), { value: '0.75' })],
     ['live-metrics', createElement('live-metrics')],
     ['light-summary', createElement('light-summary')],
     ['event-summary', createElement('event-summary')]
@@ -43,6 +46,7 @@ test('createAppShell binds step control and disables it while running', () => {
 
   try {
     let stepCalls = 0;
+    const speedCalls = [];
     const appShell = createAppShell({
       world: {},
       engine: { status: 'ready' },
@@ -56,11 +60,19 @@ test('createAppShell binds step control and disables it while running', () => {
       onStep() {
         stepCalls += 1;
       },
-      onReset() {}
+      onReset() {},
+      onSpeedChange(nextSpeed) {
+        speedCalls.push(nextSpeed);
+      }
     });
 
     elements.get('control-step').onclick();
     assert.equal(stepCalls, 1);
+    assert.deepEqual(speedCalls, [0.75]);
+
+    elements.get('control-speed').value = '1.5';
+    elements.get('control-speed').onchange();
+    assert.deepEqual(speedCalls, [0.75, 1.5]);
 
     appShell.setRunningState(true);
     assert.equal(elements.get('control-play-pause').textContent, 'Pause');

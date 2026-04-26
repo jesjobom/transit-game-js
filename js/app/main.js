@@ -11,8 +11,10 @@ import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
 import { createWorldState } from '../core/world.js';
 
-const TICK_INTERVAL_MS = 350;
-const ANIMATION_DURATION_MS = 320;
+const BASE_TICK_INTERVAL_MS = 420;
+const DEFAULT_SPEED_MULTIPLIER = 0.75;
+const MIN_ANIMATION_DURATION_MS = 180;
+const MAX_ANIMATION_DURATION_MS = 420;
 
 function boot() {
   let state = createSimulationState();
@@ -31,6 +33,7 @@ function boot() {
   let isRunning = false;
   let lastFrameAt = 0;
   let tickAccumulatorMs = 0;
+  let speedMultiplier = DEFAULT_SPEED_MULTIPLIER;
 
   appShell.bindControls({
     onPlayPause() {
@@ -52,8 +55,14 @@ function boot() {
     onReset() {
       stopLoop();
       state = createSimulationState();
+      previousWorld = snapshotRenderableWorld(state.world);
       render();
       startLoop();
+    },
+    onSpeedChange(nextSpeedMultiplier) {
+      speedMultiplier = nextSpeedMultiplier;
+      tickAccumulatorMs = Math.min(tickAccumulatorMs, getTickIntervalMs());
+      render();
     }
   });
 
@@ -90,10 +99,10 @@ function boot() {
     lastFrameAt = frameAt;
     tickAccumulatorMs += deltaMs;
 
-    while (tickAccumulatorMs >= TICK_INTERVAL_MS && state.world.status !== 'completed') {
+    while (tickAccumulatorMs >= getTickIntervalMs() && state.world.status !== 'completed') {
       previousWorld = snapshotRenderableWorld(state.world);
       state.engine.tick();
-      tickAccumulatorMs -= TICK_INTERVAL_MS;
+      tickAccumulatorMs -= getTickIntervalMs();
     }
 
     render();
@@ -118,13 +127,14 @@ function boot() {
 
   function render() {
     const report = state.engine.getReport();
-    const motionProgress = isRunning ? Math.min(1, tickAccumulatorMs / TICK_INTERVAL_MS) : 1;
+    const tickIntervalMs = getTickIntervalMs();
+    const motionProgress = isRunning ? Math.min(1, tickAccumulatorMs / tickIntervalMs) : 1;
     renderer.renderWorld(state.world, {
       summaryLines: buildSimulationSummary(state.world, benchmark.summarize(report)),
-      animationDurationMs: ANIMATION_DURATION_MS,
+      animationDurationMs: getAnimationDurationMs(tickIntervalMs),
       previousWorld,
       motionProgress,
-      tickIntervalMs: TICK_INTERVAL_MS,
+      tickIntervalMs,
       isRunning
     });
     appShell.renderDiagnostics({
@@ -132,6 +142,14 @@ function boot() {
       lights: buildLightPhaseSummary(state.world),
       events: buildRecentEventSummary(state.world)
     });
+  }
+
+  function getTickIntervalMs() {
+    return Math.round(BASE_TICK_INTERVAL_MS / speedMultiplier);
+  }
+
+  function getAnimationDurationMs(tickIntervalMs) {
+    return Math.max(MIN_ANIMATION_DURATION_MS, Math.min(MAX_ANIMATION_DURATION_MS, Math.round(tickIntervalMs * 0.88)));
   }
 }
 

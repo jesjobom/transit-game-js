@@ -146,7 +146,7 @@ Permitir ativar/desativar regras opcionais e comparar o impacto delas com benchm
 Melhorar bastante a percepção de qualidade sem tentar resolver todo o polimento de uma vez.
 
 - [~] Implementar movimento suave entre células com interpolação visual (render contínuo frame-a-frame + aproximação suave antes de parada + curva ancorada na geometria da interseção já aplicados; ainda falta aprofundar a sensação de trajetória)
-- [~] Separar tick lógico da taxa de atualização visual
+- [~] Separar tick lógico da taxa de atualização visual (scheduler visual separado + controle de velocidade da simulação já aplicados; ainda falta polimento fino de pacing)
 - [~] Implementar aceleração e desaceleração mais graduais (aproximação suave para parada iminente já aplicada; ainda falta modelagem mais rica de velocidade)
 - [x] Melhorar posicionamento visual por faixa/direção
 - [x] Introduzir sentido explícito nas vias do mapa bootstrap para evitar tráfego frontal em segmentos de célula única
@@ -155,12 +155,13 @@ Melhorar bastante a percepção de qualidade sem tentar resolver todo o poliment
 - [x] Renderizar o mapa em tela, mesmo em visual cru
 - [x] Renderizar veículos em posições reais do grid
 - [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
+- [x] Expandir o mapa bootstrap com quadras maiores e layout menos simétrico
 - [~] Melhorar o estilo visual do grid/ruas/cruzamentos
 - [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster + eixo ativo mais óbvio já aplicados; ainda falta polimento fino/mais informação)
 - [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + movimento contínuo/curva ancorada na interseção já aplicados; ainda falta polimento fino)
 - [x] Criar painel lateral ou superior com métricas em tempo real
 - [ ] Exibir claramente quais regras opcionais estão ativas
-- [~] Melhorar layout dos controles/configurações
+- [~] Melhorar layout dos controles/configurações (controle de velocidade e resumo movido para baixo do mapa já aplicados; ainda falta mais organização)
 - [x] Exibir informação de versão na UI para ajudar a detectar cache antigo
 - [x] Permitir play/pause, reset e avanço manual de 1 tick na UI
 - [x] Fazer veículos tomarem decisões básicas em interseções
