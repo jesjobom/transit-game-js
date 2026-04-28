@@ -30,10 +30,16 @@ export function buildBenchmarkMetrics(world) {
   const movedVehicles = world.metrics.movedVehicles;
   const activeVehicles = world.entities.vehicles.length;
   const completedTripTicks = world.metrics.completedTripTicks;
+  const participantVehicles = Math.max(spawnedVehicles, completedTrips + activeVehicles, 1);
   const avgCompletionTicks = completedTrips > 0 ? completedTripTicks / completedTrips : 0;
   const throughputPerTick = ticksSimulated > 0 ? completedTrips / ticksSimulated : 0;
   const blockedMoveRate = ticksSimulated > 0 ? blockedMoves / ticksSimulated : 0;
   const completionRate = spawnedVehicles > 0 ? completedTrips / spawnedVehicles : 0;
+  const avgStoppedTicks = world.metrics.stoppedTicksTotal / participantVehicles;
+  const avgQueueLength = ticksSimulated > 0 ? world.metrics.queueLengthAccumulated / ticksSimulated : 0;
+  const avgRoadOccupancy = ticksSimulated > 0 ? world.metrics.roadOccupancyAccumulated / ticksSimulated : 0;
+  const avgEffectiveSpeed = movedVehicles / participantVehicles;
+  const tripTimeVariance = calculateVariance(world.metrics.completedTripDurations);
 
   return {
     completedTrips,
@@ -48,6 +54,23 @@ export function buildBenchmarkMetrics(world) {
     avgCompletionTicks,
     throughputPerTick,
     blockedMoveRate,
-    completionRate
+    completionRate,
+    avgStoppedTicks,
+    avgQueueLength,
+    avgRoadOccupancy,
+    avgEffectiveSpeed,
+    tripTimeVariance,
+    throughputByIntersection: {
+      ...world.metrics.intersectionThroughputByKey
+    }
   };
+}
+
+function calculateVariance(values = []) {
+  if (!Array.isArray(values) || values.length === 0) {
+    return 0;
+  }
+
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return values.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / values.length;
 }

@@ -354,3 +354,55 @@ test('engine prevents entering an intersection when the exit lane is blocked and
     { x: 1, y: 0 }
   );
 });
+
+
+test('engine detects deadlocks after repeated fully blocked ticks', () => {
+  const world = createWorldState({
+    mapMode: 'custom',
+    map: {
+      id: 'deadlock-test',
+      width: 2,
+      height: 1,
+      roads: [
+        { x: 0, y: 0, allowedDirections: ['east'] },
+        { x: 1, y: 0, allowedDirections: ['east'] }
+      ],
+      intersections: [{ x: 1, y: 0, lightId: 'deadlock-light' }],
+      spawnPoints: []
+    },
+    lights: [
+      {
+        id: 'deadlock-light',
+        phaseIndex: 0,
+        remainingTicks: 10,
+        phases: [
+          { name: 'north-south', durationTicks: 10, allowedDirections: ['north', 'south'] }
+        ]
+      }
+    ],
+    vehicles: [
+      { id: 'stuck', x: 0, y: 0, direction: 'east', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+  engine.tick();
+  engine.tick();
+
+  assert.equal(world.metrics.deadlocks, 1);
+  assert.ok(world.events.some((event) => event.type === 'deadlockDetected'));
+});
+
+test('engine records intersection throughput for metrics when vehicles enter intersections', () => {
+  const world = createWorldState({
+    vehicles: [
+      { id: 'vehicle-1', x: 5, y: 5, direction: 'east', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  assert.equal(world.metrics.intersectionThroughputByKey['6,5'], 1);
+});

@@ -21,7 +21,12 @@ test('createWorldState builds the Sprint 8 structure with defaults', () => {
   assert.equal(world.metrics.ticksSimulated, 0);
   assert.equal(world.metrics.movedVehicles, 0);
   assert.equal(world.metrics.completedTripTicks, 0);
+  assert.deepEqual(world.metrics.completedTripDurations, []);
   assert.equal(world.metrics.turnsTaken, 0);
+  assert.equal(world.metrics.stoppedTicksTotal, 0);
+  assert.equal(world.metrics.queueLengthAccumulated, 0);
+  assert.equal(world.metrics.roadOccupancyAccumulated, 0);
+  assert.deepEqual(world.metrics.intersectionThroughputByKey, {});
   assert.equal(world.events[0].type, 'mapGenerated');
 });
 

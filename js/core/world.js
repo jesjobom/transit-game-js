@@ -73,7 +73,14 @@ export function createWorldState(options = {}) {
       movedVehicles: 0,
       blockedMoves: 0,
       completedTripTicks: 0,
-      turnsTaken: 0
+      completedTripDurations: [],
+      turnsTaken: 0,
+      stoppedTicksTotal: 0,
+      queueLengthAccumulated: 0,
+      roadOccupancyAccumulated: 0,
+      intersectionThroughputByKey: {},
+      deadlockStreak: 0,
+      inDeadlock: false
     },
     report: null,
     events: []

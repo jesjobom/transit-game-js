@@ -227,16 +227,16 @@ O projeto já carrega `mapSeed`, mas o mapa atual continua sendo um bootstrap fi
 Criar detecção explícita de travamentos da malha, em vez de só manter o contador disponível no modelo.
 
 **Inclui**
-- [ ] definição objetiva do que conta como deadlock
-- [ ] incremento real da métrica de deadlock
-- [ ] distinção entre fila normal e travamento estrutural
-- [ ] impacto claro no score/relatório
+- [x] definição objetiva do que conta como deadlock
+- [x] incremento real da métrica de deadlock
+- [x] distinção entre fila normal e travamento estrutural
+- [x] impacto claro no score/relatório
 
 **Por que importa**
 Sem isso, o benchmark ainda pode parecer saudável mesmo quando a rede entrou num estado ruim.
 
-**Verificação de pendência**
-`world.metrics.deadlocks` existe, mas não há evidência de detecção real na engine atual.
+**Status após Sprint 24**
+Concluído no estado atual: a engine detecta travamento após múltiplos ticks totalmente bloqueados, registra eventos de deadlock e projeta isso no score/relatório.
 
 ---
 
@@ -247,19 +247,19 @@ Sem isso, o benchmark ainda pode parecer saudável mesmo quando a rede entrou nu
 Fechar as métricas mais importantes para analisar eficiência e fluidez com mais confiança.
 
 **Inclui**
-- [ ] tempo médio parado
-- [ ] velocidade média efetiva
-- [ ] throughput por cruzamento
-- [ ] tamanho médio de fila
-- [ ] ocupação média das vias
-- [ ] variância do tempo de viagem
+- [x] tempo médio parado
+- [x] velocidade média efetiva
+- [x] throughput por cruzamento
+- [x] tamanho médio de fila
+- [x] ocupação média das vias
+- [x] variância do tempo de viagem
 - [ ] fairness entre direções/fluxos
 
 **Por que importa**
 Hoje já existe uma base boa, mas ainda faltam métricas que ajudam a distinguir “parece rápido” de “está realmente eficiente”.
 
-**Verificação de pendência**
-O benchmark atual já calcula `completedTrips`, `blockedMoves`, `avgCompletionTicks`, `throughputPerTick` e derivados, mas ainda não expõe as métricas acima.
+**Status após Sprint 24**
+Parcialmente concluído no estado atual: o benchmark agora expõe tempo médio parado, velocidade efetiva média, throughput por cruzamento, fila média, ocupação média e variância de viagem. Fairness entre direções ainda fica pendente.
 
 ---
 

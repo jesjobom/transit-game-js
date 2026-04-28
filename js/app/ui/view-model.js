@@ -31,9 +31,13 @@ export function buildLiveMetrics(world, report = null) {
     { label: 'Blocked', value: String(world.metrics.blockedMoves) },
     { label: 'Completed', value: String(world.metrics.completedTrips) },
     { label: 'Turns', value: String(world.metrics.turnsTaken) },
+    { label: 'Deadlocks', value: String(world.metrics.deadlocks) },
     { label: 'Mode', value: world.config.benchmark.mode },
     { label: 'Throughput/tick', value: formatDecimal(metrics.throughputPerTick) },
     { label: 'Avg trip ticks', value: formatDecimal(metrics.avgCompletionTicks) },
+    { label: 'Avg stopped', value: formatDecimal(metrics.avgStoppedTicks) },
+    { label: 'Avg queue', value: formatDecimal(metrics.avgQueueLength) },
+    { label: 'Occupancy', value: formatDecimal(metrics.avgRoadOccupancy) },
     { label: 'Score', value: report ? String(report.score.total) : '—' }
   ];
 }

@@ -40,14 +40,17 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   world.metrics.turnsTaken = 5;
   world.entities.vehicles = [{ id: 'v1' }, { id: 'v2' }];
 
+  world.metrics.deadlocks = 1;
+
   const metrics = buildLiveMetrics(world, {
-    metrics: { throughputPerTick: 0.25, avgCompletionTicks: 4.5 },
+    metrics: { throughputPerTick: 0.25, avgCompletionTicks: 4.5, avgStoppedTicks: 1.25, avgQueueLength: 0.75, avgRoadOccupancy: 0.4 },
     score: { total: 185 }
   });
 
   assert.deepEqual(metrics[0], { label: 'Tick', value: '9' });
   assert.ok(metrics.some((entry) => entry.label === 'Active' && entry.value === '2'));
   assert.ok(metrics.some((entry) => entry.label === 'Blocked' && entry.value === '3'));
+  assert.ok(metrics.some((entry) => entry.label === 'Deadlocks' && entry.value === '1'));
   assert.ok(metrics.some((entry) => entry.label === 'Mode' && entry.value === 'sandbox'));
   assert.ok(metrics.some((entry) => entry.label === 'Throughput/tick' && entry.value === '0.25'));
   assert.ok(metrics.some((entry) => entry.label === 'Score' && entry.value === '185'));

@@ -14,6 +14,8 @@ import {
 } from './map.js';
 import { addWorldEvent, createVehicleColor, nextRandomFloat, syncWorldRngState } from './world.js';
 
+const DEADLOCK_THRESHOLD_TICKS = 3;
+
 export function createEngine(world) {
   return {
     status: 'ready',
@@ -25,8 +27,9 @@ export function createEngine(world) {
       world.events = [];
 
       advanceTrafficLights(world);
-      moveVehicles(world);
+      const tickStats = moveVehicles(world);
       maybeSpawnVehicle(world);
+      updateDerivedTickMetrics(world, tickStats);
 
       if (shouldFinalizeBenchmark(world)) {
         world.report = finalizeBenchmark(world);
@@ -123,6 +126,10 @@ function maybeSpawnVehicle(world) {
 
 function moveVehicles(world) {
   const survivors = [];
+  const stats = {
+    movedCount: 0,
+    blockedCount: 0
+  };
 
   for (const vehicle of world.entities.vehicles) {
     const nextPosition = getNextPosition(vehicle, vehicle.direction);
@@ -132,8 +139,10 @@ function moveVehicles(world) {
     const nextStepPosition = getNextPosition(vehicle, vehicle.direction);
 
     if (!isInsideMap(world.map, nextStepPosition.x, nextStepPosition.y) || !getCell(world.map, nextStepPosition.x, nextStepPosition.y)) {
+      const tripDuration = world.tick - vehicle.spawnedAtTick;
       world.metrics.completedTrips += 1;
-      world.metrics.completedTripTicks += world.tick - vehicle.spawnedAtTick;
+      world.metrics.completedTripTicks += tripDuration;
+      world.metrics.completedTripDurations.push(tripDuration);
       addWorldEvent(world, 'vehicleExited', {
         vehicleId: vehicle.id,
         x: vehicle.x,
@@ -146,7 +155,9 @@ function moveVehicles(world) {
 
     const block = getVehicleBlock(world, vehicle, nextStepPosition);
     if (block) {
+      stats.blockedCount += 1;
       world.metrics.blockedMoves += 1;
+      world.metrics.stoppedTicksTotal += 1;
       addWorldEvent(world, 'vehicleBlocked', {
         vehicleId: vehicle.id,
         x: vehicle.x,
@@ -169,7 +180,9 @@ function moveVehicles(world) {
 
     vehicle.x = nextStepPosition.x;
     vehicle.y = nextStepPosition.y;
+    stats.movedCount += 1;
     world.metrics.movedVehicles += 1;
+    recordIntersectionThroughput(world, nextStepPosition);
     addWorldEvent(world, 'vehicleMoved', {
       vehicleId: vehicle.id,
       x: vehicle.x,
@@ -181,6 +194,48 @@ function moveVehicles(world) {
   }
 
   world.entities.vehicles = survivors;
+  return stats;
+}
+
+function updateDerivedTickMetrics(world, stats) {
+  const activeVehicles = world.entities.vehicles.length;
+  world.metrics.queueLengthAccumulated += stats.blockedCount;
+  world.metrics.roadOccupancyAccumulated += world.map.roads.length > 0 ? activeVehicles / world.map.roads.length : 0;
+
+  if (activeVehicles > 0 && stats.movedCount === 0 && stats.blockedCount > 0) {
+    world.metrics.deadlockStreak += 1;
+
+    if (world.metrics.deadlockStreak >= DEADLOCK_THRESHOLD_TICKS && !world.metrics.inDeadlock) {
+      world.metrics.deadlocks += 1;
+      world.metrics.inDeadlock = true;
+      addWorldEvent(world, 'deadlockDetected', {
+        streak: world.metrics.deadlockStreak,
+        activeVehicles,
+        blockedVehicles: stats.blockedCount
+      });
+    }
+    return;
+  }
+
+  if (world.metrics.inDeadlock && stats.movedCount > 0) {
+    addWorldEvent(world, 'deadlockResolved', {
+      streak: world.metrics.deadlockStreak,
+      movedVehicles: stats.movedCount
+    });
+  }
+
+  world.metrics.deadlockStreak = 0;
+  world.metrics.inDeadlock = false;
+}
+
+function recordIntersectionThroughput(world, position) {
+  const intersection = getIntersection(world.map, position.x, position.y);
+  if (!intersection) {
+    return;
+  }
+
+  const key = toPositionKey(position.x, position.y);
+  world.metrics.intersectionThroughputByKey[key] = (world.metrics.intersectionThroughputByKey[key] ?? 0) + 1;
 }
 
 function maybeChooseVehicleDirection(world, vehicle) {
