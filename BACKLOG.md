@@ -164,17 +164,17 @@ Há relatório final de benchmark em memória, mas não existe persistência, li
 Transformar o mapa/configuração atuais em um sistema de cenários reutilizáveis.
 
 **Inclui**
-- [ ] presets nomeados de cenário
-- [ ] presets de configuração de tráfego
-- [ ] presets combinando mapa + semáforos + benchmark + regras
-- [ ] pequenos cenários de validação/tutorial
-- [ ] cenários de gargalo, fluxo leve e horário de pico
+- [x] presets nomeados de cenário
+- [x] presets de configuração de tráfego
+- [x] presets combinando mapa + semáforos + benchmark + regras
+- [x] pequenos cenários de validação/tutorial
+- [x] cenários de gargalo, fluxo leve e horário de pico
 
 **Por que importa**
 Sem cenários reutilizáveis, fica difícil repetir testes úteis e demonstrar o simulador de forma organizada.
 
-**Verificação de pendência**
-Hoje existe um bootstrap map fixo e configuração montada no código. Não há catálogo de presets selecionável pela UI.
+**Status após Sprint 22**
+Concluído no estado atual: a UI agora expõe presets nomeados, inclusive cenários pequenos de validação/tutorial e um cenário de gargalo, cada um combinando mapa, luzes, benchmark e regras-base.
 
 ---
 

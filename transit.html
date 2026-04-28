@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s21-rules-benchmark-sandbox" />
+    <link rel="stylesheet" href="css/app.css?v=s22-scenarios-presets" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,13 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 21</div>
+        <div class="version-badge">Sprint 22</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: configurable rules plus explicit benchmark vs sandbox flows.</p>
+          <p>Current focus: reusable scenario presets on top of explicit benchmark and sandbox flows.</p>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-mode">Simulation mode</label>
@@ -28,6 +28,12 @@
               <option value="benchmark">Benchmark</option>
               <option value="sandbox">Sandbox</option>
             </select>
+          </div>
+          <div class="control-field">
+            <div class="control-field__header">
+              <label for="control-scenario">Scenario preset</label>
+            </div>
+            <select id="control-scenario"></select>
           </div>
           <div class="control-grid control-grid--two-up">
             <div class="control-field">
@@ -106,6 +112,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s21-rules-benchmark-sandbox"></script>
+    <script type="module" src="js/app/main.js?v=s22-scenarios-presets"></script>
   </body>
 </html>

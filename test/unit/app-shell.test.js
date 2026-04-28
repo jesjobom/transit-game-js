@@ -111,6 +111,13 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-play-pause').textContent, 'Play');
     assert.equal(elements.get('control-step').disabled, false);
 
+    appShell.syncScenarioCatalog([
+      { id: 'baseline-benchmark', name: 'Baseline benchmark grid' },
+      { id: 'priority-cross', name: 'Priority cross tutorial' }
+    ], 'priority-cross');
+    assert.match(elements.get('control-scenario').innerHTML, /priority-cross/);
+    assert.equal(elements.get('control-scenario').value, 'priority-cross');
+
     appShell.syncSimulationConfig({
       mode: 'sandbox',
       benchmarkDurationTicks: 90,

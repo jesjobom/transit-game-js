@@ -10,6 +10,7 @@ import {
 import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
 import { createWorldState } from '../core/world.js';
+import { buildWorldOptionsFromScenario, getScenarioById, getScenarioCatalog } from '../core/scenario.js';
 
 const BASE_TICK_INTERVAL_MS = 420;
 const DEFAULT_SPEED_MULTIPLIER = 0.75;
@@ -81,9 +82,14 @@ function boot() {
     onSpawnRateChange(nextSpawnRate) {
       runtimeConfig.spawnRate = Math.max(0, Math.min(1, Number(nextSpawnRate)));
       applyRuntimeConfig();
+    },
+    onScenarioChange(nextScenarioId) {
+      runtimeConfig.scenarioId = nextScenarioId;
+      applyRuntimeConfig();
     }
   });
 
+  appShell.syncScenarioCatalog(getScenarioCatalog(runtimeConfig.importedScenarios), runtimeConfig.scenarioId);
   appShell.syncSimulationConfig(runtimeConfig);
   appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
   render();
@@ -93,6 +99,7 @@ function boot() {
     stopLoop();
     state = createSimulationState(runtimeConfig);
     previousWorld = snapshotRenderableWorld(state.world);
+    appShell.syncScenarioCatalog(getScenarioCatalog(runtimeConfig.importedScenarios), runtimeConfig.scenarioId);
     appShell.syncSimulationConfig(runtimeConfig);
     render();
     if (runtimeConfig.mode === 'benchmark') {
@@ -190,78 +197,10 @@ function snapshotRenderableWorld(world) {
 }
 
 function createSimulationState(runtimeConfig = createRuntimeConfig()) {
-  const isBenchmarkMode = runtimeConfig.mode === 'benchmark';
-  const world = createWorldState({
-    seed: 20260425,
-    benchmark: {
-      enabled: isBenchmarkMode,
-      mode: isBenchmarkMode ? 'benchmark' : 'sandbox',
-      spawnRate: isBenchmarkMode ? runtimeConfig.spawnRate : 0,
-      durationTicks: isBenchmarkMode ? runtimeConfig.benchmarkDurationTicks : 0
-    },
-    rules: runtimeConfig.rules,
-    routing: {
-      straightWeight: 0.45,
-      leftWeight: 0.25,
-      rightWeight: 0.3,
-      allowReverse: false
-    },
-    vehicles: isBenchmarkMode
-      ? []
-      : [
-          { id: 'sandbox-1', x: 0, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 },
-          { id: 'sandbox-2', x: 10, y: 0, direction: 'south', status: 'active', spawnedAtTick: 0 },
-          { id: 'sandbox-3', x: 12, y: 4, direction: 'west', status: 'active', spawnedAtTick: 0 }
-        ],
-    lights: [
-      {
-        id: 'north-crossing',
-        phaseIndex: 0,
-        remainingTicks: 2,
-        phases: [
-          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
-          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
-        ]
-      },
-      {
-        id: 'west-crossing',
-        phaseIndex: 1,
-        remainingTicks: 2,
-        phases: [
-          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
-          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
-        ]
-      },
-      {
-        id: 'main-crossing',
-        phaseIndex: 0,
-        remainingTicks: 2,
-        phases: [
-          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
-          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
-        ]
-      },
-      {
-        id: 'east-crossing',
-        phaseIndex: 1,
-        remainingTicks: 2,
-        phases: [
-          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
-          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
-        ]
-      },
-      {
-        id: 'south-crossing',
-        phaseIndex: 0,
-        remainingTicks: 2,
-        phases: [
-          { name: 'north-south', durationTicks: 2, allowedDirections: ['north', 'south'] },
-          { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
-        ]
-      }
-    ]
-  });
-
+  const scenario = getScenarioById(runtimeConfig.scenarioId, runtimeConfig.importedScenarios);
+  const world = createWorldState(buildWorldOptionsFromScenario(scenario, runtimeConfig));
+  world.scenarioId = scenario.id;
+  world.scenarioName = scenario.name;
   return {
     world,
     engine: createEngine(world)
@@ -271,6 +210,8 @@ function createSimulationState(runtimeConfig = createRuntimeConfig()) {
 function createRuntimeConfig() {
   return {
     mode: 'benchmark',
+    scenarioId: 'baseline-benchmark',
+    importedScenarios: [],
     benchmarkDurationTicks: 60,
     spawnRate: 0.55,
     rules: {

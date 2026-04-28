@@ -7,6 +7,7 @@ export function buildSimulationSummary(world, benchmarkSummaryLines = []) {
 
   return [
     `Version: ${APP_VERSION} (${BUILD_TAG})`,
+    `Scenario: ${world.scenarioName ?? world.scenarioId ?? world.map.id}`,
     `Mode: ${world.config.benchmark.mode}`,
     `Simulation seed: ${world.simulationSeed}`,
     `Map seed: ${world.mapSeed}`,
