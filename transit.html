@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s22-scenarios-presets" />
+    <link rel="stylesheet" href="css/app.css?v=s23-scenario-import" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,13 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 22</div>
+        <div class="version-badge">Sprint 23</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: reusable scenario presets on top of explicit benchmark and sandbox flows.</p>
+          <p>Current focus: reusable scenario presets plus external JSON scenario import.</p>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-mode">Simulation mode</label>
@@ -34,6 +34,12 @@
               <label for="control-scenario">Scenario preset</label>
             </div>
             <select id="control-scenario"></select>
+          </div>
+          <div class="control-field">
+            <div class="control-field__header">
+              <label for="control-scenario-import">Import scenario JSON</label>
+            </div>
+            <input id="control-scenario-import" type="file" accept="application/json,.json" />
           </div>
           <div class="control-grid control-grid--two-up">
             <div class="control-field">
@@ -112,6 +118,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s22-scenarios-presets"></script>
+    <script type="module" src="js/app/main.js?v=s23-scenario-import"></script>
   </body>
 </html>

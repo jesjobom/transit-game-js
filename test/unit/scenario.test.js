@@ -5,7 +5,8 @@ import {
   buildWorldOptionsFromScenario,
   getScenarioById,
   getScenarioCatalog,
-  normalizeScenarioDefinition
+  normalizeScenarioDefinition,
+  parseScenarioJson
 } from '../../js/core/scenario.js';
 
 test('scenario catalog exposes built-in named presets', () => {
@@ -71,4 +72,31 @@ test('normalizeScenarioDefinition validates malformed custom scenarios', () => {
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((error) => error.includes('width')));
   assert.ok(result.errors.some((error) => error.includes('road cell')));
+});
+
+
+test('parseScenarioJson accepts valid imported scenario json', () => {
+  const parsed = parseScenarioJson(`{
+    "id": "json-demo",
+    "name": "JSON Demo",
+    "recommendedMode": "sandbox",
+    "worldOptions": {
+      "mapMode": "custom",
+      "map": {
+        "id": "json-demo-map",
+        "width": 2,
+        "height": 1,
+        "roads": [
+          { "x": 0, "y": 0, "allowedDirections": ["east"] },
+          { "x": 1, "y": 0, "allowedDirections": ["west"] }
+        ]
+      },
+      "lights": [],
+      "vehicles": []
+    }
+  }`);
+
+  assert.equal(parsed.valid, true);
+  assert.equal(parsed.scenario.id, 'json-demo');
+  assert.equal(parsed.scenario.recommendedMode, 'sandbox');
 });

@@ -185,16 +185,16 @@ Concluído no estado atual: a UI agora expõe presets nomeados, inclusive cenár
 Permitir que mapas e cenários deixem de ser definidos só no código-fonte.
 
 **Inclui**
-- [ ] carregar mapa a partir de arquivo/dado externo
-- [ ] formato documentado de mapa/cenário
-- [ ] importar mapa personalizado
-- [ ] validar mapa/cenário carregado antes de rodar
+- [x] carregar mapa a partir de arquivo/dado externo
+- [x] formato documentado de mapa/cenário
+- [x] importar mapa personalizado
+- [x] validar mapa/cenário carregado antes de rodar
 
 **Por que importa**
 Essa é a ponte entre “app com mapa hardcoded” e “simulador de verdade”. Também prepara terreno para presets, editor e benchmarks mais variados.
 
-**Verificação de pendência**
-Há suporte técnico para `mapMode: 'custom'` com objeto em memória, mas não existe fluxo de arquivo/importação/gestão de cenários na app.
+**Status após Sprint 23**
+Concluído no estado atual: a app já importa cenários em JSON por arquivo, valida a estrutura antes de aplicar e o repositório agora documenta o formato com exemplo real.
 
 ---
 

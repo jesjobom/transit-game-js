@@ -10,7 +10,7 @@ import {
 import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
 import { createWorldState } from '../core/world.js';
-import { buildWorldOptionsFromScenario, getScenarioById, getScenarioCatalog } from '../core/scenario.js';
+import { buildWorldOptionsFromScenario, getScenarioById, getScenarioCatalog, parseScenarioJson } from '../core/scenario.js';
 
 const BASE_TICK_INTERVAL_MS = 420;
 const DEFAULT_SPEED_MULTIPLIER = 0.75;
@@ -86,6 +86,31 @@ function boot() {
     onScenarioChange(nextScenarioId) {
       runtimeConfig.scenarioId = nextScenarioId;
       applyRuntimeConfig();
+    },
+    async onImportScenario(file) {
+      try {
+        const parsed = parseScenarioJson(await file.text());
+        if (!parsed.valid) {
+          window.alert(`Invalid scenario: ${parsed.errors.join(' | ')}`);
+          return;
+        }
+
+        runtimeConfig.importedScenarios = [
+          ...runtimeConfig.importedScenarios.filter((scenario) => scenario.id !== parsed.scenario.id),
+          parsed.scenario
+        ];
+        runtimeConfig.scenarioId = parsed.scenario.id;
+        if (parsed.scenario.recommendedMode) {
+          runtimeConfig.mode = parsed.scenario.recommendedMode;
+        }
+        if (parsed.scenario.benchmarkDefaults) {
+          runtimeConfig.benchmarkDurationTicks = parsed.scenario.benchmarkDefaults.durationTicks;
+          runtimeConfig.spawnRate = parsed.scenario.benchmarkDefaults.spawnRate;
+        }
+        applyRuntimeConfig();
+      } catch (error) {
+        window.alert(`Failed to import scenario JSON: ${error.message}`);
+      }
     }
   });
 

@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 22';
-export const BUILD_TAG = 's22-scenarios-presets';
+export const APP_VERSION = 'Sprint 23';
+export const BUILD_TAG = 's23-scenario-import';

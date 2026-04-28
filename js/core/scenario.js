@@ -69,6 +69,11 @@ export function normalizeScenarioDefinition(input) {
   };
 }
 
+export function parseScenarioJson(text) {
+  const parsed = JSON.parse(text);
+  return normalizeScenarioDefinition(parsed);
+}
+
 export function buildWorldOptionsFromScenario(scenario, runtimeConfig) {
   const isBenchmarkMode = runtimeConfig.mode === 'benchmark';
   const normalized = normalizeScenarioDefinition(scenario).scenario;

@@ -1,0 +1,40 @@
+{
+  "id": "imported-priority-demo",
+  "name": "Imported priority demo",
+  "description": "Small imported crossroad example for testing scenario loading.",
+  "recommendedMode": "sandbox",
+  "benchmarkDefaults": {
+    "durationTicks": 45,
+    "spawnRate": 0
+  },
+  "worldOptions": {
+    "seed": 20260428,
+    "mapMode": "custom",
+    "map": {
+      "id": "imported-priority-demo",
+      "width": 5,
+      "height": 5,
+      "roads": [
+        { "x": 2, "y": 0, "allowedDirections": ["south"] },
+        { "x": 2, "y": 1, "allowedDirections": ["north", "south"] },
+        { "x": 2, "y": 2, "allowedDirections": ["north", "south", "east", "west"] },
+        { "x": 2, "y": 3, "allowedDirections": ["north", "south"] },
+        { "x": 2, "y": 4, "allowedDirections": ["north"] },
+        { "x": 0, "y": 2, "allowedDirections": ["east"] },
+        { "x": 1, "y": 2, "allowedDirections": ["east", "west"] },
+        { "x": 3, "y": 2, "allowedDirections": ["east", "west"] },
+        { "x": 4, "y": 2, "allowedDirections": ["west"] }
+      ],
+      "intersections": [
+        { "x": 2, "y": 2 }
+      ],
+      "spawnPoints": []
+    },
+    "lights": [],
+    "vehicles": []
+  },
+  "sandboxVehicles": [
+    { "id": "imported-car-north", "x": 2, "y": 0, "direction": "south", "status": "active", "spawnedAtTick": 0 },
+    { "id": "imported-car-west", "x": 0, "y": 2, "direction": "east", "status": "active", "spawnedAtTick": 0 }
+  ]
+}
