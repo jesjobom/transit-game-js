@@ -1,13 +1,19 @@
 import { APP_VERSION, BUILD_TAG } from '../version.js';
 
 export function buildSimulationSummary(world, benchmarkSummaryLines = []) {
+  const activeRules = Object.entries(world.config.rules || {})
+    .filter(([, enabled]) => enabled)
+    .map(([rule]) => rule);
+
   return [
     `Version: ${APP_VERSION} (${BUILD_TAG})`,
+    `Mode: ${world.config.benchmark.mode}`,
     `Simulation seed: ${world.simulationSeed}`,
     `Map seed: ${world.mapSeed}`,
     `Tick: ${world.tick}`,
     `Status: ${world.status}`,
     `Active vehicles: ${world.entities.vehicles.length}`,
+    `Rules: ${activeRules.length > 0 ? activeRules.join(', ') : 'default'}`,
     ...benchmarkSummaryLines
   ];
 }
@@ -24,6 +30,7 @@ export function buildLiveMetrics(world, report = null) {
     { label: 'Blocked', value: String(world.metrics.blockedMoves) },
     { label: 'Completed', value: String(world.metrics.completedTrips) },
     { label: 'Turns', value: String(world.metrics.turnsTaken) },
+    { label: 'Mode', value: world.config.benchmark.mode },
     { label: 'Throughput/tick', value: formatDecimal(metrics.throughputPerTick) },
     { label: 'Avg trip ticks', value: formatDecimal(metrics.avgCompletionTicks) },
     { label: 'Score', value: report ? String(report.score.total) : '—' }

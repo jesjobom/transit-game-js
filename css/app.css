@@ -117,6 +117,45 @@ button {
   color: #cbd5e1;
 }
 
+.control-field input[type="number"],
+.control-field select {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  color: var(--text);
+  padding: 10px 12px;
+}
+
+.control-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.control-grid--two-up {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.control-group {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 14px 0 18px;
+}
+
+.control-group legend {
+  color: #cbd5e1;
+  padding: 0 6px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  margin: 8px 0;
+}
+
 .control-value {
   color: #7dd3fc;
   font-size: 0.9rem;

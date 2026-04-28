@@ -1,329 +1,685 @@
-# BACKLOG.md
+# BACKLOG.md — V2
 
-Backlog de melhorias do projeto **transit-game-js**, organizado para funcionar como board simples e também como guia de prioridade.
+Backlog técnico reorganizado do **transit-game-js**.
 
-## Como usar
-
-- `[ ]` tarefa pendente
-- `[~]` tarefa em andamento
-- `[x]` tarefa concluída
-- Horizonte sugerido:
-  - `MVP` = necessário para a primeira versão realmente boa e comparável
-  - `V2` = expansão importante depois da base estabilizada
-  - `FUTURE` = bom de ter, mas não deve atrasar a evolução principal
+Este arquivo foi limpo para refletir apenas o que **ainda falta fazer** depois do fechamento da versão atual como **V1**.
+Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova saiu da lista de trabalho pendente.
 
 ---
 
-## Prioridade macro
+## Status atual do projeto
 
-### MVP
-Foco: transformar o protótipo em uma simulação reproduzível, comparável e visualmente melhor, sem reescrever tudo.
+### V1 fechada
+A versão atual do projeto fica oficialmente fechada como **V1**.
 
-1. Corrigir bugs estruturais do protótipo atual
-2. Separar engine de simulação da renderização
-3. Substituir loops por carro por um tick central
-4. Introduzir seed fixa e modo de benchmark
-5. Definir métricas mínimas e score inicial
-6. Criar sistema de flags de regras opcionais
-7. Implementar movimento suave
-8. Melhorar UI e feedback visual básico
+### Baseline validado da V1
+- **Versão visível da app:** `Sprint 20`
+- **Build tag:** `s20-map-polish-speed-slider`
+- **Último estado validado:** `31/31` testes passando
 
-### V2
-Foco: enriquecer regras, análise e cenários, mantendo comparabilidade.
+### O que a V1 já entrega
+A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
 
-1. Expandir regras de trânsito configuráveis
-2. Melhorar métricas, relatórios e comparação A/B
-3. Adicionar presets de mapa/configuração
-4. Adicionar overlays, heatmap e replay
-5. Melhorar variedade de comportamentos e cenários
+#### Fundação de engine
+- engine central baseada em ticks
+- estado global serializável
+- RNG determinístico com seed fixa
+- benchmark reproduzível com duração e spawn configuráveis
+- separação real entre core da simulação e renderização/UI
 
-### FUTURE
-Foco: profundidade, polimento forte e recursos “laboratório premium”.
+#### Mundo e mapa
+- mapa bootstrap maior e menos simétrico
+- semântica explícita de direção nas vias
+- suporte base a pista bidirecional com ocupação por faixa/direção
+- suporte técnico a mapa customizado em memória
 
-1. Editor visual de mapas
-2. Batch benchmark com múltiplas seeds
-3. Semáforos adaptativos
-4. Pedestres, veículos especiais, clima e eventos
-5. Comparação lado a lado e recursos mais “gameficados” 
+#### Simulação e tráfego
+- spawn determinístico em benchmark
+- decisões básicas de rota em interseções
+- semáforos com fases e bloqueio por direção
+- motivos explícitos de bloqueio (`red-light`, `lane-occupied`, `invalid-direction`, etc.)
 
----
+#### Métricas e diagnósticos
+- métricas ao vivo
+- score inicial
+- resumo de benchmark
+- resumo de fases de semáforo
+- eventos recentes da simulação
 
-## 1. MVP — Fundação técnica
-
-### Objetivo
-Criar uma base que permita evoluir regras, visual e benchmark sem quebrar tudo a cada mudança.
-
-- [x] Separar claramente a engine de simulação da renderização visual
-- [x] Substituir loops independentes por carro por uma engine central baseada em ticks
-- [x] Definir um estado global serializável da simulação
-- [ ] Permitir reset/reexecução com a mesma configuração e mesma seed
-- [x] Remover dependências diretas da lógica de negócio com o DOM
-- [x] Definir um formato base para configuração da simulação
-- [x] Definir um formato base para mapas/cenários
-- [x] Definir contrato para geração procedural de mapas baseada em seed
-- [x] Padronizar a organização dos arquivos do projeto
-
----
-
-## 2. MVP — Bugs estruturais do protótipo atual
-
-### Objetivo
-Eliminar problemas do modelo atual antes de empilhar melhorias em cima dele.
-
-- [ ] Corrigir casos em que carros ficam presos ao avaliar conversão livre à direita
-- [ ] Eliminar recursão problemática na escolha de direção em cenários sem saída
-- [ ] Revisar lógica de colisão em cruzamentos complexos
-- [ ] Revisar geração inicial de direção nos pontos de entrada
-- [ ] Revisar spawn de carros para evitar padrões ruins ou enviesados
-- [~] Revisar representação de múltiplos carros na mesma célula
-- [x] Revisar semântica de pistas opostas e paralelas
-- [ ] Definir comportamento claro para deadlocks e travamentos
+#### UX e visual
+- play / pause / reset
+- avanço manual de `+1 Tick`
+- controle de velocidade por slider
+- animação contínua baseada em `requestAnimationFrame`
+- curvas melhores que o slide diagonal antigo
+- posicionamento visual por faixa/direção melhorado
+- semáforos visualmente mais legíveis
+- badge de versão para ajudar contra cache velho
+- mapa/cidade visualmente mais polidos
 
 ---
 
-## 3. MVP — Benchmark, métricas e score
+## Critério de limpeza deste backlog
 
-### Objetivo
-Permitir comparação objetiva entre diferentes conjuntos de regras/configurações.
+Um item só continua aqui se estiver realmente pendente.
 
-- [~] Definir um modo de teste padronizado
-- [x] Introduzir seed fixa para cenários reproduzíveis
-- [x] Permitir configurar duração fixa da simulação para benchmark
-- [x] Permitir configurar taxa de spawn de veículos no benchmark
-- [~] Definir conjunto mínimo de métricas coletadas por execução
-- [ ] Detectar deadlocks e travamentos da malha
-- [ ] Medir carros concluídos por unidade de tempo
-- [ ] Medir tempo médio de travessia
-- [ ] Medir tempo médio parado
-- [ ] Medir velocidade média efetiva
-- [x] Medir colisões
-- [x] Definir um score inicial simples de eficiência + penalidades
-- [~] Separar resultado em dimensões mínimas: eficiência, segurança e fluidez
-- [~] Gerar relatório resumido por execução
+### Foi considerado **concluído** quando há evidência no estado atual do projeto, por exemplo:
+- código implementado
+- UI existente
+- testes cobrindo o comportamento
+- commit recente deixando a entrega clara
+
+### Foi considerado **pendente** quando:
+- existe só estrutura/base, mas não a feature completa
+- existe campo/configuração, mas sem comportamento real exposto
+- existe comportamento parcial, mas não a capacidade prometida
+- não há evidência suficiente no código/UI/testes atuais
 
 ---
 
-## 4. MVP — Base de testes automatizados
+## Prioridades da V2
 
-### Objetivo
-Garantir evolução segura da nova engine sem depender de validação manual constante na UI.
+### P0 — mais importante
+Coisas que aumentam comparabilidade, controle experimental e capacidade de evolução sem bagunçar a base.
 
-- [x] Escolher e configurar o runner de testes em Node.js
-- [x] Criar estrutura inicial de testes (`unit`, `integration`, `regression`)
-- [x] Criar primeiros testes unitários para RNG com seed
-- [x] Criar primeiros testes unitários para semáforos
-- [ ] Criar primeiros testes unitários para regras de trânsito isoladas
-- [x] Criar primeiros testes unitários para métricas e score
-- [x] Criar primeiros testes unitários para renderização base do mapa/veículos
-- [x] Criar primeiros testes unitários para resumo/estado da UI
-- [x] Criar primeiros testes de integração para cenários pequenos
-- [x] Criar primeiro teste de regressão de benchmark com seed fixa
-- [x] Garantir que mesma seed + mesma config produz o mesmo resultado lógico
-- [x] Definir fluxo padrão para rodar testes antes de fechar features importantes
+### P1 — importante
+Coisas que melhoram a fidelidade da simulação e a leitura dos resultados.
+
+### P2 — depois da base de V2 estar estável
+Coisas de profundidade, laboratório avançado e polimento de produto.
 
 ---
 
-## 5. MVP — Regras configuráveis na UI
+# BACKLOG V2
 
-### Objetivo
-Permitir ativar/desativar regras opcionais e comparar o impacto delas com benchmark reproduzível.
+## P0 — Controle experimental, comparabilidade e cenários
 
-- [ ] Criar sistema de flags/opções de regras na interface
-- [ ] Permitir salvar e restaurar combinações de regras
-- [ ] Adicionar opção “conversão livre à direita no vermelho”
-- [ ] Adicionar opção “PARE de quatro vias”
-- [ ] Adicionar regra de preferência para quem já está no cruzamento
-- [ ] Adicionar bloqueio de cruzamento (“não entra se não puder sair”)
-- [ ] Adicionar opção de avanço no amarelo habilitado/desabilitado
-- [ ] Adicionar prioridade de via principal
-- [ ] Adicionar distância mínima de segurança entre carros
+### 1. Regras configuráveis de verdade na UI
+**Prioridade:** P0
 
----
+**Melhoria**
+Implementar e expor na interface regras opcionais que hoje só existem como ideia ou como estrutura incompleta.
 
-## 6. MVP — Movimento, visual e UX básicos
+**Inclui**
+- [x] painel de regras ativas
+- [x] toggle para `freeRightOnRed`
+- [x] toggle para `fourWayStop`
+- [x] toggle para `doNotBlockIntersection`
+- [x] regras adicionais realmente aplicadas pela engine, não só salvas em config
 
-### Objetivo
-Melhorar bastante a percepção de qualidade sem tentar resolver todo o polimento de uma vez.
+**Por que importa**
+Hoje a app já tem sementes, benchmark e score, mas ainda não tem um bom jeito de comparar conjuntos de regras. Sem isso, o simulador ainda é mais “demo técnica” do que “laboratório de trânsito”.
 
-- [~] Implementar movimento suave entre células com interpolação visual (render contínuo frame-a-frame + aproximação suave antes de parada + curva ancorada na geometria da interseção já aplicados; ainda falta aprofundar a sensação de trajetória)
-- [~] Separar tick lógico da taxa de atualização visual (scheduler visual separado + controle de velocidade da simulação já aplicados; ainda falta polimento fino de pacing)
-- [~] Implementar aceleração e desaceleração mais graduais (aproximação suave para parada iminente já aplicada; ainda falta modelagem mais rica de velocidade)
-- [x] Melhorar posicionamento visual por faixa/direção
-- [x] Introduzir sentido explícito nas vias do mapa bootstrap para evitar tráfego frontal em segmentos de célula única
-- [~] Melhorar espaçamento entre veículos em fila (offset por faixa corrigido e leve recuo visual dentro da célula já aplicados; ainda falta refinar filas densas)
-- [~] Redesenhar a interface geral da aplicação
-- [x] Renderizar o mapa em tela, mesmo em visual cru
-- [x] Renderizar veículos em posições reais do grid
-- [x] Fazer o mapa base ficar grande o suficiente para exibir conversões e rotas variadas
-- [x] Expandir o mapa bootstrap com quadras maiores e layout menos simétrico
-- [~] Melhorar o estilo visual do grid/ruas/cruzamentos (mapa agora inclui lotes urbanos decorativos como prédios/parques/praça/água; ainda falta polimento fino e hierarquia visual mais rica)
-- [~] Melhorar a aparência visual dos semáforos (semáforos dedicados + carcaça/cluster + eixo ativo mais óbvio já aplicados; ainda falta polimento fino/mais informação)
-- [~] Melhorar o visual dos carros com sprites/ícones mais profissionais (base estilizada tipo SVG + cor individual persistente + movimento contínuo/curva ancorada na interseção já aplicados; ainda falta polimento fino)
-- [x] Criar painel lateral ou superior com métricas em tempo real
-- [ ] Exibir claramente quais regras opcionais estão ativas
-- [~] Melhorar layout dos controles/configurações (controle de velocidade agora usa slider com leitura instantânea e resumo abaixo do mapa; ainda falta mais organização)
-- [x] Exibir informação de versão na UI para ajudar a detectar cache antigo
-- [x] Permitir play/pause, reset e avanço manual de 1 tick na UI
-- [x] Fazer veículos tomarem decisões básicas em interseções
+**Status após Sprint 21**
+Concluído no estado atual: a UI já expõe os toggles, o resumo mostra o modo/regras ativas e a engine agora aplica `freeRightOnRed`, `fourWayStop` e `doNotBlockIntersection`, com testes cobrindo os três comportamentos.
 
 ---
 
-## 7. V2 — Regras de trânsito expandidas
+### 2. Separar claramente modo Benchmark e modo Sandbox
+**Prioridade:** P0
 
-### Objetivo
-Aumentar o poder experimental da simulação depois que a base estiver estável.
+**Melhoria**
+Criar dois modos de uso explícitos:
+- **Benchmark:** execução padronizada, reproduzível e comparável
+- **Sandbox:** exploração manual, sem compromisso com comparabilidade estrita
 
-- [ ] Adicionar limite de velocidade por trecho
-- [ ] Adicionar proibição de conversão à esquerda em vias selecionadas
-- [ ] Adicionar faixa exclusiva de conversão
-- [~] Adicionar suporte a mão única / mão dupla (base de mão dupla com ocupação por faixa já aplicada no mapa bootstrap; ainda falta generalizar mudanças de faixa e regras mais ricas)
-- [ ] Adicionar rotatórias
-- [ ] Adicionar faixas de pedestre
-- [ ] Adicionar pedestres simulados
-- [ ] Adicionar acidentes aleatórios
-- [ ] Adicionar obstruções temporárias / veículos quebrados
-- [ ] Adicionar veículos especiais com prioridade
-- [ ] Adicionar semáforos adaptativos baseados no fluxo
-- [~] Evoluir heurística de roteamento dos veículos além da escolha básica em interseções
+**Inclui**
+- [x] seletor de modo na UI
+- [x] parâmetros visíveis do benchmark
+- [x] comportamento de reset coerente por modo
+- [x] resumo final mais claro quando uma execução de benchmark termina
 
----
+**Por que importa**
+Hoje o projeto já roda benchmark internamente, mas a experiência de uso ainda mistura bastante “simulação para ver” com “simulação para medir”. Separar isso melhora muito a clareza do produto.
 
-## 8. V2 — Métricas e análise avançadas
-
-### Objetivo
-Aprofundar a leitura dos resultados e dar mais poder de comparação.
-
-- [ ] Medir tamanho médio de filas
-- [ ] Medir ocupação média das vias
-- [ ] Medir throughput por cruzamento
-- [ ] Medir quase-colisões
-- [ ] Medir variância do tempo de viagem
-- [ ] Medir fairness entre direções/fluxos
-- [ ] Salvar histórico de benchmarks
-- [ ] Permitir comparação A/B entre duas configurações
-- [ ] Criar modo “benchmark” claramente separado do modo “sandbox”
-- [ ] Criar sistema de presets nomeados de configuração
-- [ ] Gerar gráficos automáticos de comparação
+**Status após Sprint 21**
+Concluído no estado atual: a interface permite alternar entre Benchmark e Sandbox, ajustar duração/spawn do benchmark e resetar cada modo de forma coerente.
 
 ---
 
-## 9. V2 — Ferramentas visuais de análise
+### 3. Salvar histórico e comparação A/B de benchmarks
+**Prioridade:** P0
 
-### Objetivo
-Facilitar entendimento do comportamento emergente e depuração dos resultados.
+**Melhoria**
+Permitir guardar resultados de execuções e comparar duas configurações lado a lado.
 
-- [ ] Criar heatmap de congestionamento
-- [ ] Exibir fluxo médio por via
-- [~] Criar modo replay de simulação (scheduler visual com requestAnimationFrame + movimento contínuo frame-a-frame e curva ancorada na interseção já aplicados como base; replay real ainda não existe)
-- [ ] Mostrar estado interno de veículos selecionados
-- [ ] Mostrar intenção atual do carro (seguir, virar, parar, aguardar)
-- [~] Mostrar estado atual dos semáforos e próxima transição
-- [ ] Permitir inspecionar células e cruzamentos pela UI
-- [ ] Destacar pontos de deadlock visualmente
-- [ ] Exibir trilhas/histórico curto de deslocamento dos veículos
-- [~] Criar modo debug com overlays visuais (diagnósticos laterais, eventos recentes e motivos de bloqueio já expostos; faltam overlays/inspeção visual no grid)
+**Inclui**
+- [ ] salvar snapshots de benchmark
+- [ ] comparação A/B entre duas execuções
+- [ ] exibição das diferenças principais de score e métricas
+- [ ] identificação clara da seed, mapSeed e regras usadas em cada execução
 
----
+**Por que importa**
+Sem histórico, cada benchmark morre na tela. Isso limita bastante o valor experimental do simulador.
 
-## 10. V2 — Mapas e cenários
-
-### Objetivo
-Dar mais variedade ao simulador e criar cenários úteis de comparação.
-
-- [ ] Permitir carregar mapas a partir de arquivo em vez de hardcode
-- [~] Evoluir o mapa bootstrap fixo para cobrir cenários mais interessantes antes dos mapas externos
-- [ ] Implementar geração procedural de mapas baseada em seed
-- [ ] Definir parâmetros controláveis da geração procedural (densidade, tamanho, cruzamentos, semáforos, etc.)
-- [ ] Garantir que mesma seed gere exatamente o mesmo mapa
-- [ ] Permitir gerar novo mapa randômico a partir de nova seed
-- [ ] Permitir benchmark com mapa procedural reproduzível
-- [ ] Criar presets de cenários prontos
-- [ ] Criar mapas pequenos de validação/tutoriais
-- [ ] Criar mapas maiores e mais realistas
-- [ ] Criar cenários com gargalos específicos
-- [ ] Criar cenários de horário de pico vs tráfego leve
-- [ ] Criar cenários com obras/interdições
-- [ ] Criar cenários climáticos que afetem comportamento
+**Verificação de pendência**
+Há relatório final de benchmark em memória, mas não existe persistência, lista de execuções anteriores nem tela de comparação.
 
 ---
 
-## 11. FUTURE — Comportamento mais rico
+### 4. Sistema de cenários e presets
+**Prioridade:** P0
 
-### Objetivo
-Adicionar profundidade e variedade sem contaminar o MVP com complexidade prematura.
+**Melhoria**
+Transformar o mapa/configuração atuais em um sistema de cenários reutilizáveis.
 
-- [ ] Introduzir tempo de reação para os veículos
-- [ ] Criar perfis de motorista (agressivo, conservador, equilibrado)
-- [ ] Diferenciar comportamento por tipo de veículo
-- [ ] Implementar curvas mais suaves em conversões
-- [ ] Simular mudança de faixa
-- [ ] Simular ultrapassagem onde aplicável
+**Inclui**
+- [ ] presets nomeados de cenário
+- [ ] presets de configuração de tráfego
+- [ ] presets combinando mapa + semáforos + benchmark + regras
+- [ ] pequenos cenários de validação/tutorial
+- [ ] cenários de gargalo, fluxo leve e horário de pico
 
----
+**Por que importa**
+Sem cenários reutilizáveis, fica difícil repetir testes úteis e demonstrar o simulador de forma organizada.
 
-## 12. FUTURE — Ferramentas avançadas e produto
-
-### Objetivo
-Levar o projeto para um modo mais completo de laboratório e exploração.
-
-- [ ] Criar modo batch para rodar várias seeds e calcular médias/desvios
-- [ ] Criar editor visual de mapas
-- [ ] Permitir importar/exportar mapas personalizados
-- [ ] Criar timeline navegável para análise de eventos
-- [ ] Criar visualização lado a lado para comparação de cenários
-- [ ] Criar comparação lado a lado entre presets
-- [ ] Criar modo “laboratório” para experimentar regras manualmente
-- [ ] Criar ranking local de melhores configurações por mapa
-- [ ] Permitir exportar/importar configurações de experimento
-- [ ] Criar objetivos/desafios opcionais para dar aspecto de jogo
-- [ ] Adicionar tema claro/escuro
-- [ ] Criar legenda visual para tipos de rua, regras e sinais
-- [ ] Criar animações visuais de explosão/acidente mais elaboradas
+**Verificação de pendência**
+Hoje existe um bootstrap map fixo e configuração montada no código. Não há catálogo de presets selecionável pela UI.
 
 ---
 
-## 13. Roadmap sugerido
+### 5. Carregar mapas externos e formalizar entrada de cenários
+**Prioridade:** P0
 
-### Fase 1 — Tirar do modo “protótipo frágil”
-- [ ] Corrigir bugs estruturais mais perigosos
-- [ ] Separar engine e renderização
-- [ ] Implementar tick central da simulação
-- [ ] Definir estado serializável
+**Melhoria**
+Permitir que mapas e cenários deixem de ser definidos só no código-fonte.
 
-### Fase 2 — Tornar comparável
-- [ ] Introduzir seed fixa
-- [ ] Criar benchmark padronizado
-- [ ] Definir métricas mínimas
-- [ ] Definir score inicial
-- [ ] Criar base de testes automatizados
-- [ ] Criar flags de regras opcionais
+**Inclui**
+- [ ] carregar mapa a partir de arquivo/dado externo
+- [ ] formato documentado de mapa/cenário
+- [ ] importar mapa personalizado
+- [ ] validar mapa/cenário carregado antes de rodar
 
-### Fase 3 — Tornar agradável de usar
-- [ ] Implementar movimento suave
-- [ ] Melhorar UI e visual geral
-- [ ] Criar painel de métricas
-- [ ] Melhorar controles e feedback visual
+**Por que importa**
+Essa é a ponte entre “app com mapa hardcoded” e “simulador de verdade”. Também prepara terreno para presets, editor e benchmarks mais variados.
 
-### Fase 4 — Expandir poder experimental
-- [ ] Adicionar mais regras de trânsito
-- [ ] Adicionar heatmap, replay e debug visual
-- [ ] Adicionar mapas e cenários mais ricos
-- [ ] Adicionar geração procedural de mapas por seed
-- [ ] Adicionar comparação A/B
-
-### Fase 5 — Laboratório mais completo
-- [ ] Batch benchmark
-- [ ] Editor de mapas
-- [ ] Semáforos adaptativos
-- [ ] Recursos avançados de análise e comparação
+**Verificação de pendência**
+Há suporte técnico para `mapMode: 'custom'` com objeto em memória, mas não existe fluxo de arquivo/importação/gestão de cenários na app.
 
 ---
 
-## 14. Princípios de priorização
+### 6. Geração procedural de mapas realmente implementada
+**Prioridade:** P0
 
-- Não tentar resolver polimento avançado antes de estabilizar a engine.
-- Não adicionar regras novas sem garantir comparabilidade com seed fixa.
-- Não deixar visual bonito mascarar métricas ruins ou bugs estruturais.
-- Preferir melhorias que aumentem reprodutibilidade e capacidade de análise.
-- Geração procedural de mapas deve ser determinística quando a seed for fixa.
-- Evitar reescrever o stack inteiro cedo demais só para parecer moderno.
+**Melhoria**
+Implementar geração procedural de mapas com parâmetros controláveis e resultado reproduzível por seed.
+
+**Inclui**
+- [ ] gerar mapa procedural a partir de `mapSeed`
+- [ ] parâmetros como densidade, tamanho, quantidade de cruzamentos e semáforos
+- [ ] reproduzir exatamente o mesmo mapa com mesma `mapSeed`
+- [ ] permitir benchmark sobre mapa procedural reproduzível
+
+**Por que importa**
+A arquitetura já foi pensada para isso. Falta virar capacidade real.
+
+**Verificação de pendência**
+O projeto já carrega `mapSeed`, mas o mapa atual continua sendo um bootstrap fixo montado por código, não um gerador procedural parametrizado.
+
+---
+
+## P1 — Qualidade da simulação e leitura dos resultados
+
+### 7. Detectar deadlocks de verdade
+**Prioridade:** P1
+
+**Melhoria**
+Criar detecção explícita de travamentos da malha, em vez de só manter o contador disponível no modelo.
+
+**Inclui**
+- [ ] definição objetiva do que conta como deadlock
+- [ ] incremento real da métrica de deadlock
+- [ ] distinção entre fila normal e travamento estrutural
+- [ ] impacto claro no score/relatório
+
+**Por que importa**
+Sem isso, o benchmark ainda pode parecer saudável mesmo quando a rede entrou num estado ruim.
+
+**Verificação de pendência**
+`world.metrics.deadlocks` existe, mas não há evidência de detecção real na engine atual.
+
+---
+
+### 8. Completar o conjunto mínimo de métricas de fluxo
+**Prioridade:** P1
+
+**Melhoria**
+Fechar as métricas mais importantes para analisar eficiência e fluidez com mais confiança.
+
+**Inclui**
+- [ ] tempo médio parado
+- [ ] velocidade média efetiva
+- [ ] throughput por cruzamento
+- [ ] tamanho médio de fila
+- [ ] ocupação média das vias
+- [ ] variância do tempo de viagem
+- [ ] fairness entre direções/fluxos
+
+**Por que importa**
+Hoje já existe uma base boa, mas ainda faltam métricas que ajudam a distinguir “parece rápido” de “está realmente eficiente”.
+
+**Verificação de pendência**
+O benchmark atual já calcula `completedTrips`, `blockedMoves`, `avgCompletionTicks`, `throughputPerTick` e derivados, mas ainda não expõe as métricas acima.
+
+---
+
+### 9. Ferramentas visuais de análise e debug no grid
+**Prioridade:** P1
+
+**Melhoria**
+Levar os diagnósticos além da sidebar textual e mostrar informação útil diretamente no mapa.
+
+**Inclui**
+- [ ] heatmap de congestionamento
+- [ ] fluxo médio por via
+- [ ] destacar pontos de deadlock
+- [ ] inspeção de célula/cruzamento
+- [ ] estado interno de veículo selecionado
+- [ ] intenção atual do veículo (seguir, virar, parar, aguardar)
+- [ ] trilha curta/histórico visual de movimento
+
+**Por que importa**
+Hoje os diagnósticos ajudam, mas ainda exigem leitura indireta. Overlay visual acelera muito depuração e entendimento do comportamento emergente.
+
+**Verificação de pendência**
+Existem métricas ao vivo, resumo de semáforos e eventos recentes, mas não há overlays analíticos reais no grid.
+
+---
+
+### 10. Replay real da simulação
+**Prioridade:** P1
+
+**Melhoria**
+Adicionar replay navegável, separado da animação ao vivo.
+
+**Inclui**
+- [ ] gravar sequência suficiente de estados/eventos
+- [ ] timeline navegável
+- [ ] play/pause do replay
+- [ ] voltar/avançar em pontos da execução já concluída
+
+**Por que importa**
+A animação contínua atual melhorou muito a leitura, mas replay é outra coisa: ele serve para análise, comparação e depuração.
+
+**Verificação de pendência**
+A V1 já tem motion frame-a-frame em tempo real, mas não há timeline de replay nem navegação por histórico.
+
+---
+
+### 11. Melhorar o modelo de movimento, topologia viária e comportamento de faixa
+**Prioridade:** P1
+
+**Melhoria**
+Aprofundar a credibilidade do movimento e da modelagem das vias sem sacrificar o determinismo lógico.
+
+**Inclui**
+- [ ] suporte explícito a múltiplas faixas por sentido
+- [ ] coexistência clara de ruas de mão dupla e mão única no mesmo mapa
+- [ ] perfil de aceleração/desaceleração mais rico
+- [ ] curvas ainda mais geométricas e centradas por faixa
+- [ ] distância mínima de segurança entre carros
+- [ ] mudança de faixa
+- [ ] faixa exclusiva de conversão
+- [ ] limite de velocidade por trecho
+
+**Por que importa**
+A V1 já deixou de parecer travada, mas ainda há bastante espaço entre “animação boa” e “modelo de tráfego convincente”. Além disso, o salto de complexidade do mapa depende de a estrutura viária suportar bem combinações mais realistas.
+
+**Verificação de pendência**
+Existe movimento contínuo, easing de parada, curva melhorada e suporte base a ocupação por faixa/direção, mas ainda não há evidência de modelagem completa para múltiplas faixas por sentido, mistura rica de mão dupla/mão única, mudança de faixa, speed limit por trecho ou modelo mais rico de headway/velocidade.
+
+---
+
+### 12. Evoluir as regras de tráfego, controles de interseção e roteamento
+**Prioridade:** P1
+
+**Melhoria**
+Expandir as decisões da engine para lidar com casos mais ricos que a malha atual.
+
+**Inclui**
+- [ ] prioridade para quem já está no cruzamento
+- [ ] avanço no amarelo configurável
+- [ ] prioridade de via principal / rua preferencial
+- [ ] placas de pare (`stop`) por aproximação ou cruzamento
+- [ ] semáforos de 3 lados / interseções em T
+- [ ] proibição de conversão à esquerda por trecho
+- [ ] retorno (`U-turn`) quando permitido pela geometria/regra
+- [ ] rotatórias
+- [ ] heurística de roteamento melhor que a escolha local básica
+
+**Por que importa**
+Esse é o passo natural depois de estabilizar a base: menos comportamento “arcade”, mais comportamento de trânsito propriamente dito.
+
+**Verificação de pendência**
+A engine atual faz escolha básica ponderada em interseções e respeita direção/semáforo, mas ainda não mostra esse conjunto mais rico de regras e controles de interseção.
+
+---
+
+## P2 — Expansão de laboratório e profundidade de produto
+
+### 13. Batch benchmark com múltiplas seeds
+**Prioridade:** P2
+
+**Melhoria**
+Rodar o mesmo experimento em várias seeds para reduzir conclusões frágeis baseadas em um caso só.
+
+**Inclui**
+- [ ] lote de execuções automáticas
+- [ ] média, desvio e melhor/pior caso
+- [ ] agregação por preset/configuração
+
+**Por que importa**
+Uma única seed é ótima para depuração e comparação justa, mas é limitada para conclusões mais sérias.
+
+**Verificação de pendência**
+Hoje o benchmark é unitário por execução.
+
+---
+
+### 14. Editor visual de mapas
+**Prioridade:** P2
+
+**Melhoria**
+Criar ferramenta para montar e ajustar mapas sem editar código manualmente.
+
+**Inclui**
+- [ ] criar/editar ruas e cruzamentos
+- [ ] configurar spawn points
+- [ ] configurar semáforos
+- [ ] salvar/exportar o resultado
+
+**Por que importa**
+Depois que mapas externos existirem, um editor visual vira o caminho mais útil para escalar cenários.
+
+**Verificação de pendência**
+Não existe editor no estado atual.
+
+---
+
+### 15. Importação/exportação de mapas e configurações
+**Prioridade:** P2
+
+**Melhoria**
+Permitir que cenários e experimentos possam ser compartilhados e reaproveitados.
+
+**Inclui**
+- [ ] exportar mapa
+- [ ] exportar configuração de experimento
+- [ ] importar mapa/configuração
+- [ ] formato estável para troca entre execuções
+
+**Por que importa**
+Isso transforma o projeto em ferramenta reutilizável, não só em demo local.
+
+**Verificação de pendência**
+Não há fluxo de import/export na V1.
+
+---
+
+### 16. Comparações visuais lado a lado
+**Prioridade:** P2
+
+**Melhoria**
+Mostrar duas execuções ou dois presets em paralelo.
+
+**Inclui**
+- [ ] comparação lado a lado de cenários
+- [ ] comparação lado a lado de presets
+- [ ] diferenças visuais e métricas sincronizadas
+
+**Por que importa**
+Ajuda muito quando a meta deixa de ser “rodar” e passa a ser “entender qual opção é melhor”.
+
+**Verificação de pendência**
+Não existe UI de comparação paralela.
+
+---
+
+### 17. Agentes e eventos mais ricos no mundo
+**Prioridade:** P2
+
+**Melhoria**
+Adicionar entidades e perturbações que deixem a simulação mais diversa.
+
+**Inclui**
+- [ ] pedestres
+- [ ] faixas de pedestre
+- [ ] veículos especiais com prioridade
+- [ ] acidentes aleatórios
+- [ ] obstruções temporárias / veículo quebrado
+- [ ] clima ou condições externas afetando fluxo
+
+**Por que importa**
+Isso aumenta o realismo e a variedade, mas seria desperdício fazer antes da base experimental estar mais madura.
+
+**Verificação de pendência**
+Não há evidência dessas entidades/eventos no modelo atual.
+
+---
+
+### 18. Semáforos adaptativos e perfis comportamentais
+**Prioridade:** P2
+
+**Melhoria**
+Levar o simulador para cenários mais estratégicos e menos estáticos.
+
+**Inclui**
+- [ ] semáforos adaptativos baseados em fluxo
+- [ ] perfis de motorista
+- [ ] comportamento por tipo de veículo
+- [ ] tempo de reação
+
+**Por que importa**
+Isso abre espaço para experimentação mais interessante, mas depende das camadas anteriores estarem sólidas.
+
+**Verificação de pendência**
+Os semáforos atuais operam em fases fixas, e os veículos ainda não têm perfis comportamentais distintos.
+
+---
+
+## Roadmap sugerido da V2
+
+### Fase A — transformar em laboratório utilizável
+1. Regras configuráveis na UI
+2. Separar benchmark e sandbox
+3. Histórico de benchmarks + comparação A/B
+4. Presets e cenários nomeados
+
+### Fase B — abrir o simulador para mais mapas
+5. Entrada formal de mapas/cenários
+6. Geração procedural por seed
+7. Cenários pequenos, gargalos e horários de pico
+
+### Fase C — melhorar análise
+8. Deadlock detection real
+9. Métricas de fluxo mais completas
+10. Overlays visuais e inspeção no grid
+11. Replay navegável
+
+### Fase D — subir o realismo
+12. Movimento/faixa/topologia viária mais ricos
+13. Regras de trânsito e controles de interseção mais sofisticados
+14. Roteamento melhor
+
+### Fase E — virar ferramenta mais completa
+15. Batch benchmarks
+16. Editor visual
+17. Import/export
+18. Comparação lado a lado
+19. Entidades/eventos ricos
+20. Semáforos adaptativos e perfis
+
+---
+
+## Épicos sugeridos para expansão do mapa e das regras viárias
+
+Esses épicos refinam principalmente os itens **11** e **12** do backlog.
+A ideia é evitar misturar topologia, regra de prioridade e comportamento avançado tudo de uma vez.
+
+### Épico 1 — Topologia viária e geometria-base
+**Objetivo**
+Dar ao modelo de mapa capacidade real para representar ruas mais próximas do mundo real, antes de sofisticar demais as regras.
+
+**Inclui**
+- [ ] múltiplas faixas por sentido
+- [ ] ruas de mão única e mão dupla convivendo no mesmo cenário
+- [ ] faixas com papel explícito quando necessário (reta, conversão, compartilhada)
+- [ ] retorno (`U-turn`) modelado na geometria base quando permitido
+- [ ] validação estrutural para evitar mapas inconsistentes
+
+**Dependências**
+- base atual de direção por via
+- evolução do formato de mapa/cenário
+
+**Risco principal**
+Se isso ficar mal modelado, todo o resto vira remendo.
+
+**Sugestão de entrega incremental**
+- Sprint 1: múltiplas faixas por sentido + mistura clara de mão única/mão dupla
+- Sprint 2: faixas especiais e suporte inicial a retorno
+
+---
+
+### Épico 2 — Regras locais de prioridade em cruzamentos
+**Objetivo**
+Introduzir regras de interseção simples, mas fundamentais, antes de partir para estruturas mais especiais.
+
+**Inclui**
+- [ ] placa de pare por aproximação
+- [ ] rua preferencial / via principal
+- [ ] prioridade para quem já entrou no cruzamento
+- [ ] regra explícita de cessão de passagem quando aplicável
+- [ ] eventos/motivos de bloqueio explicando a prioridade aplicada
+
+**Dependências**
+- Épico 1 suficientemente estável
+- engine com resolução determinística de conflitos
+
+**Risco principal**
+Criar regras ambíguas ou invisíveis, difíceis de depurar.
+
+**Sugestão de entrega incremental**
+- Sprint 3: `stop` + via preferencial
+- Sprint 4: refinamento de prioridade e instrumentação de debug
+
+---
+
+### Épico 3 — Controles de interseção especiais
+**Objetivo**
+Suportar cruzamentos que exigem modelagem própria, em vez de tratar tudo como cruzamento padrão com exceções.
+
+**Inclui**
+- [ ] semáforo de 3 lados para interseções em T
+- [ ] rotatórias com regras próprias de entrada, circulação e saída
+- [ ] fases/configuração específicas por tipo de interseção
+- [ ] representação visual coerente desses controles no mapa
+
+**Dependências**
+- Épico 2 funcional
+- formato de cenário capaz de descrever tipos de interseção
+
+**Risco principal**
+Querer reutilizar uma abstração genérica demais e acabar quebrando casos especiais.
+
+**Sugestão de entrega incremental**
+- Sprint 5: semáforo de 3 lados / T-junctions
+- Sprint 6: rotatórias
+
+---
+
+### Épico 4 — Comportamento avançado de faixa e decisão
+**Objetivo**
+Fazer os veículos usarem a malha enriquecida de forma convincente, não só compatível no papel.
+
+**Inclui**
+- [ ] escolha de faixa com base na intenção de trajeto
+- [ ] mudança de faixa
+- [ ] preparação para conversão antes do cruzamento
+- [ ] respeito a proibições/restrições por faixa ou trecho
+- [ ] uso de retorno e rotatória no roteamento
+
+**Dependências**
+- Épicos 1 a 3 em estado utilizável
+- melhoria da heurística de roteamento
+
+**Risco principal**
+Adicionar opções de mapa sem inteligência suficiente para os veículos aproveitarem isso.
+
+**Sugestão de entrega incremental**
+- Sprint 7: escolha/preparação de faixa
+- Sprint 8: mudança de faixa + integração com roteamento
+
+---
+
+## Sequência sugerida de sprints para esse pacote
+
+### Sprint 1 — Fundamentos de topologia viária
+- múltiplas faixas por sentido
+- formalização melhor de mão única vs mão dupla
+- ajustes mínimos de render e validação
+
+### Sprint 2 — Faixas especiais e retorno
+- faixas exclusivas/compartilhadas
+- retorno (`U-turn`) permitido por geometria/regra
+- pequenos cenários de teste focados nisso
+
+### Sprint 3 — Cruzamentos com prioridade simples
+- placa de pare
+- rua preferencial
+- prioridade para quem já está no cruzamento
+
+### Sprint 4 — Debug e consistência de prioridade
+- motivos explícitos de bloqueio/prioridade
+- cenários de validação para conflitos de passagem
+- ajustes finos da resolução determinística
+
+### Sprint 5 — Interseções em T com semáforo de 3 lados
+- modelo de interseção em T
+- fases do semáforo compatíveis
+- representação visual mínima confiável
+
+### Sprint 6 — Rotatórias
+- entrada/espera/circulação/saída
+- prioridade na rotatória
+- benchmark/cenários específicos para rotatória
+
+### Sprint 7 — Escolha de faixa por intenção
+- veículo se posicionando para seguir/virar/retornar
+- integração inicial com roteamento local
+
+### Sprint 8 — Mudança de faixa e roteamento mais inteligente
+- lane change
+- decisão melhor em mapas mais complexos
+- consolidação dos cenários ricos
+
+---
+
+## Princípios para não bagunçar a V2
+
+- Não misturar feature visual grande com mudança estrutural grande no mesmo passo.
+- Não chamar algo de benchmark sério sem guardar seed, mapSeed, regras e configuração.
+- Não adicionar muito realismo novo antes de fechar deadlock detection e métricas melhores.
+- Não criar editor/polimento de produto antes de existir um formato de cenário decente.
+- Quando houver dúvida entre “mais bonito” e “mais comparável”, priorizar comparabilidade primeiro.
+
+---
+
+## Fora do backlog por já estarem resolvidos na V1
+
+Esses temas não devem voltar como pendência genérica, porque já foram entregues em nível útil:
+- engine central por tick
+- separação entre core e renderização
+- seed fixa e determinismo básico
+- estado serializável
+- testes automatizados ativos
+- score inicial
+- painel de métricas ao vivo
+- renderização de mapa e veículos
+- controle de play/pause/reset/+1 tick
+- controle de velocidade
+- movimento contínuo inicial
+- curvas melhores que o protótipo antigo
+- vias com direção explícita
+- ocupação por faixa em via bidirecional
+- versão visível na UI
+- diagnósticos básicos e motivos de bloqueio

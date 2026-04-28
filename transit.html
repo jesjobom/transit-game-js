@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s20-map-polish-speed-slider" />
+    <link rel="stylesheet" href="css/app.css?v=s21-rules-benchmark-sandbox" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,42 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 20</div>
+        <div class="version-badge">Sprint 21</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: richer city-map presentation and smoother simulation-speed control.</p>
+          <p>Current focus: configurable rules plus explicit benchmark vs sandbox flows.</p>
+          <div class="control-field">
+            <div class="control-field__header">
+              <label for="control-mode">Simulation mode</label>
+            </div>
+            <select id="control-mode">
+              <option value="benchmark">Benchmark</option>
+              <option value="sandbox">Sandbox</option>
+            </select>
+          </div>
+          <div class="control-grid control-grid--two-up">
+            <div class="control-field">
+              <div class="control-field__header">
+                <label for="control-benchmark-duration">Benchmark duration</label>
+              </div>
+              <input id="control-benchmark-duration" type="number" min="0" step="10" value="60" />
+            </div>
+            <div class="control-field">
+              <div class="control-field__header">
+                <label for="control-spawn-rate">Spawn rate</label>
+              </div>
+              <input id="control-spawn-rate" type="number" min="0" max="1" step="0.05" value="0.55" />
+            </div>
+          </div>
+          <fieldset class="control-group">
+            <legend>Active rules</legend>
+            <label class="toggle-row"><input id="rule-free-right-on-red" type="checkbox" /> Free right on red</label>
+            <label class="toggle-row"><input id="rule-four-way-stop" type="checkbox" /> Four-way stop</label>
+            <label class="toggle-row"><input id="rule-do-not-block-intersection" type="checkbox" /> Do not block intersection</label>
+          </fieldset>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-speed">Simulation speed</label>
@@ -77,6 +106,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s20-map-polish-speed-slider"></script>
+    <script type="module" src="js/app/main.js?v=s21-rules-benchmark-sandbox"></script>
   </body>
 </html>

@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 20';
-export const BUILD_TAG = 's20-map-polish-speed-slider';
+export const APP_VERSION = 'Sprint 21';
+export const BUILD_TAG = 's21-rules-benchmark-sandbox';

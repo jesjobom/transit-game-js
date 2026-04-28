@@ -19,6 +19,7 @@ test('buildSimulationSummary includes version, seeds, status, and benchmark summ
   const lines = buildSimulationSummary(world, ['Score: 12']);
 
   assert.equal(lines[0], `Version: ${APP_VERSION} (${BUILD_TAG})`);
+  assert.match(lines.join('\n'), /Mode:/);
   assert.match(lines.join('\n'), /Simulation seed:/);
   assert.match(lines.join('\n'), /Map seed:/);
   assert.match(lines.join('\n'), /Tick: 7/);
@@ -31,6 +32,7 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   const world = createWorldState();
   world.tick = 9;
   world.status = 'running';
+  world.config.benchmark.mode = 'sandbox';
   world.metrics.spawnedVehicles = 4;
   world.metrics.movedVehicles = 11;
   world.metrics.blockedMoves = 3;
@@ -46,6 +48,7 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   assert.deepEqual(metrics[0], { label: 'Tick', value: '9' });
   assert.ok(metrics.some((entry) => entry.label === 'Active' && entry.value === '2'));
   assert.ok(metrics.some((entry) => entry.label === 'Blocked' && entry.value === '3'));
+  assert.ok(metrics.some((entry) => entry.label === 'Mode' && entry.value === 'sandbox'));
   assert.ok(metrics.some((entry) => entry.label === 'Throughput/tick' && entry.value === '0.25'));
   assert.ok(metrics.some((entry) => entry.label === 'Score' && entry.value === '185'));
 });

@@ -240,3 +240,117 @@ test('engine finalizes benchmark report when duration is reached', () => {
   assert.equal(world.report.metrics.ticksSimulated, 2);
   assert.equal(world.events.at(-1).type, 'benchmarkCompleted');
 });
+
+
+test('engine allows free right on red when the rule is enabled', () => {
+  const world = createWorldState({
+    seed: 12,
+    rules: {
+      freeRightOnRed: true
+    },
+    routing: {
+      straightWeight: 0,
+      leftWeight: 0,
+      rightWeight: 1,
+      allowReverse: false
+    },
+    vehicles: [
+      { id: 'vehicle-1', x: 7, y: 5, direction: 'west', status: 'active', spawnedAtTick: 0 }
+    ],
+    lights: [
+      {
+        id: 'main-crossing',
+        phaseIndex: 0,
+        remainingTicks: 5,
+        phases: [
+          { name: 'north-south', durationTicks: 5, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 5, allowedDirections: ['east', 'west'] }
+        ]
+      }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  assert.deepEqual(
+    { x: world.entities.vehicles[0].x, y: world.entities.vehicles[0].y, direction: world.entities.vehicles[0].direction },
+    { x: 6, y: 5, direction: 'west' }
+  );
+  assert.equal(world.metrics.blockedMoves, 0);
+
+  engine.tick();
+
+  assert.deepEqual(
+    { x: world.entities.vehicles[0].x, y: world.entities.vehicles[0].y, direction: world.entities.vehicles[0].direction },
+    { x: 6, y: 4, direction: 'north' }
+  );
+});
+
+test('engine enforces four-way stop with a one-tick stop before entering uncontrolled intersections', () => {
+  const world = createWorldState({
+    rules: {
+      fourWayStop: true
+    },
+    mapMode: 'custom',
+    map: {
+      id: 'four-way-stop-test',
+      width: 3,
+      height: 3,
+      roads: [
+        { x: 1, y: 0, allowedDirections: ['south'] },
+        { x: 1, y: 1, allowedDirections: ['north', 'south', 'east', 'west'] },
+        { x: 1, y: 2, allowedDirections: ['north'] }
+      ],
+      intersections: [{ x: 1, y: 1 }],
+      spawnPoints: []
+    },
+    vehicles: [
+      { id: 'vehicle-1', x: 1, y: 0, direction: 'south', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+  assert.deepEqual({ x: world.entities.vehicles[0].x, y: world.entities.vehicles[0].y }, { x: 1, y: 0 });
+  assert.equal(world.events[0].payload.reason, 'four-way-stop');
+
+  engine.tick();
+  assert.deepEqual({ x: world.entities.vehicles[0].x, y: world.entities.vehicles[0].y }, { x: 1, y: 1 });
+});
+
+test('engine prevents entering an intersection when the exit lane is blocked and do-not-block-intersection is enabled', () => {
+  const world = createWorldState({
+    rules: {
+      doNotBlockIntersection: true
+    },
+    mapMode: 'custom',
+    map: {
+      id: 'do-not-block-test',
+      width: 4,
+      height: 1,
+      roads: [
+        { x: 0, y: 0, allowedDirections: ['east'] },
+        { x: 1, y: 0, allowedDirections: ['east'] },
+        { x: 2, y: 0, allowedDirections: ['east'] },
+        { x: 3, y: 0, allowedDirections: ['east'] }
+      ],
+      intersections: [{ x: 2, y: 0 }],
+      spawnPoints: []
+    },
+    vehicles: [
+      { id: 'vehicle-front', x: 3, y: 0, direction: 'east', status: 'active', spawnedAtTick: 0 },
+      { id: 'vehicle-back', x: 1, y: 0, direction: 'east', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  const blockedEvent = world.events.find((event) => event.payload.vehicleId === 'vehicle-back');
+  assert.equal(blockedEvent.payload.reason, 'would-block-intersection');
+  assert.deepEqual(
+    { x: world.entities.vehicles.find((entry) => entry.id === 'vehicle-back').x, y: world.entities.vehicles.find((entry) => entry.id === 'vehicle-back').y },
+    { x: 1, y: 0 }
+  );
+});

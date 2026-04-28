@@ -9,11 +9,30 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
     engine,
     renderer,
     benchmark,
-    bindControls({ onPlayPause, onStep, onReset, onSpeedChange } = {}) {
+    bindControls({
+      onPlayPause,
+      onStep,
+      onReset,
+      onSpeedChange,
+      onModeChange,
+      onRuleChange,
+      onBenchmarkDurationChange,
+      onSpawnRateChange,
+      onScenarioChange,
+      onImportScenario
+    } = {}) {
       bindButton('control-play-pause', onPlayPause);
       bindButton('control-step', onStep);
       bindButton('control-reset', onReset);
       bindSpeedControl('control-speed', onSpeedChange);
+      bindSelectControl('control-mode', onModeChange);
+      bindCheckboxControl('rule-free-right-on-red', (checked) => onRuleChange?.('freeRightOnRed', checked));
+      bindCheckboxControl('rule-four-way-stop', (checked) => onRuleChange?.('fourWayStop', checked));
+      bindCheckboxControl('rule-do-not-block-intersection', (checked) => onRuleChange?.('doNotBlockIntersection', checked));
+      bindNumberControl('control-benchmark-duration', onBenchmarkDurationChange);
+      bindNumberControl('control-spawn-rate', onSpawnRateChange);
+      bindSelectControl('control-scenario', onScenarioChange);
+      bindFileControl('control-scenario-import', onImportScenario);
     },
     setSpeedState(speedMultiplier, tickIntervalMs) {
       const speedValue = document.getElementById('control-speed-value');
@@ -33,6 +52,28 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
         stepButton.disabled = isRunning;
         stepButton.dataset.running = String(isRunning);
       }
+    },
+    syncScenarioCatalog(scenarios, selectedId) {
+      const element = document.getElementById('control-scenario');
+      if (!element) {
+        return;
+      }
+
+      element.innerHTML = scenarios
+        .map((scenario) => `<option value="${escapeHtml(scenario.id)}">${escapeHtml(scenario.name)}</option>`)
+        .join('');
+
+      if (selectedId) {
+        element.value = selectedId;
+      }
+    },
+    syncSimulationConfig(config = {}) {
+      syncSelectValue('control-mode', config.mode ?? 'benchmark');
+      syncCheckboxValue('rule-free-right-on-red', Boolean(config.rules?.freeRightOnRed));
+      syncCheckboxValue('rule-four-way-stop', Boolean(config.rules?.fourWayStop));
+      syncCheckboxValue('rule-do-not-block-intersection', Boolean(config.rules?.doNotBlockIntersection));
+      syncNumericValue('control-benchmark-duration', config.benchmarkDurationTicks ?? 60);
+      syncNumericValue('control-spawn-rate', config.spawnRate ?? 0.55);
     },
     renderDiagnostics({ metrics = [], lights = [], events = [] } = {}) {
       renderMetricList('live-metrics', metrics);
@@ -79,6 +120,83 @@ function bindSpeedControl(id, handler) {
   element.oninput = emitValue;
   element.onchange = emitValue;
   emitValue();
+}
+
+function bindSelectControl(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  const emitValue = () => handler(String(element.value));
+  element.onchange = emitValue;
+  emitValue();
+}
+
+function bindCheckboxControl(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  const emitValue = () => handler(Boolean(element.checked));
+  element.onchange = emitValue;
+  emitValue();
+}
+
+function bindNumberControl(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  const emitValue = () => {
+    const value = Number(element.value);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+
+    handler(value);
+  };
+
+  element.oninput = emitValue;
+  element.onchange = emitValue;
+  emitValue();
+}
+
+function bindFileControl(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  element.onchange = () => {
+    const file = element.files?.[0] ?? null;
+    if (file) {
+      handler(file);
+    }
+  };
+}
+
+function syncSelectValue(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.value = String(value);
+  }
+}
+
+function syncCheckboxValue(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.checked = Boolean(value);
+  }
+}
+
+function syncNumericValue(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.value = String(value);
+  }
 }
 
 function formatSpeedMultiplier(value) {

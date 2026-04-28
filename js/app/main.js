@@ -17,7 +17,8 @@ const MIN_ANIMATION_DURATION_MS = 180;
 const MAX_ANIMATION_DURATION_MS = 420;
 
 function boot() {
-  let state = createSimulationState();
+  let runtimeConfig = createRuntimeConfig();
+  let state = createSimulationState(runtimeConfig);
   let previousWorld = snapshotRenderableWorld(state.world);
   const renderer = createRenderer(document.getElementById('simulation-root'));
   const benchmark = createBenchmarkShell();
@@ -54,7 +55,7 @@ function boot() {
     },
     onReset() {
       stopLoop();
-      state = createSimulationState();
+      state = createSimulationState(runtimeConfig);
       previousWorld = snapshotRenderableWorld(state.world);
       render();
       startLoop();
@@ -64,12 +65,40 @@ function boot() {
       tickAccumulatorMs = Math.min(tickAccumulatorMs, getTickIntervalMs());
       appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
       render();
+    },
+    onModeChange(nextMode) {
+      runtimeConfig.mode = nextMode === 'sandbox' ? 'sandbox' : 'benchmark';
+      applyRuntimeConfig();
+    },
+    onRuleChange(ruleKey, enabled) {
+      runtimeConfig.rules[ruleKey] = enabled;
+      applyRuntimeConfig();
+    },
+    onBenchmarkDurationChange(nextDuration) {
+      runtimeConfig.benchmarkDurationTicks = Math.max(0, Math.round(nextDuration));
+      applyRuntimeConfig();
+    },
+    onSpawnRateChange(nextSpawnRate) {
+      runtimeConfig.spawnRate = Math.max(0, Math.min(1, Number(nextSpawnRate)));
+      applyRuntimeConfig();
     }
   });
 
+  appShell.syncSimulationConfig(runtimeConfig);
   appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
   render();
   startLoop();
+
+  function applyRuntimeConfig() {
+    stopLoop();
+    state = createSimulationState(runtimeConfig);
+    previousWorld = snapshotRenderableWorld(state.world);
+    appShell.syncSimulationConfig(runtimeConfig);
+    render();
+    if (runtimeConfig.mode === 'benchmark') {
+      startLoop();
+    }
+  }
 
   function startLoop() {
     if (isRunning) {
@@ -160,21 +189,30 @@ function snapshotRenderableWorld(world) {
   return structuredClone(serializableWorld);
 }
 
-function createSimulationState() {
+function createSimulationState(runtimeConfig = createRuntimeConfig()) {
+  const isBenchmarkMode = runtimeConfig.mode === 'benchmark';
   const world = createWorldState({
     seed: 20260425,
     benchmark: {
-      enabled: true,
-      mode: 'benchmark',
-      spawnRate: 0.55,
-      durationTicks: 60
+      enabled: isBenchmarkMode,
+      mode: isBenchmarkMode ? 'benchmark' : 'sandbox',
+      spawnRate: isBenchmarkMode ? runtimeConfig.spawnRate : 0,
+      durationTicks: isBenchmarkMode ? runtimeConfig.benchmarkDurationTicks : 0
     },
+    rules: runtimeConfig.rules,
     routing: {
       straightWeight: 0.45,
       leftWeight: 0.25,
       rightWeight: 0.3,
       allowReverse: false
     },
+    vehicles: isBenchmarkMode
+      ? []
+      : [
+          { id: 'sandbox-1', x: 0, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 },
+          { id: 'sandbox-2', x: 10, y: 0, direction: 'south', status: 'active', spawnedAtTick: 0 },
+          { id: 'sandbox-3', x: 12, y: 4, direction: 'west', status: 'active', spawnedAtTick: 0 }
+        ],
     lights: [
       {
         id: 'north-crossing',
@@ -227,6 +265,19 @@ function createSimulationState() {
   return {
     world,
     engine: createEngine(world)
+  };
+}
+
+function createRuntimeConfig() {
+  return {
+    mode: 'benchmark',
+    benchmarkDurationTicks: 60,
+    spawnRate: 0.55,
+    rules: {
+      freeRightOnRed: false,
+      fourWayStop: false,
+      doNotBlockIntersection: false
+    }
   };
 }
 
