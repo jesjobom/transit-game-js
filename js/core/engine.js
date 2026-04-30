@@ -103,7 +103,7 @@ function maybeSpawnVehicle(world) {
     return;
   }
 
-  const vehicle = {
+  const vehicle = hydrateSpawnedVehicle(world, {
     id: `vehicle-${world.metrics.spawnedVehicles + 1}`,
     spawnedAtTick: world.tick,
     x: selectedSpawn.x,
@@ -112,7 +112,7 @@ function maybeSpawnVehicle(world) {
     originDirection: selectedSpawn.direction,
     status: 'active',
     color: createVehicleColor(world, `spawn-${world.metrics.spawnedVehicles + 1}`)
-  };
+  });
 
   vehicles.push(vehicle);
   world.metrics.spawnedVehicles += 1;
@@ -135,6 +135,7 @@ function moveVehicles(world) {
   };
 
   for (const vehicle of world.entities.vehicles) {
+    ensureVehicleDebug(world, vehicle);
     recordCellMetric(world, vehicle.x, vehicle.y, 'occupancyTicks');
     const nextPosition = getNextPosition(vehicle, vehicle.direction);
     maybePlanControlledIntersectionTurn(world, vehicle, nextPosition);
@@ -143,6 +144,7 @@ function moveVehicles(world) {
     const nextStepPosition = getNextPosition(vehicle, vehicle.direction);
 
     if (!isInsideMap(world.map, nextStepPosition.x, nextStepPosition.y) || !getCell(world.map, nextStepPosition.x, nextStepPosition.y)) {
+      setVehicleIntent(world, vehicle, 'exit', 'leaving-map');
       const tripDuration = world.tick - vehicle.spawnedAtTick;
       world.metrics.completedTrips += 1;
       world.metrics.completedTripTicks += tripDuration;
@@ -160,6 +162,7 @@ function moveVehicles(world) {
 
     const block = getVehicleBlock(world, vehicle, nextStepPosition);
     if (block) {
+      setVehicleIntent(world, vehicle, getBlockedVehicleIntent(block), block.reason);
       stats.blockedCount += 1;
       world.metrics.blockedMoves += 1;
       world.metrics.stoppedTicksTotal += 1;
@@ -186,8 +189,11 @@ function moveVehicles(world) {
       vehicle.stopState = null;
     }
 
+    const previousDirection = vehicle.direction;
     vehicle.x = nextStepPosition.x;
     vehicle.y = nextStepPosition.y;
+    updateVehicleRecentPositions(world, vehicle);
+    setVehicleIntent(world, vehicle, previousDirection === vehicle.direction ? 'straight' : 'turn', previousDirection === vehicle.direction ? 'advance' : `${previousDirection}->${vehicle.direction}`);
     stats.movedCount += 1;
     world.metrics.movedVehicles += 1;
     recordDirectionalMetric(world, vehicle.originDirection, 'moved');
@@ -205,6 +211,65 @@ function moveVehicles(world) {
 
   world.entities.vehicles = survivors;
   return stats;
+}
+
+function hydrateSpawnedVehicle(world, vehicle) {
+  return {
+    ...vehicle,
+    debug: {
+      intent: 'spawned',
+      note: 'spawned',
+      lastUpdatedTick: world.tick,
+      recentPositions: [{ x: vehicle.x, y: vehicle.y, tick: world.tick, direction: vehicle.direction }]
+    }
+  };
+}
+
+function ensureVehicleDebug(world, vehicle) {
+  if (!vehicle.debug) {
+    vehicle.debug = {
+      intent: 'idle',
+      note: 'idle',
+      lastUpdatedTick: world.tick,
+      recentPositions: []
+    };
+  }
+
+  if (!Array.isArray(vehicle.debug.recentPositions) || vehicle.debug.recentPositions.length === 0) {
+    vehicle.debug.recentPositions = [{ x: vehicle.x, y: vehicle.y, tick: world.tick, direction: vehicle.direction }];
+  }
+}
+
+function setVehicleIntent(world, vehicle, intent, note) {
+  ensureVehicleDebug(world, vehicle);
+  vehicle.debug.intent = intent;
+  vehicle.debug.note = note;
+  vehicle.debug.lastUpdatedTick = world.tick;
+}
+
+function updateVehicleRecentPositions(world, vehicle) {
+  ensureVehicleDebug(world, vehicle);
+  const lastEntry = vehicle.debug.recentPositions.at(-1);
+  if (lastEntry?.x === vehicle.x && lastEntry?.y === vehicle.y && lastEntry?.direction === vehicle.direction) {
+    lastEntry.tick = world.tick;
+    return;
+  }
+
+  vehicle.debug.recentPositions.push({
+    x: vehicle.x,
+    y: vehicle.y,
+    tick: world.tick,
+    direction: vehicle.direction
+  });
+  vehicle.debug.recentPositions = vehicle.debug.recentPositions.slice(-6);
+}
+
+function getBlockedVehicleIntent(block) {
+  if (block.reason === 'red-light' || block.reason === 'four-way-stop' || block.reason === 'would-block-intersection') {
+    return 'wait';
+  }
+
+  return 'stop';
 }
 
 function updateDerivedTickMetrics(world, stats) {

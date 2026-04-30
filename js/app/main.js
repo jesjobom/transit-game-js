@@ -34,6 +34,7 @@ function boot() {
     rightId: historySnapshots[0]?.id ?? ''
   };
   let selectedCell = null;
+  let selectedVehicleId = null;
   const appShell = createAppShell({
     world: state.world,
     engine: state.engine,
@@ -78,6 +79,7 @@ function boot() {
       stopReplayLoop();
       state = createSimulationState(runtimeConfig);
       previousWorld = snapshotRenderableWorld(state.world);
+      selectedVehicleId = null;
       replayState = {
         enabled: false,
         isPlaying: false,
@@ -142,7 +144,8 @@ function boot() {
       render();
     },
     onGridCellSelect(cell) {
-      selectedCell = cell;
+      selectedCell = { x: cell.x, y: cell.y };
+      selectedVehicleId = cell.vehicleId ?? null;
       render();
     },
     onReplayToggle() {
@@ -217,6 +220,7 @@ function boot() {
     stopReplayLoop();
     state = createSimulationState(runtimeConfig);
     previousWorld = snapshotRenderableWorld(state.world);
+    selectedVehicleId = null;
     replayState = {
       enabled: false,
       isPlaying: false,
@@ -350,14 +354,15 @@ function boot() {
       tickIntervalMs,
       isRunning,
       overlayMode: runtimeConfig.overlayMode,
-      selectedCell
+      selectedCell,
+      selectedVehicleId
     });
     appShell.renderDiagnostics({
       metrics: buildLiveMetrics(viewWorld, viewReport),
       lights: buildLightPhaseSummary(viewWorld),
       events: buildRecentEventSummary(viewWorld)
     });
-    appShell.renderCellInspection(buildCellInspectionLines(viewWorld, selectedCell));
+    appShell.renderCellInspection(buildCellInspectionLines(viewWorld, selectedCell, selectedVehicleId));
     appShell.syncReplayState(state.world.replay.frames, replayState);
   }
 

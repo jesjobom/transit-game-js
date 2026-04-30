@@ -210,12 +210,16 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
 
     elements.get('simulation-root').onclick({
       target: {
-        closest() {
+        closest(selector) {
+          if (selector === '[data-vehicle-id]') {
+            return { dataset: { vehicleId: 'vehicle-9' } };
+          }
+
           return { dataset: { x: '7', y: '3' } };
         }
       }
     });
-    assert.deepEqual(selectedCells.at(-1), { x: 7, y: 3 });
+    assert.deepEqual(selectedCells.at(-1), { x: 7, y: 3, vehicleId: 'vehicle-9' });
 
     appShell.renderCellInspection(['Cell: 7,3', 'Type: intersection']);
     assert.match(elements.get('cell-inspection-summary').innerHTML, /Type: intersection/);

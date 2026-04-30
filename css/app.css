@@ -237,6 +237,18 @@ button {
   pointer-events: none;
 }
 
+.vehicle-trail-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: rgba(250, 204, 21, calc(0.18 + var(--trail-alpha, 0.4) * 0.45));
+  border: 1px solid rgba(254, 240, 138, calc(0.3 + var(--trail-alpha, 0.4) * 0.45));
+  box-shadow: 0 0 8px rgba(250, 204, 21, calc(0.18 + var(--trail-alpha, 0.4) * 0.4));
+  z-index: 1;
+}
+
 .map-cell {
   position: relative;
   aspect-ratio: 1;
@@ -578,6 +590,7 @@ button {
 
 .vehicle {
   position: absolute;
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -595,6 +608,10 @@ button {
 
 .vehicle--turning .vehicle-svg {
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35)) saturate(1.03);
+}
+
+.vehicle--selected .vehicle-svg {
+  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.2)) drop-shadow(0 0 10px rgba(250, 204, 21, 0.65));
 }
 
 .vehicle[data-motion-kind='straight'],

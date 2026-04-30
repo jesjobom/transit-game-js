@@ -94,6 +94,7 @@ export function buildWorldHtml(world, options = {}) {
     }
   }
 
+  const vehicleTrail = renderSelectedVehicleTrail(world, map, options);
   const vehicles = world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map, options));
   const summary = options.summaryLines || [];
 
@@ -109,6 +110,7 @@ export function buildWorldHtml(world, options = {}) {
           ${cells.join('')}
         </div>
         <div class="vehicle-layer" style="--grid-width:${map.width}; --grid-height:${map.height};">
+          ${vehicleTrail}
           ${vehicles.join('')}
         </div>
       </div>
@@ -274,10 +276,39 @@ function renderTrafficLightBulb(direction, state = 'red') {
   return `<span class="traffic-light traffic-light--${escapeHtml(direction)} traffic-light--${escapeHtml(state)}"></span>`;
 }
 
+function renderSelectedVehicleTrail(world, map, options = {}) {
+  const selectedVehicle = world.entities.vehicles.find((vehicle) => vehicle.id === options.selectedVehicleId);
+  const positions = selectedVehicle?.debug?.recentPositions;
+
+  if (!selectedVehicle || !Array.isArray(positions) || positions.length <= 1) {
+    return '';
+  }
+
+  return positions
+    .slice(0, -1)
+    .map((entry, index, entries) => {
+      const point = toPercentPoint({ x: entry.x + 0.5, y: entry.y + 0.5 }, map);
+      const alpha = (index + 1) / Math.max(1, entries.length);
+      return `
+        <span
+          class="vehicle-trail-dot"
+          data-vehicle-trail-for="${escapeHtml(selectedVehicle.id)}"
+          style="left:${point.x}%; top:${point.y}%; --trail-alpha:${alpha.toFixed(2)};"
+          aria-hidden="true"
+        ></span>
+      `;
+    })
+    .join('');
+}
+
 function renderVehicle(world, vehicle, map, options = {}) {
   const renderState = getVehicleRenderState(world, vehicle, map, options);
   const color = vehicle.color ?? getVehicleColor(world, vehicle);
   const classes = ['vehicle', `vehicle--${escapeHtml(vehicle.direction)}`];
+
+  if (options.selectedVehicleId === vehicle.id) {
+    classes.push('vehicle--selected');
+  }
 
   if (renderState.motionKind === 'turn') {
     classes.push('vehicle--turning');
@@ -286,6 +317,9 @@ function renderVehicle(world, vehicle, map, options = {}) {
   return `
     <span
       class="${classes.join(' ')}"
+      data-vehicle-id="${escapeHtml(vehicle.id)}"
+      data-x="${vehicle.x}"
+      data-y="${vehicle.y}"
       data-motion-kind="${escapeHtml(renderState.motionKind)}"
       style="left:${renderState.position.x}%; top:${renderState.position.y}%; --vehicle-render-offset-x:${renderState.offset.x}px; --vehicle-render-offset-y:${renderState.offset.y}px; --vehicle-render-angle:${renderState.angle}deg; --vehicle-motion-progress:${renderState.progress.toFixed(3)}; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
       title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"

@@ -81,7 +81,15 @@ export function buildLiveMetrics(world, report = null) {
   ];
 }
 
-export function buildCellInspectionLines(world, selectedCell) {
+export function buildCellInspectionLines(world, selectedCell, selectedVehicleId = null) {
+  const selectedVehicle = selectedVehicleId
+    ? world.entities.vehicles.find((vehicle) => vehicle.id === selectedVehicleId) ?? null
+    : null;
+
+  if (selectedVehicle) {
+    return buildVehicleInspectionLines(selectedVehicle);
+  }
+
   if (!selectedCell || !Number.isFinite(selectedCell.x) || !Number.isFinite(selectedCell.y)) {
     return ['Click a road or intersection cell to inspect it'];
   }
@@ -101,6 +109,22 @@ export function buildCellInspectionLines(world, selectedCell) {
     `Blocked ticks: ${cellStats.blockedTicks ?? 0}`,
     `Flow count: ${cellStats.passThroughCount ?? 0}`,
     `Intersection throughput: ${world.metrics.intersectionThroughputByKey?.[positionKey] ?? 0}`
+  ];
+}
+
+function buildVehicleInspectionLines(vehicle) {
+  const recentTrail = Array.isArray(vehicle.debug?.recentPositions)
+    ? vehicle.debug.recentPositions.map((entry) => `${entry.x},${entry.y}@t${entry.tick}`).join(' → ')
+    : '—';
+
+  return [
+    `Vehicle: ${vehicle.id}`,
+    `Position: ${vehicle.x},${vehicle.y}`,
+    `Direction: ${vehicle.direction}`,
+    `Intent: ${vehicle.debug?.intent ?? '—'}`,
+    `Note: ${vehicle.debug?.note ?? '—'}`,
+    `Spawned at: t${vehicle.spawnedAtTick ?? '—'}`,
+    `Trail: ${recentTrail}`
   ];
 }
 

@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 29`
-- **Build tag:** `s29-procedural-maps`
-- **Último estado validado:** `50/50` testes passando
+- **Versão visível da app:** `Sprint 30`
+- **Build tag:** `s30-vehicle-inspector`
+- **Último estado validado:** `52/52` testes passando
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
@@ -280,15 +280,15 @@ Levar os diagnósticos além da sidebar textual e mostrar informação útil dir
 - [x] fluxo médio por via
 - [x] destacar pontos de deadlock
 - [x] inspeção de célula/cruzamento
-- [ ] estado interno de veículo selecionado
-- [ ] intenção atual do veículo (seguir, virar, parar, aguardar)
-- [ ] trilha curta/histórico visual de movimento
+- [x] estado interno de veículo selecionado
+- [x] intenção atual do veículo (seguir, virar, parar, aguardar)
+- [x] trilha curta/histórico visual de movimento
 
 **Por que importa**
 Hoje os diagnósticos ajudam, mas ainda exigem leitura indireta. Overlay visual acelera muito depuração e entendimento do comportamento emergente.
 
-**Status após Sprint 27**
-Parcialmente concluído no estado atual: a app agora mostra overlays no grid para congestionamento, fluxo e pressão de deadlock, além de inspector por clique com métricas da célula. Ainda ficam pendentes inspeção profunda de veículo selecionado, intenção do veículo e trilha curta de movimento.
+**Status após Sprint 30**
+Concluído no estado atual: a app agora mostra overlays no grid para congestionamento, fluxo e pressão de deadlock, inspector por clique com métricas da célula e inspeção de veículo selecionado com intenção atual e trilha curta de movimento.
 
 ---
 

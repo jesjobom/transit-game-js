@@ -141,7 +141,21 @@ export function hydrateVehicle(world, vehicle) {
   return {
     ...vehicle,
     originDirection: vehicle.originDirection ?? vehicle.direction,
-    color: vehicle.color ?? createVehicleColor(world, vehicle.id ?? `${vehicle.x},${vehicle.y},${vehicle.direction}`)
+    color: vehicle.color ?? createVehicleColor(world, vehicle.id ?? `${vehicle.x},${vehicle.y},${vehicle.direction}`),
+    debug: hydrateVehicleDebug(vehicle)
+  };
+}
+
+function hydrateVehicleDebug(vehicle) {
+  const recentPositions = Array.isArray(vehicle.debug?.recentPositions)
+    ? vehicle.debug.recentPositions.slice(-6)
+    : [{ x: vehicle.x, y: vehicle.y, tick: vehicle.spawnedAtTick ?? 0, direction: vehicle.direction }];
+
+  return {
+    intent: vehicle.debug?.intent ?? 'idle',
+    note: vehicle.debug?.note ?? 'idle',
+    lastUpdatedTick: vehicle.debug?.lastUpdatedTick ?? (vehicle.spawnedAtTick ?? 0),
+    recentPositions
   };
 }
 

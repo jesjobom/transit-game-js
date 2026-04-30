@@ -129,6 +129,40 @@ test('buildCellInspectionLines summarizes selected cell state and analytics', ()
   assert.match(lines[7], /3/);
 });
 
+
+test('buildCellInspectionLines summarizes selected vehicle state, intent, and trail', () => {
+  const world = createWorldState({
+    vehicles: [
+      {
+        id: 'vehicle-7',
+        x: 4,
+        y: 3,
+        direction: 'east',
+        status: 'active',
+        spawnedAtTick: 2,
+        debug: {
+          intent: 'wait',
+          note: 'red-light',
+          lastUpdatedTick: 8,
+          recentPositions: [
+            { x: 2, y: 3, tick: 6, direction: 'east' },
+            { x: 3, y: 3, tick: 7, direction: 'east' },
+            { x: 4, y: 3, tick: 8, direction: 'east' }
+          ]
+        }
+      }
+    ]
+  });
+
+  const lines = buildCellInspectionLines(world, { x: 4, y: 3 }, 'vehicle-7');
+
+  assert.match(lines[0], /vehicle-7/);
+  assert.match(lines[3], /wait/);
+  assert.match(lines[4], /red-light/);
+  assert.match(lines[6], /2,3@t6/);
+  assert.match(lines[6], /4,3@t8/);
+});
+
 test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics', () => {
   const world = createWorldState({
     lights: [

@@ -269,6 +269,7 @@ function bindGridCellSelection(id, handler) {
   }
 
   element.onclick = (event) => {
+    const vehicle = event.target?.closest?.('[data-vehicle-id]');
     const cell = event.target?.closest?.('[data-x][data-y]');
     if (!cell) {
       return;
@@ -276,7 +277,8 @@ function bindGridCellSelection(id, handler) {
 
     handler({
       x: Number(cell.dataset.x),
-      y: Number(cell.dataset.y)
+      y: Number(cell.dataset.y),
+      vehicleId: vehicle?.dataset?.vehicleId ?? null
     });
   };
 }

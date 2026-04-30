@@ -109,6 +109,41 @@ test('buildWorldHtml renders overlays and selected cell highlights', () => {
   assert.match(html, /map-cell--selected/);
 });
 
+
+test('buildWorldHtml marks selected vehicles in the vehicle layer', () => {
+  const world = createWorldState({
+    vehicles: [
+      {
+        id: 'vehicle-selected',
+        x: 2,
+        y: 1,
+        direction: 'south',
+        status: 'active',
+        spawnedAtTick: 0,
+        debug: {
+          intent: 'straight',
+          note: 'advance',
+          lastUpdatedTick: 3,
+          recentPositions: [
+            { x: 2, y: 3, tick: 1, direction: 'south' },
+            { x: 2, y: 2, tick: 2, direction: 'south' },
+            { x: 2, y: 1, tick: 3, direction: 'south' }
+          ]
+        }
+      }
+    ]
+  });
+
+  const html = buildWorldHtml(world, {
+    selectedVehicleId: 'vehicle-selected'
+  });
+
+  assert.match(html, /data-vehicle-id="vehicle-selected"/);
+  assert.match(html, /vehicle--selected/);
+  assert.match(html, /vehicle-trail-dot/);
+  assert.match(html, /data-vehicle-trail-for="vehicle-selected"/);
+});
+
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
   const world = createWorldState({
     vehicles: [
