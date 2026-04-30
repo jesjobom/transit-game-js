@@ -40,6 +40,7 @@ export function buildBenchmarkMetrics(world) {
   const avgRoadOccupancy = ticksSimulated > 0 ? world.metrics.roadOccupancyAccumulated / ticksSimulated : 0;
   const avgEffectiveSpeed = movedVehicles / participantVehicles;
   const tripTimeVariance = calculateVariance(world.metrics.completedTripDurations);
+  const fairness = buildDirectionalFairnessMetrics(world.metrics.directionalFlow);
 
   return {
     completedTrips,
@@ -60,9 +61,57 @@ export function buildBenchmarkMetrics(world) {
     avgRoadOccupancy,
     avgEffectiveSpeed,
     tripTimeVariance,
+    fairnessScore: fairness.fairnessScore,
+    fairnessByDirection: fairness.fairnessByDirection,
     throughputByIntersection: {
       ...world.metrics.intersectionThroughputByKey
     }
+  };
+}
+
+function buildDirectionalFairnessMetrics(directionalFlow = {}) {
+  const fairnessByDirection = {};
+  const completionRates = [];
+
+  for (const direction of ['north', 'east', 'south', 'west']) {
+    const stats = directionalFlow[direction] ?? {};
+    const spawned = Number(stats.spawned ?? 0);
+    const completed = Number(stats.completed ?? 0);
+    const blocked = Number(stats.blocked ?? 0);
+    const stoppedTicks = Number(stats.stoppedTicks ?? 0);
+    const moved = Number(stats.moved ?? 0);
+    const completionRate = spawned > 0 ? completed / spawned : null;
+    const avgStoppedTicks = spawned > 0 ? stoppedTicks / spawned : 0;
+
+    fairnessByDirection[direction] = {
+      spawned,
+      completed,
+      blocked,
+      moved,
+      stoppedTicks,
+      completionRate,
+      avgStoppedTicks
+    };
+
+    if (completionRate !== null) {
+      completionRates.push(completionRate);
+    }
+  }
+
+  if (completionRates.length < 2) {
+    return {
+      fairnessScore: 1,
+      fairnessByDirection
+    };
+  }
+
+  const maxRate = Math.max(...completionRates);
+  const minRate = Math.min(...completionRates);
+  const fairnessScore = maxRate <= 0 ? 1 : minRate / maxRate;
+
+  return {
+    fairnessScore,
+    fairnessByDirection
   };
 }
 

@@ -16,6 +16,10 @@ test('buildBenchmarkMetrics derives summary metrics from world state', () => {
   world.metrics.ticksSimulated = 10;
   world.metrics.completedTripTicks = 12;
   world.entities.vehicles = [{ id: 'vehicle-9' }];
+  world.metrics.directionalFlow.north.spawned = 4;
+  world.metrics.directionalFlow.north.completed = 4;
+  world.metrics.directionalFlow.south.spawned = 4;
+  world.metrics.directionalFlow.south.completed = 2;
 
   const metrics = buildBenchmarkMetrics(world);
 
@@ -25,6 +29,9 @@ test('buildBenchmarkMetrics derives summary metrics from world state', () => {
   assert.equal(metrics.blockedMoveRate, 0.4);
   assert.equal(metrics.completionRate, 0.4);
   assert.equal(metrics.activeVehicles, 1);
+  assert.equal(metrics.fairnessByDirection.north.completionRate, 1);
+  assert.equal(metrics.fairnessByDirection.south.completionRate, 0.5);
+  assert.equal(metrics.fairnessScore, 0.5);
 });
 
 test('finalizeBenchmark produces a report with metrics and score', () => {
@@ -45,6 +52,7 @@ test('finalizeBenchmark produces a report with metrics and score', () => {
 
   assert.equal(report.benchmark.mode, 'benchmark');
   assert.equal(report.metrics.avgCompletionTicks, 4);
+  assert.equal(report.metrics.fairnessScore, 1);
   assert.equal(typeof report.score.total, 'number');
   assert.deepEqual(report.rules, world.config.rules);
 });

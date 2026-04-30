@@ -18,6 +18,21 @@ test('calculateScore returns total and score components', () => {
     safetyPenalty: 500,
     deadlockPenalty: 0,
     flowPenalty: 20,
-    waitPenalty: 10
+    waitPenalty: 10,
+    fairnessPenalty: 0
   });
+});
+
+test('calculateScore penalizes unfair directional service', () => {
+  const score = calculateScore({
+    completedTrips: 4,
+    collisions: 0,
+    deadlocks: 0,
+    blockedMoves: 0,
+    avgCompletionTicks: 4,
+    fairnessScore: 0.5
+  });
+
+  assert.equal(score.components.fairnessPenalty, 50);
+  assert.equal(score.total, 342);
 });

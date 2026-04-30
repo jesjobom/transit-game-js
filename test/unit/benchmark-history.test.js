@@ -39,7 +39,8 @@ function createReport(overrides = {}) {
       avgCompletionTicks: 5.5,
       avgStoppedTicks: 1.25,
       avgQueueLength: 0.8,
-      deadlocks: 0
+      deadlocks: 0,
+      fairnessScore: 0.75
     },
     score: {
       total: 240
@@ -88,7 +89,8 @@ test('createBenchmarkHistoryStore saves snapshots newest-first and builds compar
       avgCompletionTicks: 4.75,
       avgStoppedTicks: 0.9,
       avgQueueLength: 0.55,
-      deadlocks: 0
+      deadlocks: 0,
+      fairnessScore: 0.9
     },
     score: {
       total: 315
@@ -108,6 +110,7 @@ test('createBenchmarkHistoryStore saves snapshots newest-first and builds compar
   assert.equal(comparison.scoreDelta, 75);
   assert.equal(comparison.completedTripsDelta, 3);
   assert.equal(comparison.deadlocksDelta, 0);
+  assert.ok(Math.abs(comparison.fairnessDelta - 0.15) < 1e-9);
 });
 
 test('buildBenchmarkComparison returns null when either side is missing', () => {

@@ -9,8 +9,9 @@ export function buildBenchmarkHistoryLines(snapshots = []) {
     const score = Number.isFinite(snapshot.score?.total) ? snapshot.score.total : '—';
     const throughput = formatDecimal(snapshot.metrics?.throughputPerTick);
     const completedTrips = snapshot.metrics?.completedTrips ?? '—';
+    const fairness = formatDecimal(snapshot.metrics?.fairnessScore);
     const scenario = snapshot.scenarioName || snapshot.scenarioId || snapshot.mapId || 'scenario';
-    return `${index + 1}. ${scenario} | score=${score} | trips=${completedTrips} | throughput=${throughput} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
+    return `${index + 1}. ${scenario} | score=${score} | trips=${completedTrips} | throughput=${throughput} | fairness=${fairness} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
   });
 }
 
@@ -31,7 +32,8 @@ export function buildBenchmarkComparisonLines(comparison) {
     `Avg trip ticks Δ: ${formatSignedNumber(comparison.avgCompletionTicksDelta, 2)}`,
     `Avg stopped Δ: ${formatSignedNumber(comparison.avgStoppedTicksDelta, 2)}`,
     `Avg queue Δ: ${formatSignedNumber(comparison.avgQueueLengthDelta, 2)}`,
-    `Deadlocks Δ: ${formatSignedNumber(comparison.deadlocksDelta, 0)}`
+    `Deadlocks Δ: ${formatSignedNumber(comparison.deadlocksDelta, 0)}`,
+    `Fairness Δ: ${formatSignedNumber(comparison.fairnessDelta, 2)}`
   ];
 }
 
@@ -73,6 +75,7 @@ export function buildLiveMetrics(world, report = null) {
     { label: 'Avg stopped', value: formatDecimal(metrics.avgStoppedTicks) },
     { label: 'Avg queue', value: formatDecimal(metrics.avgQueueLength) },
     { label: 'Occupancy', value: formatDecimal(metrics.avgRoadOccupancy) },
+    { label: 'Fairness', value: formatDecimal(metrics.fairnessScore) },
     { label: 'Score', value: report ? String(report.score.total) : '—' }
   ];
 }
@@ -146,7 +149,8 @@ function summarizeEventPayload(payload = {}) {
 function buildSnapshotLabel(snapshot = {}) {
   const scenario = snapshot.scenarioName || snapshot.scenarioId || snapshot.mapId || 'scenario';
   const score = Number.isFinite(snapshot.score?.total) ? snapshot.score.total : '—';
-  return `${scenario} | score=${score} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
+  const fairness = formatDecimal(snapshot.metrics?.fairnessScore);
+  return `${scenario} | score=${score} | fairness=${fairness} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
 }
 
 function formatDecimal(value) {

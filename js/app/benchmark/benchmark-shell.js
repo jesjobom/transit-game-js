@@ -12,6 +12,7 @@ export function createBenchmarkShell() {
         `Completed trips: ${report.metrics.completedTrips}`,
         `Throughput/tick: ${report.metrics.throughputPerTick.toFixed(3)}`,
         `Avg completion ticks: ${report.metrics.avgCompletionTicks.toFixed(2)}`,
+        `Fairness: ${Number(report.metrics.fairnessScore ?? 1).toFixed(2)}`,
         `Score: ${report.score.total}`
       ];
     }

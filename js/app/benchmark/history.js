@@ -65,7 +65,8 @@ export function buildBenchmarkComparison(left, right) {
     avgCompletionTicksDelta: diffNumber(right.metrics?.avgCompletionTicks, left.metrics?.avgCompletionTicks),
     avgStoppedTicksDelta: diffNumber(right.metrics?.avgStoppedTicks, left.metrics?.avgStoppedTicks),
     avgQueueLengthDelta: diffNumber(right.metrics?.avgQueueLength, left.metrics?.avgQueueLength),
-    deadlocksDelta: diffNumber(right.metrics?.deadlocks, left.metrics?.deadlocks)
+    deadlocksDelta: diffNumber(right.metrics?.deadlocks, left.metrics?.deadlocks),
+    fairnessDelta: diffNumber(right.metrics?.fairnessScore, left.metrics?.fairnessScore)
   };
 }
 

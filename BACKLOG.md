@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 25`
-- **Build tag:** `s25-benchmark-history-ab`
-- **Último estado validado:** `44/44` testes passando
+- **Versão visível da app:** `Sprint 26`
+- **Build tag:** `s26-directional-fairness`
+- **Último estado validado:** `45/45` testes passando
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
@@ -45,6 +45,7 @@ A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e
 - resumo de benchmark
 - histórico persistido de benchmarks
 - comparação A/B básica de benchmarks
+- fairness entre fluxos/direções no benchmark
 - resumo de fases de semáforo
 - eventos recentes da simulação
 
@@ -255,13 +256,13 @@ Fechar as métricas mais importantes para analisar eficiência e fluidez com mai
 - [x] tamanho médio de fila
 - [x] ocupação média das vias
 - [x] variância do tempo de viagem
-- [ ] fairness entre direções/fluxos
+- [x] fairness entre direções/fluxos
 
 **Por que importa**
 Hoje já existe uma base boa, mas ainda faltam métricas que ajudam a distinguir “parece rápido” de “está realmente eficiente”.
 
-**Status após Sprint 24**
-Parcialmente concluído no estado atual: o benchmark agora expõe tempo médio parado, velocidade efetiva média, throughput por cruzamento, fila média, ocupação média e variância de viagem. Fairness entre direções ainda fica pendente.
+**Status após Sprint 26**
+Concluído no estado atual: o benchmark agora acompanha fairness entre fluxos de origem por direção, expõe score de fairness no relatório/UI, detalha taxas por direção e penaliza cenários que favorecem demais um fluxo enquanto deixam outro morrer na fila.
 
 ---
 

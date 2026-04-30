@@ -45,7 +45,7 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   world.metrics.deadlocks = 1;
 
   const metrics = buildLiveMetrics(world, {
-    metrics: { throughputPerTick: 0.25, avgCompletionTicks: 4.5, avgStoppedTicks: 1.25, avgQueueLength: 0.75, avgRoadOccupancy: 0.4 },
+    metrics: { throughputPerTick: 0.25, avgCompletionTicks: 4.5, avgStoppedTicks: 1.25, avgQueueLength: 0.75, avgRoadOccupancy: 0.4, fairnessScore: 0.6 },
     score: { total: 185 }
   });
 
@@ -55,6 +55,7 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   assert.ok(metrics.some((entry) => entry.label === 'Deadlocks' && entry.value === '1'));
   assert.ok(metrics.some((entry) => entry.label === 'Mode' && entry.value === 'sandbox'));
   assert.ok(metrics.some((entry) => entry.label === 'Throughput/tick' && entry.value === '0.25'));
+  assert.ok(metrics.some((entry) => entry.label === 'Fairness' && entry.value === '0.60'));
   assert.ok(metrics.some((entry) => entry.label === 'Score' && entry.value === '185'));
 });
 
@@ -66,7 +67,7 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
       simulationSeed: 123,
       mapSeed: 456,
       mapId: 'baseline-benchmark',
-      metrics: { completedTrips: 12, throughputPerTick: 0.2, avgCompletionTicks: 5.5, avgStoppedTicks: 1.3, avgQueueLength: 0.8, deadlocks: 1 },
+      metrics: { completedTrips: 12, throughputPerTick: 0.2, avgCompletionTicks: 5.5, avgStoppedTicks: 1.3, avgQueueLength: 0.8, deadlocks: 1, fairnessScore: 0.5 },
       score: { total: 240 }
     },
     {
@@ -75,7 +76,7 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
       simulationSeed: 789,
       mapSeed: 987,
       mapId: 'baseline-benchmark',
-      metrics: { completedTrips: 15, throughputPerTick: 0.25, avgCompletionTicks: 4.75, avgStoppedTicks: 0.9, avgQueueLength: 0.55, deadlocks: 0 },
+      metrics: { completedTrips: 15, throughputPerTick: 0.25, avgCompletionTicks: 4.75, avgStoppedTicks: 0.9, avgQueueLength: 0.55, deadlocks: 0, fairnessScore: 0.9 },
       score: { total: 315 }
     }
   ];
@@ -90,16 +91,19 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
     avgCompletionTicksDelta: -0.75,
     avgStoppedTicksDelta: -0.4,
     avgQueueLengthDelta: -0.25,
-    deadlocksDelta: -1
+    deadlocksDelta: -1,
+    fairnessDelta: 0.4
   });
 
   assert.match(historyLines[0], /score=240/);
+  assert.match(historyLines[0], /fairness=0.50/);
   assert.match(historyLines[1], /seed=789/);
   assert.match(comparisonLines[0], /^A:/);
   assert.match(comparisonLines[1], /^B:/);
   assert.match(comparisonLines[2], /\+75/);
   assert.match(comparisonLines[4], /\+0.050/);
   assert.match(comparisonLines[8], /-1/);
+  assert.match(comparisonLines[9], /\+0.40/);
 });
 
 test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics', () => {

@@ -79,6 +79,7 @@ export function createWorldState(options = {}) {
       queueLengthAccumulated: 0,
       roadOccupancyAccumulated: 0,
       intersectionThroughputByKey: {},
+      directionalFlow: createDirectionalFlowMetrics(),
       deadlockStreak: 0,
       inDeadlock: false
     },
@@ -134,12 +135,45 @@ export function createVehicleColor(world, token) {
 export function hydrateVehicle(world, vehicle) {
   return {
     ...vehicle,
+    originDirection: vehicle.originDirection ?? vehicle.direction,
     color: vehicle.color ?? createVehicleColor(world, vehicle.id ?? `${vehicle.x},${vehicle.y},${vehicle.direction}`)
   };
 }
 
+export function recordDirectionalMetric(world, direction, metricKey, amount = 1) {
+  const normalizedDirection = normalizeDirectionKey(direction);
+  if (!normalizedDirection) {
+    return;
+  }
+
+  world.metrics.directionalFlow[normalizedDirection][metricKey] += amount;
+}
+
 function worldLike(simulationSeed) {
   return { simulationSeed };
+}
+
+function createDirectionalFlowMetrics() {
+  return {
+    north: createDirectionalMetricEntry(),
+    east: createDirectionalMetricEntry(),
+    south: createDirectionalMetricEntry(),
+    west: createDirectionalMetricEntry()
+  };
+}
+
+function createDirectionalMetricEntry() {
+  return {
+    spawned: 0,
+    completed: 0,
+    blocked: 0,
+    stoppedTicks: 0,
+    moved: 0
+  };
+}
+
+function normalizeDirectionKey(direction) {
+  return ['north', 'east', 'south', 'west'].includes(direction) ? direction : null;
 }
 
 function hashString(value) {

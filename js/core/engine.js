@@ -12,7 +12,7 @@ import {
   turnLeft,
   turnRight
 } from './map.js';
-import { addWorldEvent, createVehicleColor, nextRandomFloat, syncWorldRngState } from './world.js';
+import { addWorldEvent, createVehicleColor, nextRandomFloat, recordDirectionalMetric, syncWorldRngState } from './world.js';
 
 const DEADLOCK_THRESHOLD_TICKS = 3;
 
@@ -108,12 +108,14 @@ function maybeSpawnVehicle(world) {
     x: selectedSpawn.x,
     y: selectedSpawn.y,
     direction: selectedSpawn.direction,
+    originDirection: selectedSpawn.direction,
     status: 'active',
     color: createVehicleColor(world, `spawn-${world.metrics.spawnedVehicles + 1}`)
   };
 
   vehicles.push(vehicle);
   world.metrics.spawnedVehicles += 1;
+  recordDirectionalMetric(world, vehicle.originDirection, 'spawned');
   addWorldEvent(world, 'vehicleSpawned', {
     vehicleId: vehicle.id,
     x: vehicle.x,
@@ -143,6 +145,7 @@ function moveVehicles(world) {
       world.metrics.completedTrips += 1;
       world.metrics.completedTripTicks += tripDuration;
       world.metrics.completedTripDurations.push(tripDuration);
+      recordDirectionalMetric(world, vehicle.originDirection, 'completed');
       addWorldEvent(world, 'vehicleExited', {
         vehicleId: vehicle.id,
         x: vehicle.x,
@@ -158,6 +161,8 @@ function moveVehicles(world) {
       stats.blockedCount += 1;
       world.metrics.blockedMoves += 1;
       world.metrics.stoppedTicksTotal += 1;
+      recordDirectionalMetric(world, vehicle.originDirection, 'blocked');
+      recordDirectionalMetric(world, vehicle.originDirection, 'stoppedTicks');
       addWorldEvent(world, 'vehicleBlocked', {
         vehicleId: vehicle.id,
         x: vehicle.x,
@@ -182,6 +187,7 @@ function moveVehicles(world) {
     vehicle.y = nextStepPosition.y;
     stats.movedCount += 1;
     world.metrics.movedVehicles += 1;
+    recordDirectionalMetric(world, vehicle.originDirection, 'moved');
     recordIntersectionThroughput(world, nextStepPosition);
     addWorldEvent(world, 'vehicleMoved', {
       vehicleId: vehicle.id,
