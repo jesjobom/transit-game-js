@@ -1,4 +1,4 @@
-import { normalizeSeed } from './rng.js';
+import { createSeededRng, normalizeSeed } from './rng.js';
 
 const DIRECTION_VECTORS = {
   north: { x: 0, y: -1 },
@@ -14,7 +14,69 @@ export function createMapDefinition(options = {}) {
     return normalizeMap(options.map);
   }
 
+  if (options.mode === 'procedural') {
+    return createProceduralMap(options);
+  }
+
   return createBootstrapMap(options);
+}
+
+export function createProceduralMap(options = {}) {
+  const mapSeed = normalizeSeed(options.mapSeed ?? options.seed);
+  const rng = createSeededRng(mapSeed);
+  const procedural = options.procedural ?? {};
+  const width = clampOdd(Math.round(procedural.width ?? 15), 9, 25);
+  const height = clampOdd(Math.round(procedural.height ?? 13), 9, 25);
+  const density = clampNumber(procedural.density ?? 0.6, 0.3, 0.9);
+  const signalRate = clampNumber(procedural.signalRate ?? 0.45, 0, 1);
+  const verticalCount = clampNumber(Math.round(2 + density * ((width - 3) / 3)), 2, Math.max(2, width - 2));
+  const horizontalCount = clampNumber(Math.round(2 + density * ((height - 3) / 3)), 2, Math.max(2, height - 2));
+  const verticalColumns = pickSpreadPositions(width, verticalCount, rng);
+  const horizontalRows = pickSpreadPositions(height, horizontalCount, rng);
+  const roads = [];
+
+  for (const x of verticalColumns) {
+    for (let y = 0; y < height; y += 1) {
+      roads.push(createRoadCell(x, y, ['north', 'south']));
+    }
+  }
+
+  for (const y of horizontalRows) {
+    for (let x = 0; x < width; x += 1) {
+      roads.push(createRoadCell(x, y, ['east', 'west']));
+    }
+  }
+
+  const intersections = [];
+  let lightIndex = 1;
+  for (const x of verticalColumns) {
+    for (const y of horizontalRows) {
+      const hasLight = rng.nextFloat() <= signalRate;
+      intersections.push({
+        x,
+        y,
+        ...(hasLight ? { lightId: `proc-light-${lightIndex++}` } : {})
+      });
+    }
+  }
+
+  const spawnPoints = [
+    ...verticalColumns.map((x, index) => ({ id: `north-${index + 1}`, x, y: 0, direction: 'south' })),
+    ...verticalColumns.map((x, index) => ({ id: `south-${index + 1}`, x, y: height - 1, direction: 'north' })),
+    ...horizontalRows.map((y, index) => ({ id: `west-${index + 1}`, x: 0, y, direction: 'east' })),
+    ...horizontalRows.map((y, index) => ({ id: `east-${index + 1}`, x: width - 1, y, direction: 'west' }))
+  ];
+
+  return normalizeMap({
+    id: options.id ?? `procedural-grid-${mapSeed}`,
+    mode: 'procedural',
+    mapSeed,
+    width,
+    height,
+    roads,
+    intersections,
+    spawnPoints
+  });
 }
 
 export function createBootstrapMap(options = {}) {
@@ -227,4 +289,26 @@ function buildRoadCell({ x, y, type, allowedDirections }) {
 
 function uniqueDirections(directions) {
   return DIRECTION_ORDER.filter((direction) => directions.includes(direction));
+}
+
+function pickSpreadPositions(size, count, rng) {
+  const positions = [];
+  const step = (size - 1) / (count + 1);
+
+  for (let index = 0; index < count; index += 1) {
+    const center = Math.round(step * (index + 1));
+    const jitter = Math.round((rng.nextFloat() - 0.5) * Math.max(1, step * 0.5));
+    positions.push(clampNumber(center + jitter, 1, size - 2));
+  }
+
+  return [...new Set(positions)].sort((left, right) => left - right);
+}
+
+function clampOdd(value, min, max) {
+  const clamped = clampNumber(value, min, max);
+  return clamped % 2 === 0 ? clamped + 1 > max ? clamped - 1 : clamped + 1 : clamped;
+}
+
+function clampNumber(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }

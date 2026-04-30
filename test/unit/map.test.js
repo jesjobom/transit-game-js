@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   canTravelDirection,
   createBootstrapMap,
+  createProceduralMap,
   getAllowedDirections,
   getAvailableDirections,
   getCell,
@@ -30,6 +31,26 @@ test('createBootstrapMap builds a larger less-symmetric city map with bigger blo
   assert.equal(map.intersections.length, 13);
   assert.deepEqual(getIntersection(map, 6, 5), { x: 6, y: 5, lightId: 'main-crossing' });
   assert.equal(getIntersection(map, 10, 9), null);
+});
+
+test('createProceduralMap reproduces the same road network for the same mapSeed and params', () => {
+  const mapA = createProceduralMap({
+    mapSeed: 4242,
+    procedural: { width: 17, height: 15, density: 0.7, signalRate: 0.5 }
+  });
+  const mapB = createProceduralMap({
+    mapSeed: 4242,
+    procedural: { width: 17, height: 15, density: 0.7, signalRate: 0.5 }
+  });
+
+  assert.equal(mapA.mode, 'procedural');
+  assert.equal(mapA.width, 17);
+  assert.equal(mapA.height, 15);
+  assert.deepEqual(mapA.roads, mapB.roads);
+  assert.deepEqual(mapA.intersections, mapB.intersections);
+  assert.deepEqual(mapA.spawnPoints, mapB.spawnPoints);
+  assert.ok(mapA.intersections.length >= 4);
+  assert.ok(mapA.spawnPoints.length >= 8);
 });
 
 test('map helpers resolve roads, lane directions, and movement correctly', () => {

@@ -30,7 +30,8 @@ export function createWorldState(options = {}) {
     mode: options.mapMode,
     seed: mapSeed,
     mapSeed,
-    map: options.map
+    map: options.map,
+    procedural: options.procedural
   });
 
   const world = {
@@ -62,7 +63,7 @@ export function createWorldState(options = {}) {
     },
     entities: {
       vehicles: Array.isArray(options.vehicles) ? structuredClone(options.vehicles).map((vehicle) => hydrateVehicle(worldLike(simulationSeed), vehicle)) : [],
-      lights: Array.isArray(options.lights) ? structuredClone(options.lights) : []
+      lights: createLightEntitiesForMap(map, options.lights, options.mapMode)
     },
     metrics: {
       completedTrips: 0,
@@ -190,6 +191,34 @@ function createCellMetricEntry() {
     blockedTicks: 0,
     passThroughCount: 0
   };
+}
+
+function createLightEntitiesForMap(map, lights = [], mapMode) {
+  const baseLights = Array.isArray(lights) ? structuredClone(lights) : [];
+
+  if (mapMode !== 'procedural') {
+    return baseLights;
+  }
+
+  const byId = new Map(baseLights.map((light) => [light.id, light]));
+
+  for (const intersection of map.intersections || []) {
+    if (!intersection.lightId || byId.has(intersection.lightId)) {
+      continue;
+    }
+
+    byId.set(intersection.lightId, {
+      id: intersection.lightId,
+      phaseIndex: 0,
+      remainingTicks: 3,
+      phases: [
+        { name: 'north-south', durationTicks: 3, allowedDirections: ['north', 'south'] },
+        { name: 'east-west', durationTicks: 3, allowedDirections: ['east', 'west'] }
+      ]
+    });
+  }
+
+  return [...byId.values()];
 }
 
 function createDirectionalFlowMetrics() {

@@ -46,6 +46,11 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['rule-four-way-stop', Object.assign(createElement('rule-four-way-stop'), { checked: false })],
     ['rule-do-not-block-intersection', Object.assign(createElement('rule-do-not-block-intersection'), { checked: false })],
     ['control-scenario', Object.assign(createElement('control-scenario'), { value: '' })],
+    ['control-map-mode', Object.assign(createElement('control-map-mode'), { value: 'fixed' })],
+    ['control-procedural-width', Object.assign(createElement('control-procedural-width'), { value: '15' })],
+    ['control-procedural-height', Object.assign(createElement('control-procedural-height'), { value: '13' })],
+    ['control-procedural-density', Object.assign(createElement('control-procedural-density'), { value: '0.6' })],
+    ['control-procedural-signal-rate', Object.assign(createElement('control-procedural-signal-rate'), { value: '0.45' })],
     ['control-overlay-mode', Object.assign(createElement('control-overlay-mode'), { value: 'off' })],
     ['control-scenario-import', Object.assign(createElement('control-scenario-import'), { files: [] })],
     ['control-history-a', Object.assign(createElement('control-history-a'), { value: '' })],
@@ -74,6 +79,11 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     const ruleCalls = [];
     const historySelections = [];
     const overlayModes = [];
+    const mapModes = [];
+    const proceduralWidthCalls = [];
+    const proceduralHeightCalls = [];
+    const proceduralDensityCalls = [];
+    const proceduralSignalCalls = [];
     const selectedCells = [];
     let replayToggleCalls = 0;
     let replayPlayPauseCalls = 0;
@@ -98,8 +108,23 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       onModeChange(nextMode) {
         modeCalls.push(nextMode);
       },
+      onMapModeChange(nextMode) {
+        mapModes.push(nextMode);
+      },
       onRuleChange(ruleKey, enabled) {
         ruleCalls.push([ruleKey, enabled]);
+      },
+      onProceduralWidthChange(value) {
+        proceduralWidthCalls.push(value);
+      },
+      onProceduralHeightChange(value) {
+        proceduralHeightCalls.push(value);
+      },
+      onProceduralDensityChange(value) {
+        proceduralDensityCalls.push(value);
+      },
+      onProceduralSignalRateChange(value) {
+        proceduralSignalCalls.push(value);
       },
       onHistorySelectionChange(leftId, rightId) {
         historySelections.push([leftId, rightId]);
@@ -125,6 +150,11 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(stepCalls, 1);
     assert.deepEqual(speedCalls, [0.75]);
     assert.deepEqual(modeCalls, ['benchmark']);
+    assert.deepEqual(mapModes, ['fixed']);
+    assert.deepEqual(proceduralWidthCalls, [15]);
+    assert.deepEqual(proceduralHeightCalls, [13]);
+    assert.deepEqual(proceduralDensityCalls, [0.6]);
+    assert.deepEqual(proceduralSignalCalls, [0.45]);
     assert.deepEqual(overlayModes, ['off']);
     assert.deepEqual(ruleCalls, [
       ['freeRightOnRed', false],
@@ -200,6 +230,13 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       mode: 'sandbox',
       benchmarkDurationTicks: 90,
       spawnRate: 0.4,
+      mapMode: 'procedural',
+      procedural: {
+        width: 17,
+        height: 15,
+        density: 0.7,
+        signalRate: 0.5
+      },
       overlayMode: 'flow',
       rules: {
         freeRightOnRed: true,
@@ -210,6 +247,11 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-mode').value, 'sandbox');
     assert.equal(elements.get('control-benchmark-duration').value, '90');
     assert.equal(elements.get('control-spawn-rate').value, '0.4');
+    assert.equal(elements.get('control-map-mode').value, 'procedural');
+    assert.equal(elements.get('control-procedural-width').value, '17');
+    assert.equal(elements.get('control-procedural-height').value, '15');
+    assert.equal(elements.get('control-procedural-density').value, '0.7');
+    assert.equal(elements.get('control-procedural-signal-rate').value, '0.5');
     assert.equal(elements.get('control-overlay-mode').value, 'flow');
     assert.equal(elements.get('rule-free-right-on-red').checked, true);
   } finally {

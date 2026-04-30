@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 28`
-- **Build tag:** `s28-replay-timeline`
-- **Último estado validado:** `48/48` testes passando
+- **Versão visível da app:** `Sprint 29`
+- **Build tag:** `s29-procedural-maps`
+- **Último estado validado:** `50/50` testes passando
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
@@ -211,16 +211,16 @@ Concluído no estado atual: a app já importa cenários em JSON por arquivo, val
 Implementar geração procedural de mapas com parâmetros controláveis e resultado reproduzível por seed.
 
 **Inclui**
-- [ ] gerar mapa procedural a partir de `mapSeed`
-- [ ] parâmetros como densidade, tamanho, quantidade de cruzamentos e semáforos
-- [ ] reproduzir exatamente o mesmo mapa com mesma `mapSeed`
-- [ ] permitir benchmark sobre mapa procedural reproduzível
+- [x] gerar mapa procedural a partir de `mapSeed`
+- [x] parâmetros como densidade, tamanho, quantidade de cruzamentos e semáforos
+- [x] reproduzir exatamente o mesmo mapa com mesma `mapSeed`
+- [x] permitir benchmark sobre mapa procedural reproduzível
 
 **Por que importa**
 A arquitetura já foi pensada para isso. Falta virar capacidade real.
 
-**Verificação de pendência**
-O projeto já carrega `mapSeed`, mas o mapa atual continua sendo um bootstrap fixo montado por código, não um gerador procedural parametrizado.
+**Status após Sprint 29**
+Concluído no estado atual: a app agora alterna entre mapa fixo e gerador procedural, aceita parâmetros de largura, altura, densidade e taxa de semáforos, reproduz exatamente o layout pela `mapSeed` e mantém benchmark compatível com esse modo.
 
 ---
 

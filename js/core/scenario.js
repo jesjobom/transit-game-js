@@ -50,6 +50,7 @@ export function normalizeScenarioDefinition(input) {
         mapId: worldOptions.mapId ?? 'bootstrap-grid',
         mapMode: worldOptions.mapMode,
         map: worldOptions.map,
+        procedural: structuredClone(worldOptions.procedural ?? {}),
         routing: {
           straightWeight: 0.45,
           leftWeight: 0.25,
@@ -80,6 +81,11 @@ export function buildWorldOptionsFromScenario(scenario, runtimeConfig) {
 
   return {
     ...structuredClone(normalized.worldOptions),
+    mapMode: runtimeConfig.mapMode ?? normalized.worldOptions.mapMode,
+    procedural: {
+      ...(structuredClone(normalized.worldOptions.procedural ?? {})),
+      ...(structuredClone(runtimeConfig.procedural ?? {}))
+    },
     benchmark: {
       enabled: isBenchmarkMode,
       mode: isBenchmarkMode ? 'benchmark' : 'sandbox',

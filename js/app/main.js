@@ -113,6 +113,26 @@ function boot() {
       runtimeConfig.scenarioId = nextScenarioId;
       applyRuntimeConfig();
     },
+    onMapModeChange(nextMapMode) {
+      runtimeConfig.mapMode = nextMapMode;
+      applyRuntimeConfig();
+    },
+    onProceduralWidthChange(nextWidth) {
+      runtimeConfig.procedural.width = Math.max(9, Math.round(nextWidth));
+      applyRuntimeConfig();
+    },
+    onProceduralHeightChange(nextHeight) {
+      runtimeConfig.procedural.height = Math.max(9, Math.round(nextHeight));
+      applyRuntimeConfig();
+    },
+    onProceduralDensityChange(nextDensity) {
+      runtimeConfig.procedural.density = Math.max(0.3, Math.min(0.9, Number(nextDensity)));
+      applyRuntimeConfig();
+    },
+    onProceduralSignalRateChange(nextSignalRate) {
+      runtimeConfig.procedural.signalRate = Math.max(0, Math.min(1, Number(nextSignalRate)));
+      applyRuntimeConfig();
+    },
     onHistorySelectionChange(leftId, rightId) {
       historySelection = { leftId, rightId };
       renderBenchmarkHistory();
@@ -404,6 +424,13 @@ function createRuntimeConfig() {
     importedScenarios: [],
     benchmarkDurationTicks: 60,
     spawnRate: 0.55,
+    mapMode: 'fixed',
+    procedural: {
+      width: 15,
+      height: 13,
+      density: 0.6,
+      signalRate: 0.45
+    },
     overlayMode: 'off',
     rules: {
       freeRightOnRed: false,

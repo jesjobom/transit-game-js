@@ -19,7 +19,7 @@ test('scenario catalog exposes built-in named presets', () => {
   );
 });
 
-test('buildWorldOptionsFromScenario applies runtime mode and sandbox vehicles', () => {
+test('buildWorldOptionsFromScenario applies runtime mode, sandbox vehicles, and procedural overrides', () => {
   const scenario = getScenarioById('baseline-benchmark');
   const sandboxWorld = buildWorldOptionsFromScenario(scenario, {
     mode: 'sandbox',
@@ -40,6 +40,13 @@ test('buildWorldOptionsFromScenario applies runtime mode and sandbox vehicles', 
     mode: 'benchmark',
     benchmarkDurationTicks: 90,
     spawnRate: 0.4,
+    mapMode: 'procedural',
+    procedural: {
+      width: 17,
+      height: 15,
+      density: 0.7,
+      signalRate: 0.5
+    },
     rules: {
       freeRightOnRed: true,
       fourWayStop: false,
@@ -50,6 +57,8 @@ test('buildWorldOptionsFromScenario applies runtime mode and sandbox vehicles', 
   assert.equal(benchmarkWorld.benchmark.enabled, true);
   assert.equal(benchmarkWorld.benchmark.durationTicks, 90);
   assert.equal(benchmarkWorld.benchmark.spawnRate, 0.4);
+  assert.equal(benchmarkWorld.mapMode, 'procedural');
+  assert.equal(benchmarkWorld.procedural.width, 17);
   assert.equal(benchmarkWorld.vehicles.length, 0);
   assert.equal(benchmarkWorld.rules.freeRightOnRed, true);
 });

@@ -19,6 +19,11 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onBenchmarkDurationChange,
       onSpawnRateChange,
       onScenarioChange,
+      onMapModeChange,
+      onProceduralWidthChange,
+      onProceduralHeightChange,
+      onProceduralDensityChange,
+      onProceduralSignalRateChange,
       onImportScenario,
       onHistorySelectionChange,
       onOverlayModeChange,
@@ -38,6 +43,11 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindNumberControl('control-benchmark-duration', onBenchmarkDurationChange);
       bindNumberControl('control-spawn-rate', onSpawnRateChange);
       bindSelectControl('control-scenario', onScenarioChange);
+      bindSelectControl('control-map-mode', onMapModeChange);
+      bindNumberControl('control-procedural-width', onProceduralWidthChange);
+      bindNumberControl('control-procedural-height', onProceduralHeightChange);
+      bindNumberControl('control-procedural-density', onProceduralDensityChange);
+      bindNumberControl('control-procedural-signal-rate', onProceduralSignalRateChange);
       bindSelectControl('control-overlay-mode', onOverlayModeChange);
       bindFileControl('control-scenario-import', onImportScenario);
       bindHistoryCompareControls(onHistorySelectionChange);
@@ -86,6 +96,11 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       syncCheckboxValue('rule-do-not-block-intersection', Boolean(config.rules?.doNotBlockIntersection));
       syncNumericValue('control-benchmark-duration', config.benchmarkDurationTicks ?? 60);
       syncNumericValue('control-spawn-rate', config.spawnRate ?? 0.55);
+      syncSelectValue('control-map-mode', config.mapMode ?? 'fixed');
+      syncNumericValue('control-procedural-width', config.procedural?.width ?? 15);
+      syncNumericValue('control-procedural-height', config.procedural?.height ?? 13);
+      syncNumericValue('control-procedural-density', config.procedural?.density ?? 0.6);
+      syncNumericValue('control-procedural-signal-rate', config.procedural?.signalRate ?? 0.45);
       syncSelectValue('control-overlay-mode', config.overlayMode ?? 'off');
     },
     renderDiagnostics({ metrics = [], lights = [], events = [] } = {}) {

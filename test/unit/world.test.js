@@ -54,6 +54,18 @@ test('createWorldState merges custom configuration and seeds', () => {
   assert.equal(world.config.benchmark.spawnRate, 0.5);
 });
 
+test('createWorldState auto-creates procedural lights for generated intersections', () => {
+  const world = createWorldState({
+    mapMode: 'procedural',
+    mapSeed: 4242,
+    procedural: { width: 17, height: 15, density: 0.7, signalRate: 0.5 }
+  });
+
+  const litIntersections = world.map.intersections.filter((intersection) => intersection.lightId);
+  assert.ok(litIntersections.length > 0);
+  assert.ok(world.entities.lights.some((light) => light.id === litIntersections[0].lightId));
+});
+
 test('createWorldState hydrates custom vehicles with persistent individual colors', () => {
   const world = createWorldState({
     seed: 42,
