@@ -19,7 +19,8 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onBenchmarkDurationChange,
       onSpawnRateChange,
       onScenarioChange,
-      onImportScenario
+      onImportScenario,
+      onHistorySelectionChange
     } = {}) {
       bindButton('control-play-pause', onPlayPause);
       bindButton('control-step', onStep);
@@ -33,6 +34,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindNumberControl('control-spawn-rate', onSpawnRateChange);
       bindSelectControl('control-scenario', onScenarioChange);
       bindFileControl('control-scenario-import', onImportScenario);
+      bindHistoryCompareControls(onHistorySelectionChange);
     },
     setSpeedState(speedMultiplier, tickIntervalMs) {
       const speedValue = document.getElementById('control-speed-value');
@@ -79,6 +81,20 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       renderMetricList('live-metrics', metrics);
       renderTextList('light-summary', lights);
       renderTextList('event-summary', events);
+    },
+    syncBenchmarkHistory(snapshots = [], selectedIds = {}) {
+      const historyList = document.getElementById('benchmark-history-list');
+      if (historyList) {
+        historyList.innerHTML = snapshots
+          .map((snapshot) => `<li>${escapeHtml(snapshot.scenarioName || snapshot.scenarioId || snapshot.mapId || 'scenario')} · score ${escapeHtml(snapshot.score?.total ?? '—')} · seed ${escapeHtml(snapshot.simulationSeed)} · map ${escapeHtml(snapshot.mapSeed)}</li>`)
+          .join('');
+      }
+
+      syncHistorySelectOptions('control-history-a', snapshots, selectedIds.leftId);
+      syncHistorySelectOptions('control-history-b', snapshots, selectedIds.rightId);
+    },
+    renderBenchmarkComparison(lines = []) {
+      renderTextList('benchmark-compare-summary', lines);
     }
   };
 }
@@ -164,6 +180,19 @@ function bindNumberControl(id, handler) {
   emitValue();
 }
 
+function bindHistoryCompareControls(handler) {
+  const left = document.getElementById('control-history-a');
+  const right = document.getElementById('control-history-b');
+
+  if (!left || !right || typeof handler !== 'function') {
+    return;
+  }
+
+  const emitValue = () => handler(String(left.value || ''), String(right.value || ''));
+  left.onchange = emitValue;
+  right.onchange = emitValue;
+}
+
 function bindFileControl(id, handler) {
   const element = document.getElementById(id);
   if (!element || typeof handler !== 'function') {
@@ -196,6 +225,23 @@ function syncNumericValue(id, value) {
   const element = document.getElementById(id);
   if (element) {
     element.value = String(value);
+  }
+}
+
+function syncHistorySelectOptions(id, snapshots, selectedId) {
+  const element = document.getElementById(id);
+  if (!element) {
+    return;
+  }
+
+  element.innerHTML = snapshots
+    .map((snapshot, index) => `<option value="${escapeHtml(snapshot.id)}">${escapeHtml(`${index + 1}. ${snapshot.scenarioName || snapshot.scenarioId || snapshot.mapId || 'scenario'} · score ${snapshot.score?.total ?? '—'}`)}</option>`)
+    .join('');
+
+  if (selectedId && snapshots.some((snapshot) => snapshot.id === selectedId)) {
+    element.value = selectedId;
+  } else if (snapshots[0]) {
+    element.value = snapshots[0].id;
   }
 }
 

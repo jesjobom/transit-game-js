@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 24';
-export const BUILD_TAG = 's24-deadlocks-metrics';
+export const APP_VERSION = 'Sprint 25';
+export const BUILD_TAG = 's25-benchmark-history-ab';

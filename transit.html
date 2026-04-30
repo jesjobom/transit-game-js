@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s24-deadlocks-metrics" />
+    <link rel="stylesheet" href="css/app.css?v=s25-benchmark-history-ab" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,13 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 24</div>
+        <div class="version-badge">Sprint 25</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: richer diagnostics with deadlock detection and stronger benchmark metrics.</p>
+          <p>Current focus: benchmark history with A/B comparison for reproducible experiments.</p>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-mode">Simulation mode</label>
@@ -110,6 +110,31 @@
           <ul id="event-summary" class="info-list">
             <li>Waiting for simulation events…</li>
           </ul>
+
+          <h3>Benchmark History</h3>
+          <ol id="benchmark-history-list" class="info-list">
+            <li>No benchmark snapshots saved yet</li>
+          </ol>
+
+          <div class="control-grid control-grid--two-up">
+            <div class="control-field">
+              <div class="control-field__header">
+                <label for="control-history-a">Compare A</label>
+              </div>
+              <select id="control-history-a"></select>
+            </div>
+            <div class="control-field">
+              <div class="control-field__header">
+                <label for="control-history-b">Compare B</label>
+              </div>
+              <select id="control-history-b"></select>
+            </div>
+          </div>
+
+          <h3>Benchmark Compare</h3>
+          <ul id="benchmark-compare-summary" class="info-list">
+            <li>Pick two benchmark snapshots to compare</li>
+          </ul>
         </aside>
       </main>
 
@@ -118,6 +143,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s24-deadlocks-metrics"></script>
+    <script type="module" src="js/app/main.js?v=s25-benchmark-history-ab"></script>
   </body>
 </html>

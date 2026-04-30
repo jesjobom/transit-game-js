@@ -43,10 +43,14 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['rule-do-not-block-intersection', Object.assign(createElement('rule-do-not-block-intersection'), { checked: false })],
     ['control-scenario', Object.assign(createElement('control-scenario'), { value: '' })],
     ['control-scenario-import', Object.assign(createElement('control-scenario-import'), { files: [] })],
+    ['control-history-a', Object.assign(createElement('control-history-a'), { value: '' })],
+    ['control-history-b', Object.assign(createElement('control-history-b'), { value: '' })],
     ['control-speed-value', createElement('control-speed-value')],
     ['live-metrics', createElement('live-metrics')],
     ['light-summary', createElement('light-summary')],
-    ['event-summary', createElement('event-summary')]
+    ['event-summary', createElement('event-summary')],
+    ['benchmark-history-list', createElement('benchmark-history-list')],
+    ['benchmark-compare-summary', createElement('benchmark-compare-summary')]
   ]);
 
   const originalDocument = globalThis.document;
@@ -61,6 +65,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     const speedCalls = [];
     const modeCalls = [];
     const ruleCalls = [];
+    const historySelections = [];
     const appShell = createAppShell({
       world: {},
       engine: { status: 'ready' },
@@ -83,6 +88,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       },
       onRuleChange(ruleKey, enabled) {
         ruleCalls.push([ruleKey, enabled]);
+      },
+      onHistorySelectionChange(leftId, rightId) {
+        historySelections.push([leftId, rightId]);
       }
     });
 
@@ -117,6 +125,22 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ], 'priority-cross');
     assert.match(elements.get('control-scenario').innerHTML, /priority-cross/);
     assert.equal(elements.get('control-scenario').value, 'priority-cross');
+
+    appShell.syncBenchmarkHistory([
+      { id: 'run-b', scenarioName: 'Baseline benchmark grid', mapId: 'baseline-benchmark', simulationSeed: 456, mapSeed: 654, score: { total: 220 } },
+      { id: 'run-a', scenarioName: 'Baseline benchmark grid', mapId: 'baseline-benchmark', simulationSeed: 123, mapSeed: 321, score: { total: 180 } }
+    ], { leftId: 'run-a', rightId: 'run-b' });
+    assert.match(elements.get('benchmark-history-list').innerHTML, /score 220/);
+    assert.equal(elements.get('control-history-a').value, 'run-a');
+    assert.equal(elements.get('control-history-b').value, 'run-b');
+
+    elements.get('control-history-a').value = 'run-b';
+    elements.get('control-history-b').value = 'run-a';
+    elements.get('control-history-a').onchange();
+    assert.deepEqual(historySelections.at(-1), ['run-b', 'run-a']);
+
+    appShell.renderBenchmarkComparison(['A: baseline', 'Score Δ (B-A): +10']);
+    assert.match(elements.get('benchmark-compare-summary').innerHTML, /Score Δ/);
 
     appShell.syncSimulationConfig({
       mode: 'sandbox',

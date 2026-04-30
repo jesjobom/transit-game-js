@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 20`
-- **Build tag:** `s20-map-polish-speed-slider`
-- **Último estado validado:** `31/31` testes passando
+- **Versão visível da app:** `Sprint 25`
+- **Build tag:** `s25-benchmark-history-ab`
+- **Último estado validado:** `44/44` testes passando
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
@@ -43,6 +43,8 @@ A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e
 - métricas ao vivo
 - score inicial
 - resumo de benchmark
+- histórico persistido de benchmarks
+- comparação A/B básica de benchmarks
 - resumo de fases de semáforo
 - eventos recentes da simulação
 
@@ -144,16 +146,16 @@ Concluído no estado atual: a interface permite alternar entre Benchmark e Sandb
 Permitir guardar resultados de execuções e comparar duas configurações lado a lado.
 
 **Inclui**
-- [ ] salvar snapshots de benchmark
-- [ ] comparação A/B entre duas execuções
-- [ ] exibição das diferenças principais de score e métricas
-- [ ] identificação clara da seed, mapSeed e regras usadas em cada execução
+- [x] salvar snapshots de benchmark
+- [x] comparação A/B entre duas execuções
+- [x] exibição das diferenças principais de score e métricas
+- [x] identificação clara da seed, mapSeed e regras usadas em cada execução
 
 **Por que importa**
 Sem histórico, cada benchmark morre na tela. Isso limita bastante o valor experimental do simulador.
 
-**Verificação de pendência**
-Há relatório final de benchmark em memória, mas não existe persistência, lista de execuções anteriores nem tela de comparação.
+**Status após Sprint 25**
+Concluído no estado atual: benchmarks finalizados agora ficam persistidos em histórico local, a UI lista execuções recentes com cenário/score/seed/mapSeed e a app permite comparação A/B básica com deltas de score, throughput, filas, viagens completas e deadlocks.
 
 ---
 

@@ -1,7 +1,10 @@
 import { createBenchmarkShell } from './benchmark/benchmark-shell.js';
+import { createBenchmarkHistoryStore } from './benchmark/history.js';
 import { createRenderer } from './render/renderer.js';
 import { createAppShell } from './ui/app-shell.js';
 import {
+  buildBenchmarkComparisonLines,
+  buildBenchmarkHistoryLines,
   buildLightPhaseSummary,
   buildLiveMetrics,
   buildRecentEventSummary,
@@ -23,6 +26,12 @@ function boot() {
   let previousWorld = snapshotRenderableWorld(state.world);
   const renderer = createRenderer(document.getElementById('simulation-root'));
   const benchmark = createBenchmarkShell();
+  const historyStore = createBenchmarkHistoryStore();
+  let historySnapshots = historyStore.loadSnapshots();
+  let historySelection = {
+    leftId: historySnapshots[1]?.id ?? historySnapshots[0]?.id ?? '',
+    rightId: historySnapshots[0]?.id ?? ''
+  };
   const appShell = createAppShell({
     world: state.world,
     engine: state.engine,
@@ -58,6 +67,7 @@ function boot() {
       stopLoop();
       state = createSimulationState(runtimeConfig);
       previousWorld = snapshotRenderableWorld(state.world);
+      renderBenchmarkHistory();
       render();
       startLoop();
     },
@@ -86,6 +96,10 @@ function boot() {
     onScenarioChange(nextScenarioId) {
       runtimeConfig.scenarioId = nextScenarioId;
       applyRuntimeConfig();
+    },
+    onHistorySelectionChange(leftId, rightId) {
+      historySelection = { leftId, rightId };
+      renderBenchmarkHistory();
     },
     async onImportScenario(file) {
       try {
@@ -117,6 +131,7 @@ function boot() {
   appShell.syncScenarioCatalog(getScenarioCatalog(runtimeConfig.importedScenarios), runtimeConfig.scenarioId);
   appShell.syncSimulationConfig(runtimeConfig);
   appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
+  renderBenchmarkHistory();
   render();
   startLoop();
 
@@ -190,6 +205,7 @@ function boot() {
 
   function render() {
     const report = state.engine.getReport();
+    maybePersistCompletedBenchmark(report);
     const tickIntervalMs = getTickIntervalMs();
     const motionProgress = isRunning ? Math.min(1, tickAccumulatorMs / tickIntervalMs) : 1;
     renderer.renderWorld(state.world, {
@@ -205,6 +221,36 @@ function boot() {
       lights: buildLightPhaseSummary(state.world),
       events: buildRecentEventSummary(state.world)
     });
+  }
+
+  function maybePersistCompletedBenchmark(report) {
+    if (state.world.status !== 'completed' || state.world.historySaved || state.world.config.benchmark.mode !== 'benchmark') {
+      return;
+    }
+
+    const snapshot = historyStore.saveReport(report, {
+      appVersion: `${APP_VERSION} (${BUILD_TAG})`,
+      scenarioId: state.world.scenarioId,
+      scenarioName: state.world.scenarioName
+    });
+
+    historySnapshots = historyStore.loadSnapshots();
+    historySelection = {
+      leftId: historySelection.leftId || historySnapshots[1]?.id || snapshot.id,
+      rightId: historySelection.rightId || snapshot.id
+    };
+    state.world.historySaved = true;
+    renderBenchmarkHistory();
+  }
+
+  function renderBenchmarkHistory() {
+    appShell.syncBenchmarkHistory(historySnapshots, historySelection);
+    const comparison = historyStore.buildComparison(historySelection.leftId, historySelection.rightId);
+    appShell.renderBenchmarkComparison([
+      ...buildBenchmarkHistoryLines(historySnapshots).slice(0, 4),
+      '---',
+      ...buildBenchmarkComparisonLines(comparison)
+    ]);
   }
 
   function getTickIntervalMs() {

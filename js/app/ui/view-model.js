@@ -1,5 +1,40 @@
 import { APP_VERSION, BUILD_TAG } from '../version.js';
 
+export function buildBenchmarkHistoryLines(snapshots = []) {
+  if (!Array.isArray(snapshots) || snapshots.length === 0) {
+    return ['No benchmark snapshots saved yet'];
+  }
+
+  return snapshots.map((snapshot, index) => {
+    const score = Number.isFinite(snapshot.score?.total) ? snapshot.score.total : '—';
+    const throughput = formatDecimal(snapshot.metrics?.throughputPerTick);
+    const completedTrips = snapshot.metrics?.completedTrips ?? '—';
+    const scenario = snapshot.scenarioName || snapshot.scenarioId || snapshot.mapId || 'scenario';
+    return `${index + 1}. ${scenario} | score=${score} | trips=${completedTrips} | throughput=${throughput} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
+  });
+}
+
+export function buildBenchmarkComparisonLines(comparison) {
+  if (!comparison) {
+    return ['Pick two benchmark snapshots to compare'];
+  }
+
+  const leftLabel = buildSnapshotLabel(comparison.left);
+  const rightLabel = buildSnapshotLabel(comparison.right);
+
+  return [
+    `A: ${leftLabel}`,
+    `B: ${rightLabel}`,
+    `Score Δ (B-A): ${formatSignedNumber(comparison.scoreDelta, 0)}`,
+    `Completed trips Δ: ${formatSignedNumber(comparison.completedTripsDelta, 0)}`,
+    `Throughput Δ: ${formatSignedNumber(comparison.throughputDelta, 3)}`,
+    `Avg trip ticks Δ: ${formatSignedNumber(comparison.avgCompletionTicksDelta, 2)}`,
+    `Avg stopped Δ: ${formatSignedNumber(comparison.avgStoppedTicksDelta, 2)}`,
+    `Avg queue Δ: ${formatSignedNumber(comparison.avgQueueLengthDelta, 2)}`,
+    `Deadlocks Δ: ${formatSignedNumber(comparison.deadlocksDelta, 0)}`
+  ];
+}
+
 export function buildSimulationSummary(world, benchmarkSummaryLines = []) {
   const activeRules = Object.entries(world.config.rules || {})
     .filter(([, enabled]) => enabled)
@@ -108,6 +143,21 @@ function summarizeEventPayload(payload = {}) {
   return payload.reason ? `reason=${payload.reason}` : '';
 }
 
+function buildSnapshotLabel(snapshot = {}) {
+  const scenario = snapshot.scenarioName || snapshot.scenarioId || snapshot.mapId || 'scenario';
+  const score = Number.isFinite(snapshot.score?.total) ? snapshot.score.total : '—';
+  return `${scenario} | score=${score} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
+}
+
 function formatDecimal(value) {
   return Number.isFinite(value) ? value.toFixed(2) : '—';
+}
+
+function formatSignedNumber(value, decimals = 2) {
+  if (!Number.isFinite(value)) {
+    return '—';
+  }
+
+  const fixed = value.toFixed(decimals);
+  return value > 0 ? `+${fixed}` : fixed;
 }

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildBenchmarkComparisonLines,
+  buildBenchmarkHistoryLines,
   buildLightPhaseSummary,
   buildLiveMetrics,
   buildRecentEventSummary,
@@ -54,6 +56,50 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   assert.ok(metrics.some((entry) => entry.label === 'Mode' && entry.value === 'sandbox'));
   assert.ok(metrics.some((entry) => entry.label === 'Throughput/tick' && entry.value === '0.25'));
   assert.ok(metrics.some((entry) => entry.label === 'Score' && entry.value === '185'));
+});
+
+test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize saved benchmark runs', () => {
+  const snapshots = [
+    {
+      id: 'run-a',
+      scenarioName: 'Baseline benchmark grid',
+      simulationSeed: 123,
+      mapSeed: 456,
+      mapId: 'baseline-benchmark',
+      metrics: { completedTrips: 12, throughputPerTick: 0.2, avgCompletionTicks: 5.5, avgStoppedTicks: 1.3, avgQueueLength: 0.8, deadlocks: 1 },
+      score: { total: 240 }
+    },
+    {
+      id: 'run-b',
+      scenarioName: 'Baseline benchmark grid',
+      simulationSeed: 789,
+      mapSeed: 987,
+      mapId: 'baseline-benchmark',
+      metrics: { completedTrips: 15, throughputPerTick: 0.25, avgCompletionTicks: 4.75, avgStoppedTicks: 0.9, avgQueueLength: 0.55, deadlocks: 0 },
+      score: { total: 315 }
+    }
+  ];
+
+  const historyLines = buildBenchmarkHistoryLines(snapshots);
+  const comparisonLines = buildBenchmarkComparisonLines({
+    left: snapshots[0],
+    right: snapshots[1],
+    scoreDelta: 75,
+    completedTripsDelta: 3,
+    throughputDelta: 0.05,
+    avgCompletionTicksDelta: -0.75,
+    avgStoppedTicksDelta: -0.4,
+    avgQueueLengthDelta: -0.25,
+    deadlocksDelta: -1
+  });
+
+  assert.match(historyLines[0], /score=240/);
+  assert.match(historyLines[1], /seed=789/);
+  assert.match(comparisonLines[0], /^A:/);
+  assert.match(comparisonLines[1], /^B:/);
+  assert.match(comparisonLines[2], /\+75/);
+  assert.match(comparisonLines[4], /\+0.050/);
+  assert.match(comparisonLines[8], /-1/);
 });
 
 test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics', () => {

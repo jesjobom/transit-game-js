@@ -83,6 +83,7 @@ export function createWorldState(options = {}) {
       inDeadlock: false
     },
     report: null,
+    historySaved: false,
     events: []
   };
 
