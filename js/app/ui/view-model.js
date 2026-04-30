@@ -1,3 +1,4 @@
+import { getCell, getIntersection, toPositionKey } from '../../core/map.js';
 import { APP_VERSION, BUILD_TAG } from '../version.js';
 
 export function buildBenchmarkHistoryLines(snapshots = []) {
@@ -77,6 +78,29 @@ export function buildLiveMetrics(world, report = null) {
     { label: 'Occupancy', value: formatDecimal(metrics.avgRoadOccupancy) },
     { label: 'Fairness', value: formatDecimal(metrics.fairnessScore) },
     { label: 'Score', value: report ? String(report.score.total) : '—' }
+  ];
+}
+
+export function buildCellInspectionLines(world, selectedCell) {
+  if (!selectedCell || !Number.isFinite(selectedCell.x) || !Number.isFinite(selectedCell.y)) {
+    return ['Click a road or intersection cell to inspect it'];
+  }
+
+  const road = getCell(world.map, selectedCell.x, selectedCell.y);
+  const intersection = getIntersection(world.map, selectedCell.x, selectedCell.y);
+  const positionKey = toPositionKey(selectedCell.x, selectedCell.y);
+  const cellStats = world.metrics.cellStatsByKey?.[positionKey] ?? {};
+  const vehicles = world.entities.vehicles.filter((vehicle) => vehicle.x === selectedCell.x && vehicle.y === selectedCell.y);
+
+  return [
+    `Cell: ${selectedCell.x},${selectedCell.y}`,
+    `Type: ${intersection ? 'intersection' : road ? 'road' : 'lot'}`,
+    `Directions: ${road?.allowedDirections?.join(', ') || '—'}`,
+    `Vehicles here: ${vehicles.length}`,
+    `Occupancy ticks: ${cellStats.occupancyTicks ?? 0}`,
+    `Blocked ticks: ${cellStats.blockedTicks ?? 0}`,
+    `Flow count: ${cellStats.passThroughCount ?? 0}`,
+    `Intersection throughput: ${world.metrics.intersectionThroughputByKey?.[positionKey] ?? 0}`
   ];
 }
 

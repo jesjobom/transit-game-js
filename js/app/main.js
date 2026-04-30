@@ -5,6 +5,7 @@ import { createAppShell } from './ui/app-shell.js';
 import {
   buildBenchmarkComparisonLines,
   buildBenchmarkHistoryLines,
+  buildCellInspectionLines,
   buildLightPhaseSummary,
   buildLiveMetrics,
   buildRecentEventSummary,
@@ -32,6 +33,7 @@ function boot() {
     leftId: historySnapshots[1]?.id ?? historySnapshots[0]?.id ?? '',
     rightId: historySnapshots[0]?.id ?? ''
   };
+  let selectedCell = null;
   const appShell = createAppShell({
     world: state.world,
     engine: state.engine,
@@ -100,6 +102,14 @@ function boot() {
     onHistorySelectionChange(leftId, rightId) {
       historySelection = { leftId, rightId };
       renderBenchmarkHistory();
+    },
+    onOverlayModeChange(nextOverlayMode) {
+      runtimeConfig.overlayMode = nextOverlayMode;
+      render();
+    },
+    onGridCellSelect(cell) {
+      selectedCell = cell;
+      render();
     },
     async onImportScenario(file) {
       try {
@@ -214,13 +224,16 @@ function boot() {
       previousWorld,
       motionProgress,
       tickIntervalMs,
-      isRunning
+      isRunning,
+      overlayMode: runtimeConfig.overlayMode,
+      selectedCell
     });
     appShell.renderDiagnostics({
       metrics: buildLiveMetrics(state.world, report),
       lights: buildLightPhaseSummary(state.world),
       events: buildRecentEventSummary(state.world)
     });
+    appShell.renderCellInspection(buildCellInspectionLines(state.world, selectedCell));
   }
 
   function maybePersistCompletedBenchmark(report) {
@@ -285,6 +298,7 @@ function createRuntimeConfig() {
     importedScenarios: [],
     benchmarkDurationTicks: 60,
     spawnRate: 0.55,
+    overlayMode: 'off',
     rules: {
       freeRightOnRed: false,
       fourWayStop: false,

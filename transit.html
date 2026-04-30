@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s26-directional-fairness" />
+    <link rel="stylesheet" href="css/app.css?v=s27-grid-overlays-inspector" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,13 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 26</div>
+        <div class="version-badge">Sprint 27</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: directional fairness metrics so a "good" score does not hide starved traffic flows.</p>
+          <p>Current focus: grid overlays and cell inspection so debugging happens on the map instead of only in the sidebar.</p>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-mode">Simulation mode</label>
@@ -34,6 +34,17 @@
               <label for="control-scenario">Scenario preset</label>
             </div>
             <select id="control-scenario"></select>
+          </div>
+          <div class="control-field">
+            <div class="control-field__header">
+              <label for="control-overlay-mode">Overlay</label>
+            </div>
+            <select id="control-overlay-mode">
+              <option value="off">Off</option>
+              <option value="congestion">Congestion</option>
+              <option value="flow">Flow</option>
+              <option value="deadlock">Deadlock pressure</option>
+            </select>
           </div>
           <div class="control-field">
             <div class="control-field__header">
@@ -135,6 +146,11 @@
           <ul id="benchmark-compare-summary" class="info-list">
             <li>Pick two benchmark snapshots to compare</li>
           </ul>
+
+          <h3>Cell Inspector</h3>
+          <ul id="cell-inspection-summary" class="info-list">
+            <li>Click a road or intersection cell to inspect it</li>
+          </ul>
         </aside>
       </main>
 
@@ -143,6 +159,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s26-directional-fairness"></script>
+    <script type="module" src="js/app/main.js?v=s27-grid-overlays-inspector"></script>
   </body>
 </html>

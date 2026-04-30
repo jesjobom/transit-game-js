@@ -78,7 +78,9 @@ export function buildWorldHtml(world, options = {}) {
       if (intersection) classes.push('map-cell--intersection');
       if (spawnPoint) classes.push('map-cell--spawn');
       if (lightPhase) classes.push(`map-cell--light-${slugify(lightPhase)}`);
+      if (isSelectedCell(options.selectedCell, x, y)) classes.push('map-cell--selected');
 
+      const overlayMarkup = renderCellOverlay(world, { x, y, intersection, road }, options);
       const content = road ? renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) : renderLotSurface(x, y, map);
 
       cells.push(`
@@ -87,7 +89,7 @@ export function buildWorldHtml(world, options = {}) {
           data-x="${x}"
           data-y="${y}"
           title="x=${x}, y=${y}${lightPhase ? `, light=${escapeHtml(lightPhase)}` : ''}"
-        >${content}</div>
+        >${content}${overlayMarkup}</div>
       `);
     }
   }
@@ -115,6 +117,43 @@ export function buildWorldHtml(world, options = {}) {
       </div>
     </div>
   `;
+}
+
+function renderCellOverlay(world, cell, options = {}) {
+  const overlayMode = options.overlayMode ?? 'off';
+  if (overlayMode === 'off' || !cell.road) {
+    return '';
+  }
+
+  const positionKey = toPositionKey(cell.x, cell.y);
+  const cellStats = world.metrics.cellStatsByKey?.[positionKey] ?? {};
+  let tone = 'neutral';
+  let value = '';
+
+  if (overlayMode === 'congestion') {
+    value = String(cellStats.blockedTicks ?? 0);
+    tone = getOverlayTone(cellStats.blockedTicks ?? 0, [1, 3, 6]);
+  } else if (overlayMode === 'flow') {
+    value = String(cellStats.passThroughCount ?? 0);
+    tone = getOverlayTone(cellStats.passThroughCount ?? 0, [1, 4, 8]);
+  } else if (overlayMode === 'deadlock') {
+    const deadlockPressure = (cellStats.blockedTicks ?? 0) + ((cell.intersection ? world.metrics.intersectionThroughputByKey?.[positionKey] ?? 0 : 0) === 0 ? 0 : 1);
+    value = String(cellStats.blockedTicks ?? 0);
+    tone = getOverlayTone(deadlockPressure, [2, 5, 9]);
+  }
+
+  return `<span class="cell-overlay cell-overlay--${tone}" data-overlay-mode="${escapeHtml(overlayMode)}">${escapeHtml(value)}</span>`;
+}
+
+function isSelectedCell(selectedCell, x, y) {
+  return selectedCell?.x === x && selectedCell?.y === y;
+}
+
+function getOverlayTone(value, thresholds) {
+  if (value >= thresholds[2]) return 'hot';
+  if (value >= thresholds[1]) return 'warm';
+  if (value >= thresholds[0]) return 'cool';
+  return 'neutral';
 }
 
 function renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) {

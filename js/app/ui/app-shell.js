@@ -20,7 +20,9 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onSpawnRateChange,
       onScenarioChange,
       onImportScenario,
-      onHistorySelectionChange
+      onHistorySelectionChange,
+      onOverlayModeChange,
+      onGridCellSelect
     } = {}) {
       bindButton('control-play-pause', onPlayPause);
       bindButton('control-step', onStep);
@@ -33,8 +35,10 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindNumberControl('control-benchmark-duration', onBenchmarkDurationChange);
       bindNumberControl('control-spawn-rate', onSpawnRateChange);
       bindSelectControl('control-scenario', onScenarioChange);
+      bindSelectControl('control-overlay-mode', onOverlayModeChange);
       bindFileControl('control-scenario-import', onImportScenario);
       bindHistoryCompareControls(onHistorySelectionChange);
+      bindGridCellSelection('simulation-root', onGridCellSelect);
     },
     setSpeedState(speedMultiplier, tickIntervalMs) {
       const speedValue = document.getElementById('control-speed-value');
@@ -76,6 +80,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       syncCheckboxValue('rule-do-not-block-intersection', Boolean(config.rules?.doNotBlockIntersection));
       syncNumericValue('control-benchmark-duration', config.benchmarkDurationTicks ?? 60);
       syncNumericValue('control-spawn-rate', config.spawnRate ?? 0.55);
+      syncSelectValue('control-overlay-mode', config.overlayMode ?? 'off');
     },
     renderDiagnostics({ metrics = [], lights = [], events = [] } = {}) {
       renderMetricList('live-metrics', metrics);
@@ -95,6 +100,9 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
     },
     renderBenchmarkComparison(lines = []) {
       renderTextList('benchmark-compare-summary', lines);
+    },
+    renderCellInspection(lines = []) {
+      renderTextList('cell-inspection-summary', lines);
     }
   };
 }
@@ -191,6 +199,25 @@ function bindHistoryCompareControls(handler) {
   const emitValue = () => handler(String(left.value || ''), String(right.value || ''));
   left.onchange = emitValue;
   right.onchange = emitValue;
+}
+
+function bindGridCellSelection(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  element.onclick = (event) => {
+    const cell = event.target?.closest?.('[data-x][data-y]');
+    if (!cell) {
+      return;
+    }
+
+    handler({
+      x: Number(cell.dataset.x),
+      y: Number(cell.dataset.y)
+    });
+  };
 }
 
 function bindFileControl(id, handler) {

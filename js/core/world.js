@@ -80,6 +80,7 @@ export function createWorldState(options = {}) {
       roadOccupancyAccumulated: 0,
       intersectionThroughputByKey: {},
       directionalFlow: createDirectionalFlowMetrics(),
+      cellStatsByKey: {},
       deadlockStreak: 0,
       inDeadlock: false
     },
@@ -149,8 +150,23 @@ export function recordDirectionalMetric(world, direction, metricKey, amount = 1)
   world.metrics.directionalFlow[normalizedDirection][metricKey] += amount;
 }
 
+export function recordCellMetric(world, x, y, metricKey, amount = 1) {
+  const key = toWorldPositionKey(x, y);
+  const entry = world.metrics.cellStatsByKey[key] ?? createCellMetricEntry();
+  entry[metricKey] += amount;
+  world.metrics.cellStatsByKey[key] = entry;
+}
+
 function worldLike(simulationSeed) {
   return { simulationSeed };
+}
+
+function createCellMetricEntry() {
+  return {
+    occupancyTicks: 0,
+    blockedTicks: 0,
+    passThroughCount: 0
+  };
 }
 
 function createDirectionalFlowMetrics() {
@@ -174,6 +190,10 @@ function createDirectionalMetricEntry() {
 
 function normalizeDirectionKey(direction) {
   return ['north', 'east', 'south', 'west'].includes(direction) ? direction : null;
+}
+
+function toWorldPositionKey(x, y) {
+  return `${x},${y}`;
 }
 
 function hashString(value) {

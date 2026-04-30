@@ -12,7 +12,7 @@ import {
   turnLeft,
   turnRight
 } from './map.js';
-import { addWorldEvent, createVehicleColor, nextRandomFloat, recordDirectionalMetric, syncWorldRngState } from './world.js';
+import { addWorldEvent, createVehicleColor, nextRandomFloat, recordCellMetric, recordDirectionalMetric, syncWorldRngState } from './world.js';
 
 const DEADLOCK_THRESHOLD_TICKS = 3;
 
@@ -134,6 +134,7 @@ function moveVehicles(world) {
   };
 
   for (const vehicle of world.entities.vehicles) {
+    recordCellMetric(world, vehicle.x, vehicle.y, 'occupancyTicks');
     const nextPosition = getNextPosition(vehicle, vehicle.direction);
     maybePlanControlledIntersectionTurn(world, vehicle, nextPosition);
     maybeChooseVehicleDirection(world, vehicle);
@@ -163,6 +164,7 @@ function moveVehicles(world) {
       world.metrics.stoppedTicksTotal += 1;
       recordDirectionalMetric(world, vehicle.originDirection, 'blocked');
       recordDirectionalMetric(world, vehicle.originDirection, 'stoppedTicks');
+      recordCellMetric(world, vehicle.x, vehicle.y, 'blockedTicks');
       addWorldEvent(world, 'vehicleBlocked', {
         vehicleId: vehicle.id,
         x: vehicle.x,
@@ -188,6 +190,7 @@ function moveVehicles(world) {
     stats.movedCount += 1;
     world.metrics.movedVehicles += 1;
     recordDirectionalMetric(world, vehicle.originDirection, 'moved');
+    recordCellMetric(world, vehicle.x, vehicle.y, 'passThroughCount');
     recordIntersectionThroughput(world, nextStepPosition);
     addWorldEvent(world, 'vehicleMoved', {
       vehicleId: vehicle.id,

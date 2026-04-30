@@ -91,6 +91,24 @@ test('buildWorldHtml renders turning vehicles with start/end angle and lane offs
   assert.match(html, /--vehicle-motion-progress:0.500/);
 });
 
+test('buildWorldHtml renders overlays and selected cell highlights', () => {
+  const world = createWorldState();
+  world.metrics.cellStatsByKey['2,0'] = {
+    occupancyTicks: 4,
+    blockedTicks: 3,
+    passThroughCount: 7
+  };
+
+  const html = buildWorldHtml(world, {
+    overlayMode: 'congestion',
+    selectedCell: { x: 2, y: 0 }
+  });
+
+  assert.match(html, /cell-overlay/);
+  assert.match(html, /data-overlay-mode="congestion"/);
+  assert.match(html, /map-cell--selected/);
+});
+
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
   const world = createWorldState({
     vehicles: [

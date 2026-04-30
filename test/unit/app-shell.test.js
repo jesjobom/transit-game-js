@@ -42,6 +42,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['rule-four-way-stop', Object.assign(createElement('rule-four-way-stop'), { checked: false })],
     ['rule-do-not-block-intersection', Object.assign(createElement('rule-do-not-block-intersection'), { checked: false })],
     ['control-scenario', Object.assign(createElement('control-scenario'), { value: '' })],
+    ['control-overlay-mode', Object.assign(createElement('control-overlay-mode'), { value: 'off' })],
     ['control-scenario-import', Object.assign(createElement('control-scenario-import'), { files: [] })],
     ['control-history-a', Object.assign(createElement('control-history-a'), { value: '' })],
     ['control-history-b', Object.assign(createElement('control-history-b'), { value: '' })],
@@ -50,7 +51,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['light-summary', createElement('light-summary')],
     ['event-summary', createElement('event-summary')],
     ['benchmark-history-list', createElement('benchmark-history-list')],
-    ['benchmark-compare-summary', createElement('benchmark-compare-summary')]
+    ['benchmark-compare-summary', createElement('benchmark-compare-summary')],
+    ['cell-inspection-summary', createElement('cell-inspection-summary')],
+    ['simulation-root', createElement('simulation-root')]
   ]);
 
   const originalDocument = globalThis.document;
@@ -66,6 +69,8 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     const modeCalls = [];
     const ruleCalls = [];
     const historySelections = [];
+    const overlayModes = [];
+    const selectedCells = [];
     const appShell = createAppShell({
       world: {},
       engine: { status: 'ready' },
@@ -91,6 +96,12 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       },
       onHistorySelectionChange(leftId, rightId) {
         historySelections.push([leftId, rightId]);
+      },
+      onOverlayModeChange(mode) {
+        overlayModes.push(mode);
+      },
+      onGridCellSelect(cell) {
+        selectedCells.push(cell);
       }
     });
 
@@ -98,6 +109,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(stepCalls, 1);
     assert.deepEqual(speedCalls, [0.75]);
     assert.deepEqual(modeCalls, ['benchmark']);
+    assert.deepEqual(overlayModes, ['off']);
     assert.deepEqual(ruleCalls, [
       ['freeRightOnRed', false],
       ['fourWayStop', false],
@@ -142,10 +154,23 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     appShell.renderBenchmarkComparison(['A: baseline', 'Score Δ (B-A): +10']);
     assert.match(elements.get('benchmark-compare-summary').innerHTML, /Score Δ/);
 
+    elements.get('simulation-root').onclick({
+      target: {
+        closest() {
+          return { dataset: { x: '7', y: '3' } };
+        }
+      }
+    });
+    assert.deepEqual(selectedCells.at(-1), { x: 7, y: 3 });
+
+    appShell.renderCellInspection(['Cell: 7,3', 'Type: intersection']);
+    assert.match(elements.get('cell-inspection-summary').innerHTML, /Type: intersection/);
+
     appShell.syncSimulationConfig({
       mode: 'sandbox',
       benchmarkDurationTicks: 90,
       spawnRate: 0.4,
+      overlayMode: 'flow',
       rules: {
         freeRightOnRed: true,
         fourWayStop: true,
@@ -155,6 +180,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-mode').value, 'sandbox');
     assert.equal(elements.get('control-benchmark-duration').value, '90');
     assert.equal(elements.get('control-spawn-rate').value, '0.4');
+    assert.equal(elements.get('control-overlay-mode').value, 'flow');
     assert.equal(elements.get('rule-free-right-on-red').checked, true);
   } finally {
     globalThis.document = originalDocument;

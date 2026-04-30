@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   buildBenchmarkComparisonLines,
   buildBenchmarkHistoryLines,
+  buildCellInspectionLines,
   buildLightPhaseSummary,
   buildLiveMetrics,
   buildRecentEventSummary,
@@ -104,6 +105,28 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
   assert.match(comparisonLines[4], /\+0.050/);
   assert.match(comparisonLines[8], /-1/);
   assert.match(comparisonLines[9], /\+0.40/);
+});
+
+test('buildCellInspectionLines summarizes selected cell state and analytics', () => {
+  const world = createWorldState({
+    vehicles: [
+      { id: 'vehicle-1', x: 2, y: 0, direction: 'south', status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  world.metrics.cellStatsByKey['2,0'] = {
+    occupancyTicks: 4,
+    blockedTicks: 2,
+    passThroughCount: 5
+  };
+  world.metrics.intersectionThroughputByKey['2,0'] = 3;
+
+  const lines = buildCellInspectionLines(world, { x: 2, y: 0 });
+
+  assert.match(lines[0], /2,0/);
+  assert.match(lines[1], /road|intersection/);
+  assert.match(lines[3], /1/);
+  assert.match(lines[4], /4/);
+  assert.match(lines[7], /3/);
 });
 
 test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics', () => {

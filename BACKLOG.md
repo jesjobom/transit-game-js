@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 26`
-- **Build tag:** `s26-directional-fairness`
-- **Último estado validado:** `45/45` testes passando
+- **Versão visível da app:** `Sprint 27`
+- **Build tag:** `s27-grid-overlays-inspector`
+- **Último estado validado:** `47/47` testes passando
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
@@ -46,6 +46,8 @@ A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e
 - histórico persistido de benchmarks
 - comparação A/B básica de benchmarks
 - fairness entre fluxos/direções no benchmark
+- overlays básicos no grid para congestionamento/fluxo/pressão de deadlock
+- inspeção de célula/cruzamento por clique
 - resumo de fases de semáforo
 - eventos recentes da simulação
 
@@ -273,10 +275,10 @@ Concluído no estado atual: o benchmark agora acompanha fairness entre fluxos de
 Levar os diagnósticos além da sidebar textual e mostrar informação útil diretamente no mapa.
 
 **Inclui**
-- [ ] heatmap de congestionamento
-- [ ] fluxo médio por via
-- [ ] destacar pontos de deadlock
-- [ ] inspeção de célula/cruzamento
+- [x] heatmap de congestionamento
+- [x] fluxo médio por via
+- [x] destacar pontos de deadlock
+- [x] inspeção de célula/cruzamento
 - [ ] estado interno de veículo selecionado
 - [ ] intenção atual do veículo (seguir, virar, parar, aguardar)
 - [ ] trilha curta/histórico visual de movimento
@@ -284,8 +286,8 @@ Levar os diagnósticos além da sidebar textual e mostrar informação útil dir
 **Por que importa**
 Hoje os diagnósticos ajudam, mas ainda exigem leitura indireta. Overlay visual acelera muito depuração e entendimento do comportamento emergente.
 
-**Verificação de pendência**
-Existem métricas ao vivo, resumo de semáforos e eventos recentes, mas não há overlays analíticos reais no grid.
+**Status após Sprint 27**
+Parcialmente concluído no estado atual: a app agora mostra overlays no grid para congestionamento, fluxo e pressão de deadlock, além de inspector por clique com métricas da célula. Ainda ficam pendentes inspeção profunda de veículo selecionado, intenção do veículo e trilha curta de movimento.
 
 ---
 
