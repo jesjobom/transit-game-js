@@ -22,7 +22,10 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onImportScenario,
       onHistorySelectionChange,
       onOverlayModeChange,
-      onGridCellSelect
+      onGridCellSelect,
+      onReplayToggle,
+      onReplayPlayPause,
+      onReplayFrameChange
     } = {}) {
       bindButton('control-play-pause', onPlayPause);
       bindButton('control-step', onStep);
@@ -39,6 +42,9 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindFileControl('control-scenario-import', onImportScenario);
       bindHistoryCompareControls(onHistorySelectionChange);
       bindGridCellSelection('simulation-root', onGridCellSelect);
+      bindButton('control-replay-toggle', onReplayToggle);
+      bindButton('control-replay-play-pause', onReplayPlayPause);
+      bindRangeControl('control-replay-frame', onReplayFrameChange);
     },
     setSpeedState(speedMultiplier, tickIntervalMs) {
       const speedValue = document.getElementById('control-speed-value');
@@ -103,6 +109,35 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
     },
     renderCellInspection(lines = []) {
       renderTextList('cell-inspection-summary', lines);
+    },
+    syncReplayState(frames = [], replayState = {}) {
+      const frameInput = document.getElementById('control-replay-frame');
+      const frameValue = document.getElementById('control-replay-frame-value');
+      const toggleButton = document.getElementById('control-replay-toggle');
+      const playPauseButton = document.getElementById('control-replay-play-pause');
+      const maxIndex = Math.max(0, frames.length - 1);
+      const frameIndex = Math.max(0, Math.min(maxIndex, Number(replayState.frameIndex ?? maxIndex)));
+
+      if (frameInput) {
+        frameInput.min = '0';
+        frameInput.max = String(maxIndex);
+        frameInput.value = String(frameIndex);
+        frameInput.disabled = frames.length <= 1;
+      }
+
+      if (frameValue) {
+        const frame = frames[frameIndex];
+        frameValue.textContent = frame ? `frame ${frameIndex}/${maxIndex} · tick ${frame.tick}` : 'no replay';
+      }
+
+      if (toggleButton) {
+        toggleButton.textContent = replayState.enabled ? 'Exit Replay' : 'Replay';
+      }
+
+      if (playPauseButton) {
+        playPauseButton.textContent = replayState.isPlaying ? 'Pause Replay' : 'Play Replay';
+        playPauseButton.disabled = frames.length <= 1;
+      }
     }
   };
 }
@@ -186,6 +221,17 @@ function bindNumberControl(id, handler) {
   element.oninput = emitValue;
   element.onchange = emitValue;
   emitValue();
+}
+
+function bindRangeControl(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  const emitValue = () => handler(Number(element.value));
+  element.oninput = emitValue;
+  element.onchange = emitValue;
 }
 
 function bindHistoryCompareControls(handler) {

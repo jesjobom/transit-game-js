@@ -12,7 +12,7 @@ import {
   turnLeft,
   turnRight
 } from './map.js';
-import { addWorldEvent, createVehicleColor, nextRandomFloat, recordCellMetric, recordDirectionalMetric, syncWorldRngState } from './world.js';
+import { addWorldEvent, captureReplayFrame, createVehicleColor, nextRandomFloat, recordCellMetric, recordDirectionalMetric, syncWorldRngState } from './world.js';
 
 const DEADLOCK_THRESHOLD_TICKS = 3;
 
@@ -38,6 +38,7 @@ export function createEngine(world) {
       }
 
       syncWorldRngState(world);
+      captureReplayFrame(world);
       return world.tick;
     },
     runTicks(totalTicks) {

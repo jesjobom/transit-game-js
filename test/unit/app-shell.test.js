@@ -34,6 +34,10 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['control-play-pause', createElement('control-play-pause')],
     ['control-step', createElement('control-step')],
     ['control-reset', createElement('control-reset')],
+    ['control-replay-toggle', createElement('control-replay-toggle')],
+    ['control-replay-play-pause', createElement('control-replay-play-pause')],
+    ['control-replay-frame', Object.assign(createElement('control-replay-frame'), { value: '0', min: '0', max: '0' })],
+    ['control-replay-frame-value', createElement('control-replay-frame-value')],
     ['control-mode', Object.assign(createElement('control-mode'), { value: 'benchmark' })],
     ['control-speed', Object.assign(createElement('control-speed'), { value: '0.75' })],
     ['control-benchmark-duration', Object.assign(createElement('control-benchmark-duration'), { value: '60' })],
@@ -71,6 +75,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     const historySelections = [];
     const overlayModes = [];
     const selectedCells = [];
+    let replayToggleCalls = 0;
+    let replayPlayPauseCalls = 0;
+    const replayFrameCalls = [];
     const appShell = createAppShell({
       world: {},
       engine: { status: 'ready' },
@@ -102,6 +109,15 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       },
       onGridCellSelect(cell) {
         selectedCells.push(cell);
+      },
+      onReplayToggle() {
+        replayToggleCalls += 1;
+      },
+      onReplayPlayPause() {
+        replayPlayPauseCalls += 1;
+      },
+      onReplayFrameChange(frameIndex) {
+        replayFrameCalls.push(frameIndex);
       }
     });
 
@@ -119,6 +135,14 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     elements.get('control-speed').value = '1.5';
     elements.get('control-speed').oninput();
     assert.deepEqual(speedCalls, [0.75, 1.5]);
+
+    elements.get('control-replay-toggle').onclick();
+    elements.get('control-replay-play-pause').onclick();
+    elements.get('control-replay-frame').value = '2';
+    elements.get('control-replay-frame').oninput();
+    assert.equal(replayToggleCalls, 1);
+    assert.equal(replayPlayPauseCalls, 1);
+    assert.deepEqual(replayFrameCalls, [2]);
 
     appShell.setSpeedState(1.5, 280);
     assert.equal(elements.get('control-speed-value').textContent, '1.5× · 280ms/tick');
@@ -165,6 +189,12 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
 
     appShell.renderCellInspection(['Cell: 7,3', 'Type: intersection']);
     assert.match(elements.get('cell-inspection-summary').innerHTML, /Type: intersection/);
+
+    appShell.syncReplayState([{ tick: 0 }, { tick: 1 }, { tick: 2 }], { enabled: true, isPlaying: false, frameIndex: 2 });
+    assert.equal(elements.get('control-replay-toggle').textContent, 'Exit Replay');
+    assert.equal(elements.get('control-replay-play-pause').textContent, 'Play Replay');
+    assert.equal(elements.get('control-replay-frame').max, '2');
+    assert.match(elements.get('control-replay-frame-value').textContent, /tick 2/);
 
     appShell.syncSimulationConfig({
       mode: 'sandbox',

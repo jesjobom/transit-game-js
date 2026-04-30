@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 27`
-- **Build tag:** `s27-grid-overlays-inspector`
-- **Último estado validado:** `47/47` testes passando
+- **Versão visível da app:** `Sprint 28`
+- **Build tag:** `s28-replay-timeline`
+- **Último estado validado:** `48/48` testes passando
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
@@ -48,6 +48,7 @@ A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e
 - fairness entre fluxos/direções no benchmark
 - overlays básicos no grid para congestionamento/fluxo/pressão de deadlock
 - inspeção de célula/cruzamento por clique
+- replay com timeline e play/pause
 - resumo de fases de semáforo
 - eventos recentes da simulação
 
@@ -298,16 +299,16 @@ Parcialmente concluído no estado atual: a app agora mostra overlays no grid par
 Adicionar replay navegável, separado da animação ao vivo.
 
 **Inclui**
-- [ ] gravar sequência suficiente de estados/eventos
-- [ ] timeline navegável
-- [ ] play/pause do replay
-- [ ] voltar/avançar em pontos da execução já concluída
+- [x] gravar sequência suficiente de estados/eventos
+- [x] timeline navegável
+- [x] play/pause do replay
+- [x] voltar/avançar em pontos da execução já concluída
 
 **Por que importa**
 A animação contínua atual melhorou muito a leitura, mas replay é outra coisa: ele serve para análise, comparação e depuração.
 
-**Verificação de pendência**
-A V1 já tem motion frame-a-frame em tempo real, mas não há timeline de replay nem navegação por histórico.
+**Status após Sprint 28**
+Concluído no estado atual: a simulação agora grava frames serializáveis, expõe um modo replay separado do loop ao vivo, permite scrub por timeline e reproduz os frames capturados com play/pause para análise posterior.
 
 ---
 

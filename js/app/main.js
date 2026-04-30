@@ -13,7 +13,7 @@ import {
 } from './ui/view-model.js';
 import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
-import { createWorldState } from '../core/world.js';
+import { captureReplayFrame, createWorldState } from '../core/world.js';
 import { buildWorldOptionsFromScenario, getScenarioById, getScenarioCatalog, parseScenarioJson } from '../core/scenario.js';
 
 const BASE_TICK_INTERVAL_MS = 420;
@@ -43,10 +43,18 @@ function boot() {
   });
 
   let animationFrameId = null;
+  let replayAnimationFrameId = null;
   let isRunning = false;
   let lastFrameAt = 0;
   let tickAccumulatorMs = 0;
+  let replayLastFrameAt = 0;
+  let replayAccumulatorMs = 0;
   let speedMultiplier = DEFAULT_SPEED_MULTIPLIER;
+  let replayState = {
+    enabled: false,
+    isPlaying: false,
+    frameIndex: Math.max(0, state.world.replay.frames.length - 1)
+  };
 
   appShell.bindControls({
     onPlayPause() {
@@ -67,8 +75,14 @@ function boot() {
     },
     onReset() {
       stopLoop();
+      stopReplayLoop();
       state = createSimulationState(runtimeConfig);
       previousWorld = snapshotRenderableWorld(state.world);
+      replayState = {
+        enabled: false,
+        isPlaying: false,
+        frameIndex: Math.max(0, state.world.replay.frames.length - 1)
+      };
       renderBenchmarkHistory();
       render();
       startLoop();
@@ -111,6 +125,39 @@ function boot() {
       selectedCell = cell;
       render();
     },
+    onReplayToggle() {
+      replayState.enabled = !replayState.enabled;
+      replayState.isPlaying = false;
+      stopReplayLoop();
+      if (replayState.enabled) {
+        stopLoop();
+        replayState.frameIndex = Math.max(0, state.world.replay.frames.length - 1);
+      }
+      render();
+    },
+    onReplayPlayPause() {
+      if (!replayState.enabled) {
+        replayState.enabled = true;
+        replayState.frameIndex = 0;
+      }
+
+      replayState.isPlaying = !replayState.isPlaying;
+      if (replayState.isPlaying) {
+        stopLoop();
+        startReplayLoop();
+      } else {
+        stopReplayLoop();
+      }
+      render();
+    },
+    onReplayFrameChange(frameIndex) {
+      replayState.enabled = true;
+      replayState.isPlaying = false;
+      stopLoop();
+      stopReplayLoop();
+      replayState.frameIndex = Math.max(0, Math.min(state.world.replay.frames.length - 1, Math.round(frameIndex)));
+      render();
+    },
     async onImportScenario(file) {
       try {
         const parsed = parseScenarioJson(await file.text());
@@ -147,8 +194,14 @@ function boot() {
 
   function applyRuntimeConfig() {
     stopLoop();
+    stopReplayLoop();
     state = createSimulationState(runtimeConfig);
     previousWorld = snapshotRenderableWorld(state.world);
+    replayState = {
+      enabled: false,
+      isPlaying: false,
+      frameIndex: Math.max(0, state.world.replay.frames.length - 1)
+    };
     appShell.syncScenarioCatalog(getScenarioCatalog(runtimeConfig.importedScenarios), runtimeConfig.scenarioId);
     appShell.syncSimulationConfig(runtimeConfig);
     render();
@@ -196,6 +249,8 @@ function boot() {
     render();
 
     if (state.world.status === 'completed') {
+      replayState.frameIndex = Math.max(0, state.world.replay.frames.length - 1);
+      render();
       stopLoop();
       return;
     }
@@ -213,13 +268,62 @@ function boot() {
     appShell.setRunningState(false);
   }
 
+  function startReplayLoop() {
+    if (replayAnimationFrameId || !replayState.isPlaying) {
+      return;
+    }
+
+    replayLastFrameAt = 0;
+    replayAccumulatorMs = 0;
+    replayAnimationFrameId = window.requestAnimationFrame(replayFrameLoop);
+  }
+
+  function replayFrameLoop(frameAt) {
+    if (!replayState.isPlaying) {
+      return;
+    }
+
+    if (!replayLastFrameAt) {
+      replayLastFrameAt = frameAt;
+    }
+
+    const deltaMs = frameAt - replayLastFrameAt;
+    replayLastFrameAt = frameAt;
+    replayAccumulatorMs += deltaMs;
+
+    if (replayAccumulatorMs >= getTickIntervalMs()) {
+      replayAccumulatorMs = 0;
+      const maxFrameIndex = Math.max(0, state.world.replay.frames.length - 1);
+      if (replayState.frameIndex >= maxFrameIndex) {
+        replayState.isPlaying = false;
+        stopReplayLoop();
+      } else {
+        replayState.frameIndex += 1;
+      }
+      render();
+    }
+
+    if (replayState.isPlaying) {
+      replayAnimationFrameId = window.requestAnimationFrame(replayFrameLoop);
+    }
+  }
+
+  function stopReplayLoop() {
+    if (replayAnimationFrameId) {
+      window.cancelAnimationFrame(replayAnimationFrameId);
+      replayAnimationFrameId = null;
+    }
+  }
+
   function render() {
     const report = state.engine.getReport();
     maybePersistCompletedBenchmark(report);
+    const viewWorld = replayState.enabled ? (state.world.replay.frames[replayState.frameIndex] ?? state.world) : state.world;
+    const viewReport = viewWorld.report ?? report;
     const tickIntervalMs = getTickIntervalMs();
     const motionProgress = isRunning ? Math.min(1, tickAccumulatorMs / tickIntervalMs) : 1;
-    renderer.renderWorld(state.world, {
-      summaryLines: buildSimulationSummary(state.world, benchmark.summarize(report)),
+    renderer.renderWorld(viewWorld, {
+      summaryLines: buildSimulationSummary(viewWorld, benchmark.summarize(viewReport)),
       animationDurationMs: getAnimationDurationMs(tickIntervalMs),
       previousWorld,
       motionProgress,
@@ -229,11 +333,12 @@ function boot() {
       selectedCell
     });
     appShell.renderDiagnostics({
-      metrics: buildLiveMetrics(state.world, report),
-      lights: buildLightPhaseSummary(state.world),
-      events: buildRecentEventSummary(state.world)
+      metrics: buildLiveMetrics(viewWorld, viewReport),
+      lights: buildLightPhaseSummary(viewWorld),
+      events: buildRecentEventSummary(viewWorld)
     });
-    appShell.renderCellInspection(buildCellInspectionLines(state.world, selectedCell));
+    appShell.renderCellInspection(buildCellInspectionLines(viewWorld, selectedCell));
+    appShell.syncReplayState(state.world.replay.frames, replayState);
   }
 
   function maybePersistCompletedBenchmark(report) {
@@ -285,6 +390,7 @@ function createSimulationState(runtimeConfig = createRuntimeConfig()) {
   const world = createWorldState(buildWorldOptionsFromScenario(scenario, runtimeConfig));
   world.scenarioId = scenario.id;
   world.scenarioName = scenario.name;
+  captureReplayFrame(world);
   return {
     world,
     engine: createEngine(world)

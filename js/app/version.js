@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 27';
-export const BUILD_TAG = 's27-grid-overlays-inspector';
+export const APP_VERSION = 'Sprint 28';
+export const BUILD_TAG = 's28-replay-timeline';

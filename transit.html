@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s27-grid-overlays-inspector" />
+    <link rel="stylesheet" href="css/app.css?v=s28-replay-timeline" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,13 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 27</div>
+        <div class="version-badge">Sprint 28</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: grid overlays and cell inspection so debugging happens on the map instead of only in the sidebar.</p>
+          <p>Current focus: replay timeline so completed runs can be scrubbed, replayed and inspected frame by frame.</p>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-mode">Simulation mode</label>
@@ -88,6 +88,18 @@
             <button id="control-play-pause" type="button">Pause</button>
             <button id="control-step" type="button">+1 Tick</button>
             <button id="control-reset" type="button">Reset</button>
+          </div>
+
+          <div class="control-buttons">
+            <button id="control-replay-toggle" type="button">Replay</button>
+            <button id="control-replay-play-pause" type="button">Play Replay</button>
+          </div>
+          <div class="control-field">
+            <div class="control-field__header">
+              <label for="control-replay-frame">Replay frame</label>
+              <span id="control-replay-frame-value" class="control-value">no replay</span>
+            </div>
+            <input id="control-replay-frame" type="range" min="0" max="0" step="1" value="0" />
           </div>
           <ul>
             <li>Legacy version lives under <code>legacy/</code></li>
@@ -159,6 +171,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s27-grid-overlays-inspector"></script>
+    <script type="module" src="js/app/main.js?v=s28-replay-timeline"></script>
   </body>
 </html>

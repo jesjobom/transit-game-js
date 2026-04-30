@@ -86,6 +86,9 @@ export function createWorldState(options = {}) {
     },
     report: null,
     historySaved: false,
+    replay: {
+      frames: []
+    },
     events: []
   };
 
@@ -155,6 +158,26 @@ export function recordCellMetric(world, x, y, metricKey, amount = 1) {
   const entry = world.metrics.cellStatsByKey[key] ?? createCellMetricEntry();
   entry[metricKey] += amount;
   world.metrics.cellStatsByKey[key] = entry;
+}
+
+export function captureReplayFrame(world) {
+  const frame = {
+    tick: world.tick,
+    status: world.status,
+    simulationSeed: world.simulationSeed,
+    mapSeed: world.mapSeed,
+    scenarioId: world.scenarioId,
+    scenarioName: world.scenarioName,
+    config: structuredClone(world.config),
+    map: structuredClone(world.map),
+    entities: structuredClone(world.entities),
+    metrics: structuredClone(world.metrics),
+    events: structuredClone(world.events),
+    report: world.report ? structuredClone(world.report) : null
+  };
+
+  world.replay.frames.push(frame);
+  return frame;
 }
 
 function worldLike(simulationSeed) {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { addWorldEvent, createWorldState, nextRandomFloat } from '../../js/core/world.js';
+import { addWorldEvent, captureReplayFrame, createWorldState, nextRandomFloat } from '../../js/core/world.js';
 
 test('createWorldState builds the Sprint 8 structure with defaults', () => {
   const world = createWorldState();
@@ -66,6 +66,23 @@ test('createWorldState hydrates custom vehicles with persistent individual color
   assert.ok(world.entities.vehicles[0].color);
   assert.ok(world.entities.vehicles[1].color);
   assert.notDeepEqual(world.entities.vehicles[0].color, world.entities.vehicles[1].color);
+});
+
+test('captureReplayFrame stores serializable timeline snapshots', () => {
+  const world = createWorldState({
+    vehicles: [{ id: 'vehicle-a', x: 0, y: 2, direction: 'east', status: 'active', spawnedAtTick: 0 }]
+  });
+  world.tick = 3;
+  world.status = 'running';
+  world.scenarioId = 'baseline-benchmark';
+  world.scenarioName = 'Baseline benchmark grid';
+
+  const frame = captureReplayFrame(world);
+
+  assert.equal(world.replay.frames.length, 1);
+  assert.equal(frame.tick, 3);
+  assert.equal(frame.entities.vehicles[0].id, 'vehicle-a');
+  assert.equal(frame.scenarioId, 'baseline-benchmark');
 });
 
 test('world random helper updates rng state and addWorldEvent records the current tick', () => {
