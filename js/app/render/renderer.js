@@ -38,6 +38,7 @@ export function createRenderer(rootElement) {
     key: '',
     descriptor: null
   };
+  let liveDomState = null;
 
   return {
     status: 'world renderer ready',
@@ -57,7 +58,7 @@ export function createRenderer(rootElement) {
     },
     renderWorld(world, options = {}) {
       if (!rootElement) {
-        return { usedStaticMapCache: false, staticCellCount: 0 };
+        return { usedStaticMapCache: false, staticCellCount: 0, usedIncrementalVehicleLayer: false };
       }
 
       const viewport = {
@@ -74,16 +75,27 @@ export function createRenderer(rootElement) {
         };
       }
 
-      rootElement.innerHTML = buildWorldHtml(world, {
+      const renderOptions = {
         ...options,
         viewport,
         staticWorldDescriptor: staticWorldCache.descriptor,
         worldScale: computeWorldScale(world.map, viewport)
-      });
+      };
+
+      const canUseIncrementalDom = hasIncrementalDomSupport(rootElement);
+      const shouldHydrateFullShell = !canUseIncrementalDom || !usedStaticMapCache || !liveDomState;
+
+      if (shouldHydrateFullShell) {
+        rootElement.innerHTML = buildWorldHtml(world, renderOptions);
+        liveDomState = canUseIncrementalDom ? captureLiveDomState(rootElement) : null;
+      } else {
+        patchLiveWorldShell(liveDomState, world, renderOptions);
+      }
 
       return {
         usedStaticMapCache,
-        staticCellCount: staticWorldCache.descriptor?.cells?.length ?? 0
+        staticCellCount: staticWorldCache.descriptor?.cells?.length ?? 0,
+        usedIncrementalVehicleLayer: Boolean(canUseIncrementalDom && !shouldHydrateFullShell)
       };
     }
   };
@@ -149,40 +161,51 @@ export function buildStaticWorldDescriptor(map) {
 export function buildWorldHtml(world, options = {}) {
   const map = world.map;
   const staticWorldDescriptor = options.staticWorldDescriptor ?? buildStaticWorldDescriptor(map);
-  const lightsById = new Map(world.entities.lights.map((light) => [light.id, light]));
-  const cells = staticWorldDescriptor.cells.map((cell) => renderWorldCell(world, cell, lightsById, options));
-  const vehicleTrail = renderSelectedVehicleTrail(world, map, options);
-  const vehicles = world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map, options));
-  const summary = options.summaryLines || [];
-
-  const animationDurationMs = options.animationDurationMs ?? 240;
-  const tileSizePx = options.tileSizePx ?? DEFAULT_TILE_SIZE_PX;
-  const gridPaddingPx = WORLD_STAGE_PADDING_PX;
-  const stageWidthPx = map.width * tileSizePx + gridPaddingPx;
-  const stageHeightPx = map.height * tileSizePx + gridPaddingPx;
-  const worldScale = clampWorldScale(options.worldScale ?? 1);
 
   return `
     <div class="world-view">
-      <div class="world-grid-shell" style="--vehicle-animation-duration:${animationDurationMs}ms; --world-scale:${worldScale.toFixed(4)}; --world-stage-width:${stageWidthPx}px; --world-stage-height:${stageHeightPx}px; height:${Math.round(stageHeightPx * worldScale)}px;">
+      <div class="world-grid-shell" style="${buildWorldShellStyle(map, options)}">
         <div class="world-grid-stage">
           <div
             class="world-grid"
-            style="grid-template-columns: repeat(${map.width}, ${tileSizePx}px);"
+            style="grid-template-columns: repeat(${map.width}, ${(options.tileSizePx ?? DEFAULT_TILE_SIZE_PX)}px);"
           >
-            ${cells.join('')}
+            ${buildWorldGridMarkup(world, staticWorldDescriptor, options)}
           </div>
           <div class="vehicle-layer" style="--grid-width:${map.width}; --grid-height:${map.height};">
-            ${vehicleTrail}
-            ${vehicles.join('')}
+            <div class="vehicle-trail-layer">${renderSelectedVehicleTrail(world, map, options)}</div>
+            <div class="vehicle-sprite-layer">${buildVehicleSpriteMarkup(world, map, options)}</div>
           </div>
         </div>
       </div>
       <div class="world-summary">
-        ${summary.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}
+        ${buildWorldSummaryMarkup(options.summaryLines || [])}
       </div>
     </div>
   `;
+}
+
+function buildWorldShellStyle(map, options = {}) {
+  const tileSizePx = options.tileSizePx ?? DEFAULT_TILE_SIZE_PX;
+  const animationDurationMs = options.animationDurationMs ?? 240;
+  const stageWidthPx = map.width * tileSizePx + WORLD_STAGE_PADDING_PX;
+  const stageHeightPx = map.height * tileSizePx + WORLD_STAGE_PADDING_PX;
+  const worldScale = clampWorldScale(options.worldScale ?? 1);
+
+  return `--vehicle-animation-duration:${animationDurationMs}ms; --world-scale:${worldScale.toFixed(4)}; --world-stage-width:${stageWidthPx}px; --world-stage-height:${stageHeightPx}px; height:${Math.round(stageHeightPx * worldScale)}px;`;
+}
+
+function buildWorldGridMarkup(world, staticWorldDescriptor, options = {}) {
+  const lightsById = new Map(world.entities.lights.map((light) => [light.id, light]));
+  return staticWorldDescriptor.cells.map((cell) => renderWorldCell(world, cell, lightsById, options)).join('');
+}
+
+function buildWorldSummaryMarkup(summaryLines = []) {
+  return summaryLines.map((line) => `<div>${escapeHtml(line)}</div>`).join('');
+}
+
+function buildVehicleSpriteMarkup(world, map, options = {}) {
+  return world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map, options)).join('');
 }
 
 function renderWorldCell(world, cell, lightsById, options = {}) {
@@ -204,6 +227,90 @@ function renderWorldCell(world, cell, lightsById, options = {}) {
       title="x=${cell.x}, y=${cell.y}${lightPhase ? `, light=${escapeHtml(lightPhase)}` : ''}"
     >${injectTrafficLightMarkup(cell.baseContent, dynamicLightMarkup)}${overlayMarkup}</div>
   `;
+}
+
+function hasIncrementalDomSupport(rootElement) {
+  return Boolean(rootElement?.querySelector);
+}
+
+function captureLiveDomState(rootElement) {
+  return {
+    rootElement,
+    gridShell: rootElement.querySelector('.world-grid-shell'),
+    grid: rootElement.querySelector('.world-grid'),
+    summary: rootElement.querySelector('.world-summary'),
+    trailLayer: rootElement.querySelector('.vehicle-trail-layer'),
+    spriteLayer: rootElement.querySelector('.vehicle-sprite-layer'),
+    vehicleNodesById: new Map(
+      [...(rootElement.querySelectorAll?.('[data-vehicle-id]') ?? [])].map((element) => [element.dataset.vehicleId, element])
+    )
+  };
+}
+
+function patchLiveWorldShell(liveDomState, world, options = {}) {
+  if (!liveDomState?.grid || !liveDomState?.summary || !liveDomState?.gridShell || !liveDomState?.trailLayer || !liveDomState?.spriteLayer) {
+    return;
+  }
+
+  const staticWorldDescriptor = options.staticWorldDescriptor ?? buildStaticWorldDescriptor(world.map);
+  liveDomState.gridShell.setAttribute('style', buildWorldShellStyle(world.map, options));
+  liveDomState.grid.setAttribute('style', `grid-template-columns: repeat(${world.map.width}, ${(options.tileSizePx ?? DEFAULT_TILE_SIZE_PX)}px);`);
+  liveDomState.grid.innerHTML = buildWorldGridMarkup(world, staticWorldDescriptor, options);
+  liveDomState.summary.innerHTML = buildWorldSummaryMarkup(options.summaryLines || []);
+  liveDomState.trailLayer.innerHTML = renderSelectedVehicleTrail(world, world.map, options);
+  patchVehicleSpriteLayer(liveDomState, world, options);
+}
+
+function patchVehicleSpriteLayer(liveDomState, world, options = {}) {
+  const spriteLayer = liveDomState.spriteLayer;
+  const previousVehicles = [...liveDomState.vehicleNodesById.keys()].map((id) => ({ id }));
+  const nextDescriptors = world.entities.vehicles.map((vehicle) => buildVehicleRenderDescriptor(world, vehicle, world.map, options));
+  const patch = buildVehicleLayerPatch(previousVehicles, nextDescriptors);
+  const nextById = new Map(nextDescriptors.map((descriptor) => [descriptor.id, descriptor]));
+
+  for (const removedId of patch.removed) {
+    const node = liveDomState.vehicleNodesById.get(removedId);
+    node?.remove?.();
+    liveDomState.vehicleNodesById.delete(removedId);
+  }
+
+  for (const updatedId of patch.updated) {
+    const node = liveDomState.vehicleNodesById.get(updatedId);
+    const descriptor = nextById.get(updatedId);
+    if (node && descriptor) {
+      applyVehicleDescriptorToNode(node, descriptor);
+    }
+  }
+
+  for (const addedId of patch.added) {
+    const descriptor = nextById.get(addedId);
+    if (!descriptor) {
+      continue;
+    }
+
+    const node = createVehicleNode(spriteLayer, descriptor);
+    spriteLayer.appendChild(node);
+    liveDomState.vehicleNodesById.set(addedId, node);
+  }
+}
+
+function createVehicleNode(spriteLayer, descriptor) {
+  const documentRef = spriteLayer?.ownerDocument ?? globalThis.document;
+  const node = documentRef.createElement('span');
+  node.innerHTML = vehicleInnerMarkup();
+  applyVehicleDescriptorToNode(node, descriptor);
+  return node;
+}
+
+function applyVehicleDescriptorToNode(node, descriptor) {
+  node.className = descriptor.className;
+  node.dataset.vehicleId = descriptor.id;
+  node.dataset.x = String(descriptor.x);
+  node.dataset.y = String(descriptor.y);
+  node.dataset.motionKind = descriptor.motionKind;
+  node.setAttribute('style', descriptor.style);
+  node.setAttribute('title', descriptor.title);
+  node.setAttribute('aria-label', descriptor.ariaLabel);
 }
 
 function computeWorldScale(map, viewport = {}) {
@@ -411,9 +518,39 @@ function renderSelectedVehicleTrail(world, map, options = {}) {
 }
 
 function renderVehicle(world, vehicle, map, options = {}) {
+  const descriptor = buildVehicleRenderDescriptor(world, vehicle, map, options);
+
+  return `
+    <span
+      class="${descriptor.className}"
+      data-vehicle-id="${escapeHtml(descriptor.id)}"
+      data-x="${descriptor.x}"
+      data-y="${descriptor.y}"
+      data-motion-kind="${escapeHtml(descriptor.motionKind)}"
+      style="${descriptor.style}"
+      title="${escapeHtml(descriptor.title)}"
+      aria-label="${escapeHtml(descriptor.ariaLabel)}"
+    >
+      ${vehicleInnerMarkup()}
+    </span>
+  `;
+}
+
+export function buildVehicleLayerPatch(previousVehicles = [], nextVehicles = []) {
+  const previousIds = new Set(previousVehicles.map((vehicle) => vehicle.id));
+  const nextIds = new Set(nextVehicles.map((vehicle) => vehicle.id));
+
+  return {
+    added: nextVehicles.filter((vehicle) => !previousIds.has(vehicle.id)).map((vehicle) => vehicle.id),
+    updated: nextVehicles.filter((vehicle) => previousIds.has(vehicle.id)).map((vehicle) => vehicle.id),
+    removed: previousVehicles.filter((vehicle) => !nextIds.has(vehicle.id)).map((vehicle) => vehicle.id)
+  };
+}
+
+function buildVehicleRenderDescriptor(world, vehicle, map, options = {}) {
   const renderState = getVehicleRenderState(world, vehicle, map, options);
   const color = vehicle.color ?? getVehicleColor(world, vehicle);
-  const classes = ['vehicle', `vehicle--${escapeHtml(vehicle.direction)}`];
+  const classes = ['vehicle', `vehicle--${vehicle.direction}`];
 
   if (options.selectedVehicleId === vehicle.id) {
     classes.push('vehicle--selected');
@@ -423,24 +560,26 @@ function renderVehicle(world, vehicle, map, options = {}) {
     classes.push('vehicle--turning');
   }
 
+  return {
+    id: vehicle.id,
+    x: vehicle.x,
+    y: vehicle.y,
+    motionKind: renderState.motionKind,
+    className: classes.join(' '),
+    style: `left:${renderState.position.x}%; top:${renderState.position.y}%; --vehicle-render-offset-x:${renderState.offset.x}px; --vehicle-render-offset-y:${renderState.offset.y}px; --vehicle-render-angle:${renderState.angle}deg; --vehicle-motion-progress:${renderState.progress.toFixed(3)}; --vehicle-color:${color.fill}; --vehicle-color-dark:${color.shadow}; --vehicle-color-light:${color.highlight};`,
+    title: `${vehicle.id} lane=${vehicle.direction}#${(vehicle.laneIndex ?? 0) + 1}`,
+    ariaLabel: vehicle.id
+  };
+}
+
+function vehicleInnerMarkup() {
   return `
-    <span
-      class="${classes.join(' ')}"
-      data-vehicle-id="${escapeHtml(vehicle.id)}"
-      data-x="${vehicle.x}"
-      data-y="${vehicle.y}"
-      data-motion-kind="${escapeHtml(renderState.motionKind)}"
-      style="left:${renderState.position.x}%; top:${renderState.position.y}%; --vehicle-render-offset-x:${renderState.offset.x}px; --vehicle-render-offset-y:${renderState.offset.y}px; --vehicle-render-angle:${renderState.angle}deg; --vehicle-motion-progress:${renderState.progress.toFixed(3)}; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
-      title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}#${escapeHtml((vehicle.laneIndex ?? 0) + 1)}"
-      aria-label="${escapeHtml(vehicle.id)}"
-    >
-      <span class="vehicle-svg">
-        <span class="vehicle-body"></span>
-        <span class="vehicle-cabin"></span>
-        <span class="vehicle-wheels vehicle-wheels--front"></span>
-        <span class="vehicle-wheels vehicle-wheels--rear"></span>
-        <span class="vehicle-windshield"></span>
-      </span>
+    <span class="vehicle-svg">
+      <span class="vehicle-body"></span>
+      <span class="vehicle-cabin"></span>
+      <span class="vehicle-wheels vehicle-wheels--front"></span>
+      <span class="vehicle-wheels vehicle-wheels--rear"></span>
+      <span class="vehicle-windshield"></span>
     </span>
   `;
 }

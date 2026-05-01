@@ -249,6 +249,12 @@ button {
   pointer-events: none;
 }
 
+.vehicle-trail-layer,
+.vehicle-sprite-layer {
+  position: absolute;
+  inset: 0;
+}
+
 .vehicle-trail-dot {
   position: absolute;
   width: 10px;

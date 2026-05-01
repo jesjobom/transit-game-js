@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildStaticWorldDescriptor, buildWorldHtml, createRenderer } from '../../js/app/render/renderer.js';
+import { buildStaticWorldDescriptor, buildVehicleLayerPatch, buildWorldHtml, createRenderer } from '../../js/app/render/renderer.js';
 import { createWorldState } from '../../js/core/world.js';
 
 test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, and styled roads', () => {
@@ -171,6 +171,19 @@ test('createRenderer reuses the static world cache when the map does not change'
   assert.equal(secondRender.usedStaticMapCache, true);
   assert.equal(secondRender.staticCellCount, world.map.width * world.map.height);
   assert.match(rootElement.innerHTML, /world-grid/);
+});
+
+test('buildVehicleLayerPatch identifies added, updated, and removed vehicles', () => {
+  const patch = buildVehicleLayerPatch(
+    [{ id: 'vehicle-1' }, { id: 'vehicle-2' }],
+    [{ id: 'vehicle-2' }, { id: 'vehicle-3' }]
+  );
+
+  assert.deepEqual(patch, {
+    added: ['vehicle-3'],
+    updated: ['vehicle-2'],
+    removed: ['vehicle-1']
+  });
 });
 
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
