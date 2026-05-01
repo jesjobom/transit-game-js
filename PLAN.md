@@ -1,668 +1,590 @@
 # PLAN.md
 
-Plano técnico inicial para evoluir o **transit-game-js** de protótipo visual para simulador reproduzível e comparável.
+Plano de melhoria de performance do **transit-game-js**.
 
-## 1. Objetivo do plano
-
-Levar o projeto do estado atual:
-- lógica acoplada ao DOM
-- loops independentes por carro com `setTimeout`
-- mapa hardcoded
-- comportamento difícil de reproduzir
-- movimento visual “piscando”
-
-para um estado em que ele tenha:
-- engine central de simulação por ticks
-- estado serializável
-- seed fixa e benchmark reproduzível
-- regras configuráveis por flags
-- renderização separada da lógica
-- base pronta para movimento suave e métricas consistentes
+Este arquivo substitui o plano antigo.
+Agora o projeto já tem engine por ticks, replay, benchmark, geração procedural e suporte inicial a múltiplas faixas. O problema deixou de ser “como sair do protótipo” e passou a ser “como escalar sem a UI ficar pesada nem a simulação perder consistência”.
 
 ---
 
-## 2. Diagnóstico do estado atual
+# 1. Objetivo deste plano
 
-## Problemas principais
+Melhorar a performance percebida e a performance real da simulação sem destruir:
+- determinismo do benchmark
+- clareza da arquitetura atual
+- capacidade de debug
+- facilidade de continuar evoluindo regras, mapa e UX
 
-### 2.1. Loop por carro
-Hoje cada carro mantém o próprio loop assíncrono. Isso complica:
-- previsibilidade
-- depuração
-- benchmark reproduzível
-- coleta de métricas coerente
-- evolução para movimento suave
+Em termos práticos, queremos:
+- reduzir sensação de travamento quando a simulação roda
+- manter o mapa fluido mesmo com mais veículos e mais interseções
+- evitar picos de CPU e GC
+- preparar terreno para mapas maiores e comportamento mais rico de faixas
+- separar melhor custo de simulação vs custo de renderização
 
-### 2.2. Mistura de engine e UI
-A simulação depende fortemente da renderização e do estado global da página.
-Isso torna difícil:
-- testar regras isoladamente
-- trocar a visualização
-- pausar/reiniciar de forma limpa
-- rodar modo benchmark sem UI
+---
 
-### 2.3. Estado implícito e pouco serializável
-Boa parte do estado está distribuída entre objetos vivos e timers.
-Isso dificulta:
+# 2. Leitura honesta do problema atual
+
+A app já está muito melhor que no começo, mas a sensação de peso ainda aparece porque vários custos se acumulam.
+
+## 2.1. O renderer ainda faz trabalho demais por frame
+Hoje a renderização ainda reconstrói bastante HTML e recalcula muita coisa visual a cada atualização.
+
+Isso pesa porque:
+- grid inteiro é reemitido com frequência
+- veículos, overlays, luzes e decoração urbana convivem no mesmo fluxo de render
+- mapas maiores amplificam custo de DOM e layout
+
+## 2.2. O DOM continua sendo um gargalo provável
+Mesmo com código organizado, DOM grande + atualização frequente + estilos detalhados ainda custa caro.
+
+Sinais típicos:
+- sensação de atraso enquanto carros se movem
+- quedas de FPS quando há muitos veículos/eventos
+- stutter pior em mapas mais largos ou com zoom reduzido
+
+## 2.3. A simulação e a renderização ainda disputam o mesmo orçamento de tempo
+Mesmo usando `requestAnimationFrame`, tudo ainda acontece no mesmo thread principal.
+
+Então qualquer combinação destas coisas se soma:
+- tick da engine
+- cálculo de debug/métricas
+- geração do HTML
+- layout/repaint do browser
+- eventos da UI
+
+## 2.4. Há trabalho repetido em hot paths
+Toda simulação desse tipo tende a sofrer com pequenas ineficiências repetidas milhares de vezes:
+- buscas lineares por veículos
+- resolução de ocupação por `.find()` / `.some()`
+- leitura repetida de estrutura de mapa
+- recomputação de metadados que poderiam ser pré-calculados
+
+## 2.5. Debug e visual rico têm custo real
+A app hoje já entrega várias coisas úteis:
+- inspector
 - replay
-- reset fiel
-- comparação A/B
-- persistência de cenários
+- overlays
+- histórico
+- eventos recentes
+- trilha de veículo
+- múltiplas faixas
 
-### 2.4. Randomicidade sem controle formal
-Existem decisões aleatórias, mas sem seed controlada.
-Isso impede comparação séria entre configurações.
-
-### 2.5. Renderização baseada em reconstrução frequente do DOM
-Isso é aceitável no protótipo, mas fica ruim para:
-- suavidade visual
-- escalabilidade
-- separação entre estado lógico e estado visual
+Tudo isso é bom, mas também adiciona custo. Se não houver orçamento explícito para observabilidade, o debug come performance silenciosamente.
 
 ---
 
-## 3. Estratégia geral
+# 3. Princípios para otimizar sem bagunçar o projeto
 
-A recomendação é **refatorar incrementalmente**, não reescrever tudo de uma vez.
+## 3.1. Otimizar com medição, não no escuro
+Nada de “acho que isso aqui pesa”.
+Cada etapa deve ser guiada por medição.
 
-Princípio:
-1. estabilizar a engine
-2. introduzir benchmark e métricas
-3. só então investir forte em visual, suavidade e regras novas
+## 3.2. Priorizar gargalos estruturais antes de micro-otimizações
+Trocar um loop por outro quase nunca salva um renderer pesado.
+Primeiro atacar:
+- renderização
+- arquitetura de atualização
+- estrutura de dados quentes
+- separação de responsabilidades
+
+## 3.3. Preservar determinismo do benchmark
+Qualquer otimização que mude ordem lógica, resolução de conflito ou uso do RNG precisa ser tratada com muito cuidado.
+
+## 3.4. Melhorar performance sem apagar capacidade de debug
+O ideal não é “tirar informação”; é:
+- atualizar menos vezes
+- agregar melhor
+- tornar observabilidade opcional quando necessário
+
+## 3.5. Preferir melhorias incrementais e reversíveis
+Nada de reescrever tudo para canvas ou worker no impulso.
+Primeiro atacar o que traz ganho forte com risco controlado.
 
 ---
 
-## 4. Arquitetura alvo
+# 4. Métricas que precisamos acompanhar
 
-## 4.1. Camadas principais
+Antes e durante a otimização, a app deveria acompanhar pelo menos estas métricas internas.
 
-### A. Core Simulation Engine
-Responsável por:
-- avançar o tempo em ticks
-- processar veículos
-- processar regras de trânsito
-- processar semáforos
-- gerar eventos e métricas
+## 4.1. Métricas de simulação
+- `avg_ms_per_tick`
+- `p95_ms_per_tick`
+- `max_ms_per_tick`
+- veículos ativos por tick
+- movimentos resolvidos por tick
+- bloqueios por tick
 
-### B. World State
-Representação serializável de:
+## 4.2. Métricas de renderização
+- `avg_ms_per_render`
+- `p95_ms_per_render`
+- número de renders por segundo
+- tamanho do HTML renderizado ou quantidade de nós relevantes
+- tempo médio de reconstrução do grid
+
+## 4.3. Métricas de fluidez percebida
+- frames longos `> 16.7ms`
+- frames muito longos `> 33ms`
+- frequência de dropped frames
+- tempo entre ticks visuais
+
+## 4.4. Métricas de custo de observabilidade
+- custo de gerar overlays
+- custo de gerar summaries textuais
+- custo de atualizar replay
+- custo de persistir benchmark history
+
+## 4.5. Métricas de correção
+Toda melhoria de performance deve ser validada contra:
+- mesmos resultados para mesma seed/config
+- mesmos testes de engine
+- ausência de regressão visual grave
+
+---
+
+# 5. Grandes frentes de melhoria
+
+---
+
+## 5.1. Frente A — Instrumentação real de performance
+
+### O que fazer
+Adicionar um pequeno subsistema interno para medir:
+- tempo do tick
+- tempo do render
+- tempo do replay render
+- tempo de summaries/diagnostics
+- contagem de nós/veículos/células renderizadas
+
+### Por que importa
+Sem isso, qualquer discussão de performance vira palpite com roupa técnica.
+
+### Como implementar
+- usar `performance.now()` nos pontos críticos
+- guardar janelas móveis simples, ex.: últimos 60 ou 120 samples
+- opcionalmente expor painel debug/perf na UI
+- registrar métricas separadas para `benchmark`, `sandbox` e `replay`
+
+### Benefício esperado
+- localizar gargalo dominante de verdade
+- comparar antes/depois de cada otimização
+- evitar “otimizações” que não movem o ponteiro
+
+### Prioridade
+**P0**
+
+---
+
+## 5.2. Frente B — Reduzir custo de renderização do mundo
+
+### O que fazer
+Parar de tratar cada atualização como se o mundo inteiro precisasse ser re-renderizado do zero.
+
+### Problema atual
+A parte estática do mapa quase não muda, mas o custo de reconstruí-la pode voltar várias vezes.
+
+### Melhorias sugeridas
+
+#### B1. Separar visual estático de visual dinâmico
+Particionar em camadas:
+- camada estática do mapa/base
+- camada dinâmica de veículos
+- camada de overlays
+- camada de seleção/debug
+
+#### B2. Cache do grid estático
+Renderizar uma vez e reaproveitar enquanto não mudar:
 - mapa
-- cruzamentos
-- pistas/segmentos
-- veículos
-- semáforos
-- configuração ativa
-- seed e estado do RNG
-- seed do mapa / parâmetros de geração procedural
-- tempo atual da simulação
+- zoom
+- modo de overlay estrutural que afete a base
 
-### C. Rules Layer
-Conjunto de regras habilitáveis/desabilitáveis, por exemplo:
-- free right on red
-- 4-way stop
-- no block intersection
-- yellow handling
-- priority road
+#### B3. Atualizar só a camada de veículos por tick
+Veículos são o que mais muda. O mapa não deveria pagar o preço disso toda hora.
 
-### D. Renderer
-Responsável só por desenhar/interpolar o estado atual.
-Não deve decidir comportamento de trânsito.
-
-### E. UI / Controls
-Responsável por:
-- botões
-- sliders
-- flags de regras
-- presets
-- iniciar benchmark
-- mostrar métricas e score
-
-### F. Benchmark / Analytics
-Responsável por:
-- rodar cenário com seed fixa
-- coletar métricas
-- consolidar score
-- exportar relatório resumido
-
----
-
-## 5. Modelo técnico sugerido
-
-## 5.1. Tick fixo da simulação
-Sugestão inicial:
-- tick lógico fixo, por exemplo `10` ou `20` passos por segundo
-- renderização independente, usando `requestAnimationFrame`
-
-### Vantagens
-- previsibilidade
-- mesma simulação para a mesma seed/config
-- métricas consistentes
-- base perfeita para interpolação visual
-
-## 5.2. Random com seed fixa
-Adicionar um RNG controlado por seed.
-
-### Necessário para
-- comparar duas regras com justiça
-- replay
-- benchmark em lote
-- depuração reproduzível
-- geração procedural de mapas reproduzível
-
-## 5.3. Estado serializável
-Definir um objeto central de estado, por exemplo:
-
-```js
-{
-  tick: 1234,
-  rngState: ...,
-  config: {...},
-  map: {...},
-  lights: [...],
-  vehicles: [...],
-  metrics: {...}
-}
-```
-
-Não precisa ser exatamente esse formato, mas a ideia é essa.
-
-## 5.4. Eventos da simulação
-A engine deve emitir eventos simples, como:
-- mapGenerated
-- vehicleSpawned
-- vehicleMoved
-- vehicleStopped
-- vehicleExited
-- collision
-- deadlockDetected
-- lightChanged
-
-Isso ajuda em:
-- métricas
-- replay
-- debug visual
-
-## 5.5. Geração procedural de mapas
-
-A arquitetura deve permitir dois modos de mapa:
-
-1. **mapa fixo/predefinido**
-2. **mapa procedural gerado a partir de seed**
-
-A recomendação é que o modo procedural use:
-- uma `mapSeed`
-- um conjunto de parâmetros explícitos
-- um gerador determinístico
-
-Exemplo conceitual de configuração:
-
-```js
-{
-  map: {
-    mode: 'procedural',
-    mapSeed: 20260425,
-    width: 20,
-    height: 14,
-    roadDensity: 0.35,
-    intersectionDensity: 0.12,
-    trafficLightRate: 0.25
-  }
-}
-```
-
-### Requisitos técnicos da geração procedural
-- mesma `mapSeed` + mesmos parâmetros = mesmo mapa
-- seeds diferentes devem poder gerar mapas diferentes
-- benchmark deve registrar a seed do mapa usada
-- o mapa gerado deve ser serializável
-- deve ser possível salvar o mapa final gerado para replay/debug
-
-### Observação importante
-No começo, o projeto pode continuar usando uma seed padrão fixa, de forma que o mapa procedural inicial continue sendo sempre o mesmo. Isso mantém reprodutibilidade e permite depois um botão/ação de “gerar novo mapa” apenas trocando a seed.
-
----
-
-## 6. Estrutura de diretórios sugerida
-
-Sem exagerar na modernização, uma estrutura incremental já ajuda.
-
-```text
-transit-game-js/
-  BACKLOG.md
-  PLAN.md
-  transit.html
-  css/
-  js/
-    app/
-      main.js
-      ui/
-      render/
-      benchmark/
-    core/
-      engine.js
-      world.js
-      rules/
-      metrics/
-      rng.js
-    data/
-      maps/
-      presets/
-```
-
-Não precisa migrar tudo de uma vez. Pode criar essa estrutura aos poucos.
-
----
-
-## 7. Estratégia de testes
-
-A nova arquitetura deve nascer com testes desde cedo, não como etapa cosmética para depois.
-
-## 7.1. Objetivo dos testes
-
-Os testes devem permitir validar a evolução do simulador sem depender de inspeção manual constante na UI.
-
-Eles devem cobrir principalmente:
-- corretude da engine
-- previsibilidade com seed fixa
-- comportamento das regras de trânsito
-- coleta de métricas
-- benchmark reproduzível
-- prevenção de regressões em cenários já estabilizados
-
-## 7.2. Pirâmide de testes recomendada
-
-### A. Testes unitários
-Cobrem partes pequenas e isoladas, por exemplo:
-- RNG com seed
-- transição de estado dos semáforos
-- regras de trânsito isoladas
-- detecção de colisão
-- detecção de deadlock
-- cálculo de score
-- coleta de métricas
-- spawn de veículos
-
-### B. Testes de integração
-Cobrem pequenos cenários completos, por exemplo:
-- mapa pequeno com poucos veículos
-- execução de N ticks
-- validação do estado final
-- validação das métricas geradas
-- comparação de comportamento com diferentes flags de regras
-
-### C. Testes de regressão de benchmark
-Cobrem cenários fixos com seed fixa, por exemplo:
-- mesmo mapa
-- mesma seed
-- mesma duração
-- mesmas regras
-- comparação de métricas e score esperados
-
-### D. Testes de regressão de geração procedural
-Cobrem a geração determinística do mapa, por exemplo:
-- mesma `mapSeed` gera o mesmo layout
-- seed diferente gera layout diferente
-- mesmos parâmetros + mesma seed preservam cruzamentos e elementos esperados
-
-Esses testes são especialmente importantes para detectar quando uma feature nova piora throughput, segurança ou fluidez sem querer.
-
-## 7.3. O que deve ser testado primeiro
-
-Prioridade inicial:
-1. RNG com seed
-2. engine central de ticks
-3. semáforos
-4. movimentação básica de veículos
-5. colisões e bloqueios
-6. métricas mínimas
-7. benchmark reproduzível
-8. geração procedural determinística de mapas
-9. flags de regras opcionais
-
-## 7.4. O que não precisa ser prioridade de teste no início
-
-Não precisa gastar muita energia logo no começo com:
-- testes visuais sofisticados
-- animação suave
-- detalhes de layout
-- polimento cosmético
-
-Esses pontos podem ser validados com inspeção manual e testes leves depois.
-
-## 8. Fases técnicas recomendadas
-
-## Fase 1 — Estabilização da engine
-
-### Meta
-Tirar a lógica do modelo atual de timers por carro.
-
-### Entregas
-- engine central por tick
-- atualização de semáforos por tick
-- atualização de veículos por tick
-- estado serializável mínimo
-- RNG com seed
-- reset limpo da simulação
-- base de testes automatizados
-- primeiros testes unitários para RNG, semáforos e engine
-
-### Critério de sucesso
-- a simulação roda sem loops independentes por carro
-- mesma seed + mesma config = mesmo resultado lógico
-
----
-
-## Fase 2 — Benchmark reproduzível
-
-### Meta
-Criar base de comparação objetiva entre configurações.
-
-### Entregas
-- modo benchmark separado do modo sandbox
-- duração fixa de execução
-- spawn controlado/configurável
-- métricas mínimas
-- score inicial
-- relatório resumido
-- testes de integração para cenários pequenos
-- primeiro benchmark de regressão com seed fixa
-
-### Métricas mínimas sugeridas
-- throughput
-- tempo médio de travessia
-- tempo médio parado
-- colisões
-- deadlocks
-
-### Critério de sucesso
-- duas execuções com a mesma seed e config produzem os mesmos números
-
----
-
-## Fase 3 — Flags e regras opcionais
-
-### Meta
-Transformar regras de trânsito em opções formais, não gambiarras espalhadas.
-
-### Entregas
-- registry/configuração de regras
-- flags na UI
-- presets salvos de regras
-- primeiras regras opcionais implementadas
-
-### Primeiras regras sugeridas
-- free right on red
-- four-way stop
-- do not block intersection
-- yellow handling
-- right of way for occupied intersection
-
-### Critério de sucesso
-- trocar regras sem alterar a engine base
-- benchmark consegue registrar quais regras estavam ativas
-
----
-
-## Fase 4 — Renderização e movimento suave
-
-### Meta
-Melhorar muito a percepção visual sem afetar a consistência da engine.
-
-### Entregas
-- render loop separado
-- interpolação entre estados lógicos
-- animação suave de deslocamento
-- melhor posicionamento visual nas vias
-- UI revisada
-- painel de métricas em tempo real
-
-### Critério de sucesso
-- lógica continua determinística
-- visual deixa de “piscar”
-
----
-
-## Fase 5 — Ferramentas de análise e cenários
-
-### Meta
-Dar poder real de exploração e comparação.
-
-### Entregas
-- replay
-- heatmap
-- mapas externos
-- comparação A/B
-- histórico de benchmark
-- geração procedural determinística de mapas
-
----
-
-## 8.1. Estratégia recomendada para mapas procedurais
-
-Implementar em camadas:
-
-1. gerador procedural simples baseado em grade
-2. validação estrutural do mapa gerado
-3. serialização do mapa gerado
-4. uso do mapa procedural no benchmark
-5. controles de UI para trocar seed e regenerar
-
-A recomendação é começar simples:
-- gerar vias principais
-- conectar cruzamentos
-- marcar entradas/saídas
-- adicionar semáforos em interseções elegíveis
-
-Evitar, no início, tentar criar cidades realistas demais. Melhor um gerador simples, determinístico e testável.
-
----
-
-## 8. Score inicial sugerido
-
-Não começar complexo demais.
-
-### Proposta inicial
-Usar três indicadores principais:
-- eficiência
-- segurança
-- fluidez
-
-### Exemplo simples
-- Eficiência: carros concluídos por unidade de tempo
-- Segurança: penalidade por colisões
-- Fluidez: penalidade por tempo parado e deadlocks
-
-### Fórmula inicial possível
-
-```text
-scoreTotal =
-  throughput * 100
-  - collisions * 500
-  - deadlocks * 1000
-  - avgStoppedTime * K
-```
-
-Isso pode mudar depois. O mais importante é começar simples e interpretável.
-
----
-
-## 9. Decisões de design recomendadas
-
-### 9.1. Evitar reescrita total agora
-O projeto ainda está num estágio em que reescrever tudo seria tentador e meio burro.
-Melhor refatorar em camadas.
-
-### 9.2. Manter benchmark acima de polimento avançado
-Se ficar bonito mas continuar irreproduzível, vira demo simpática e só.
-
-### 9.3. Regras novas devem ser configuráveis e mensuráveis
-Toda regra adicionada deve responder:
-- pode ser ligada/desligada?
-- entra no benchmark?
-- altera métricas de forma rastreável?
-
-### 9.4. Visual não deve carregar lógica escondida
-Sem “decisões” embutidas no renderer.
-
----
-
-## 10. Ferramental de testes sugerido
-
-## 10.1. Abordagem recomendada
-
-A recomendação prática é usar **JavaScript no Node.js**, com foco em testes da camada `core`, sem depender de browser para validar a lógica da simulação.
-
-Isso permite:
-- execução rápida
-- testes determinísticos
-- integração simples com o projeto atual
-- menor acoplamento com DOM e renderer
-
-## 10.2. Sugestão de stack
-
-### Opção recomendada
-- linguagem: **JavaScript**
-- runner/assertions: **Vitest**
-
-Motivos:
-- leve
-- rápido
-- simples de configurar
-- bom para unitários e integração leve
-- funciona bem em projetos JS pequenos sem exagero de boilerplate
-
-### Alternativa viável
-- Node.js com `node:test` + `assert`
-
-Essa alternativa reduz dependências, mas normalmente fica um pouco menos confortável para crescer, organizar suites e evoluir relatórios.
-
-Minha recomendação é começar com **Vitest**, a menos que você queira radicalizar no minimalismo.
-
-## 10.3. Como os testes seriam organizados
-
-Estrutura possível:
-
-```text
-transit-game-js/
-  js/
-    core/
-    app/
-    ui/
-  test/
-    unit/
-      rng.test.js
-      traffic-light.test.js
-      rules.test.js
-      metrics.test.js
-    integration/
-      basic-flow.test.js
-      collision-handling.test.js
-      benchmark-determinism.test.js
-```
-
-## 10.4. Como os testes funcionariam tecnicamente
-
-### Testes unitários
-Chamariam funções puras ou objetos da camada `core` diretamente.
-
-Exemplos:
-- instanciar RNG com seed fixa e validar sequência
-- avançar um semáforo por N ticks e validar estados
-- aplicar uma regra de trânsito a um cenário mínimo
-- validar cálculo de score dado um conjunto de métricas
-
-### Testes de integração
-Montariam um `WorldState` pequeno, aplicariam uma configuração e rodariam a engine por um número fixo de ticks.
-
-Exemplos:
-- mapa 3x3 com um cruzamento
-- seed fixa
-- 100 ticks
-- verificar quantos carros concluíram
-- verificar se houve colisão
-- verificar se houve deadlock
-
-### Testes de regressão
-Rodariam benchmarks pequenos e confeririam o resultado esperado.
-
+#### B4. Atualizar overlays em frequência menor
 Exemplo:
-- cenário `default-small`
-- seed `12345`
-- duração `1000 ticks`
-- throughput esperado dentro de uma faixa
-- zero colisões
-- zero deadlocks
+- veículos: todo frame/tick visual
+- overlays e summaries: a cada 2, 3 ou 4 ticks
 
-## 10.5. Como seriam executados
+#### B5. Tornar decoração urbana opcional ou cacheada
+Prédios, parques, praças e água são bonitos, mas são custo visual puro.
+Idealmente:
+- ou ficam na camada estática
+- ou podem ser simplificados em modo performance
 
-Exemplo com Vitest:
+### Benefício esperado
+Grande chance de ser o maior ganho perceptível no curto prazo.
 
-```bash
-npm test
-```
-
-ou:
-
-```bash
-npx vitest run
-```
-
-E durante desenvolvimento:
-
-```bash
-npx vitest
-```
-
-para modo watch interativo.
-
-## 10.6. Quando os testes rodam
-
-Fluxo recomendado:
-- durante desenvolvimento local, em modo watch
-- antes de fechar uma feature importante
-- antes de marcar uma regra nova como estável
-- antes de comparar resultados de benchmark entre versões
-
-## 10.7. O que a UI não precisa fazer para os testes funcionarem
-
-A UI não precisa estar carregada.
-
-Esse é justamente o benefício da arquitetura proposta: os testes devem validar a lógica principal sem abrir `transit.html` nem depender de clique manual.
-
-## 11. Primeira sequência prática de implementação
-
-Ordem sugerida de trabalho real:
-
-1. Criar módulo de RNG com seed
-2. Criar estrutura de estado global da simulação
-3. Criar engine central de ticks
-4. Migrar semáforos para tick central
-5. Migrar atualização de carros para tick central
-6. Remover loops assíncronos individuais dos carros
-7. Criar coletor mínimo de métricas
-8. Criar modo benchmark com duração fixa
-9. Criar sistema de flags de regras
-10. Separar renderer da engine
-11. Implementar interpolação visual
-12. Melhorar UI
+### Prioridade
+**P0**
 
 ---
 
-## 12. Riscos principais
+## 5.3. Frente C — Otimizar atualização de veículos
 
-- Tentar melhorar visual antes de estabilizar a engine
-- Tentar adicionar muitas regras antes de haver benchmark bom
-- Acoplar benchmark ao renderer
-- Fazer score sofisticado demais cedo demais
-- Ceder à tentação de reescrever todo o frontend sem necessidade
+### O que fazer
+Tratar a camada de veículos como estrutura altamente dinâmica e barata de atualizar.
+
+### Melhorias sugeridas
+
+#### C1. Evitar recriar markup completo dos veículos
+Em vez de regenerar tudo, manter elementos e atualizar só:
+- posição
+- rotação
+- classe de estado
+- seleção
+
+#### C2. Reaproveitar nós DOM de veículos
+Criar/remover só quando entra/sai carro.
+Movimento normal deveria ser só atualização de estilo/transform.
+
+#### C3. Consolidar estilos dinâmicos
+Hoje muita informação vai inline. Dá para melhorar com:
+- CSS vars mínimas
+- menos texto de style churn por frame
+- atualizações pontuais
+
+#### C4. Reduzir custo de trilhas e highlights
+Trilha visual pode ser recalculada só quando o veículo selecionado muda ou avança, não a cada reconstrução global.
+
+### Benefício esperado
+Melhora clara na sensação de fluidez quando muitos carros se mexem ao mesmo tempo.
+
+### Prioridade
+**P0**
 
 ---
 
-## 13. Critério de sucesso do projeto reestruturado
+## 5.4. Frente D — Melhorar estrutura de dados quente da engine
 
-O projeto estará numa base boa quando:
-- a simulação for reproduzível com seed fixa
-- regras puderem ser ligadas/desligadas sem bagunça
-- benchmark gerar números confiáveis
-- a renderização for suave, mas subordinada à engine
-- novas melhorias puderem ser adicionadas sem implodir o código
+### O que fazer
+Reduzir buscas lineares e trabalho repetido no núcleo da simulação.
+
+### Gargalos prováveis
+- localizar ocupação por faixa usando busca em lista de veículos
+- consultas frequentes de interseção/road metadata
+- resolução de bloqueio baseada em scans repetidos
+
+### Melhorias sugeridas
+
+#### D1. Índice de ocupação por tick
+Montar uma estrutura temporária por tick, por exemplo:
+- `occupancyByLaneKey`
+- `occupancyByIntersectionKey`
+
+Em vez de chamar `.find()` em todos os veículos a cada tentativa.
+
+#### D2. Índice de veículos por posição
+Útil para inspector, overlay e colisões locais.
+
+#### D3. Pré-cálculo de transições válidas
+Especialmente agora com múltiplas faixas e narrowing.
+Para cada célula/direção/faixa, deixar pronto:
+- próximo trecho
+- lane remap padrão
+- possibilidade de merge
+- opções de saída em interseção
+
+#### D4. Evitar recomputar geometria de render em hot path lógico
+Parte de ângulo, curva e offset deve ficar fora da engine quando possível.
+
+### Benefício esperado
+Melhora throughput do tick e reduz crescimento ruim com mais veículos.
+
+### Prioridade
+**P0**
+
+---
+
+## 5.5. Frente E — Separar frequência de simulação e frequência de UI
+
+### O que fazer
+Continuar desacoplando o que é lógico do que é visual.
+
+### Melhorias sugeridas
+
+#### E1. Tick lógico fixo e orçamento explícito
+A engine roda em cadência fixa.
+Se o render atrasar, não deve levar o sistema para um espiral ruim.
+
+#### E2. Bounded catch-up
+Se acumulou atraso:
+- processar no máximo N ticks por frame visual
+- depois renderizar
+
+#### E3. Amostrar UI com menor frequência
+Exemplo:
+- world tick: 10/20 TPS
+- render: RAF
+- diagnostics textuais: 4-5 vezes por segundo
+- benchmark history: só quando termina execução
+
+### Benefício esperado
+Reduz peso percebido sem perder fidelidade lógica.
+
+### Prioridade
+**P0**
+
+---
+
+## 5.6. Frente F — Introduzir modo “performance-aware” para observabilidade
+
+### O que fazer
+Transformar debug pesado em algo com custo controlável.
+
+### Melhorias sugeridas
+
+#### F1. Replay com sampling configurável
+Não precisa guardar frame completo em toda situação.
+Possíveis modos:
+- completo
+- a cada N ticks
+- só benchmark final
+- desligado
+
+#### F2. Eventos recentes limitados por orçamento
+Em vez de empilhar tudo, manter buffer circular pequeno e barato.
+
+#### F3. Overlays com refresh desacoplado
+Congestionamento/flow/deadlock não precisam ser recalculados todo frame visual.
+
+#### F4. Inspector sob demanda
+Só calcular detalhes profundos do veículo/célula quando houver seleção ativa.
+
+### Benefício esperado
+Boa redução de custo com quase nenhum impacto negativo na UX normal.
+
+### Prioridade
+**P1**
+
+---
+
+## 5.7. Frente G — Worker para a simulação
+
+### O que fazer
+Mover a engine para um **Web Worker**.
+
+### Por que isso pode valer muito
+Hoje a UI e a engine compartilham o mesmo thread.
+Quando o tick pesa, a interface sofre junto.
+Worker separa melhor:
+- simulação e benchmark de um lado
+- render, controles e DOM do outro
+
+### Como fazer sem se sabotar
+
+#### G1. Começar com snapshot simples
+Sem tentar deltas ultra-inteligentes de cara.
+Primeiro fazer funcionar com segurança.
+
+#### G2. Preservar determinismo
+Mensagens entre main thread e worker precisam ser controladas para não afetar ordem lógica.
+
+#### G3. Mandar dados compactos
+Depois do primeiro passo funcional, reduzir payload de snapshot:
+- só veículos ativos
+- só métricas necessárias para UI ao vivo
+- replay opcional ou reduzido
+
+### Risco
+É uma mudança estrutural maior.
+Não é a primeira coisa que eu faria.
+
+### Benefício esperado
+Ganho forte de responsividade, principalmente em mapas mais pesados.
+
+### Prioridade
+**P1**, quase **P2** se os ganhos anteriores já resolverem boa parte do problema
+
+---
+
+## 5.8. Frente H — Canvas para renderização
+
+### O que fazer
+Trocar parte ou toda a renderização do mundo de DOM para Canvas.
+
+### Quando faz sentido
+Se depois de:
+- cache de camadas
+- atualização incremental
+- otimização de veículos
+- desacoplamento de frequências
+
+...o DOM ainda for o gargalo dominante.
+
+### Estratégia recomendada
+Não migrar tudo de uma vez.
+
+#### H1. Canvas só para o layer dinâmico de veículos
+Provavelmente o melhor primeiro experimento.
+
+#### H2. Manter UI, painéis e controles em DOM
+Não precisa radicalizar.
+
+#### H3. Só depois avaliar mover grid/base também
+
+### Benefício esperado
+Pode ser enorme, mas o custo de complexidade também sobe.
+
+### Prioridade
+**P2**
+
+---
+
+## 5.9. Frente I — Organização de memória e GC
+
+### O que fazer
+Reduzir alocação transitória em caminhos críticos.
+
+### Melhorias sugeridas
+- evitar criar arrays/objetos temporários em loops quentes
+- reutilizar buffers temporários
+- reduzir `structuredClone` fora de momentos realmente necessários
+- reaproveitar estruturas de snapshot quando possível
+- evitar concatenações e strings enormes por frame
+
+### Onde isso pega forte
+- replay
+- render de listas textuais
+- resolução de ocupação
+- histórico de eventos
+
+### Benefício esperado
+Menos spikes e menos pausas intermitentes.
+
+### Prioridade
+**P1**
+
+---
+
+## 5.10. Frente J — Modo benchmark mais barato que sandbox
+
+### O que fazer
+Benchmark deve privilegiar throughput e determinismo, não beleza.
+
+### Melhorias sugeridas
+- renderizar menos durante benchmark
+- desligar ou simplificar overlays
+- reduzir frequência de summaries ao vivo
+- permitir benchmark headless dentro do browser
+- opcionalmente processar N ticks por frame em benchmark
+
+### Benefício esperado
+Benchmark mais rápido e mais estável, sem comprometer a experiência sandbox.
+
+### Prioridade
+**P1**
+
+---
+
+# 6. Sequência recomendada de execução
+
+## Fase 1 — Medir e separar custos
+1. adicionar métricas internas de tick/render
+2. medir cenários leves, médios e pesados
+3. identificar se o gargalo dominante é engine, DOM ou ambos
+
+## Fase 2 — Ganhos grandes de curto prazo
+4. cache da camada estática do mapa
+5. atualização incremental de veículos
+6. reduzir frequência de overlays/summaries
+7. limitar custo de replay/eventos
+
+## Fase 3 — Ganhos estruturais na engine
+8. criar índice de ocupação por tick
+9. criar lookup rápido por faixa/interseção
+10. pré-calcular transições de mapa e de faixa
+11. revisar hot loops da engine
+
+## Fase 4 — Modos e orçamento de execução
+12. benchmark render-light/headless
+13. orçamento explícito de observabilidade
+14. presets de qualidade/performance
+
+## Fase 5 — Mudanças maiores se ainda necessário
+15. mover engine para Worker
+16. avaliar Canvas para camada de veículos
+17. avaliar Canvas total se DOM continuar sendo o gargalo
+
+---
+
+# 7. Propostas concretas de backlog técnico
+
+## P0 — fazer primeiro
+- painel/perf counters internos
+- cache de mapa estático
+- layer de veículos incremental
+- throttle de overlays e diagnostics
+- índice de ocupação por tick
+- lookup rápido por faixa/interseção
+- benchmark com render simplificado
+
+## P1 — fazer depois da base P0
+- sampling configurável de replay
+- buffer circular barato para eventos
+- redução de alocação em hot paths
+- pré-cálculo de conectividade/transição de faixas
+- modo performance / modo visual rico
+- worker para engine
+
+## P2 — só se ainda precisar
+- canvas para veículos
+- canvas para grid completo
+- protocolo compacto de snapshots/deltas
+- otimizações mais agressivas de memória
+
+---
+
+# 8. Riscos e cuidados
+
+## 8.1. Risco de otimizar o lugar errado
+Mitigação:
+- medir antes
+- repetir benchmark fixo depois
+
+## 8.2. Risco de quebrar determinismo
+Mitigação:
+- testes de seed fixa
+- testes de regressão de benchmark
+- cuidado extra com worker e batching
+
+## 8.3. Risco de destruir debug/UX
+Mitigação:
+- fazer downgrade controlado, não remoção cega
+- observabilidade configurável
+
+## 8.4. Risco de complexidade demais cedo
+Mitigação:
+- atacar primeiro as melhorias reversíveis
+- deixar worker/canvas para quando o ganho justificar
+
+---
+
+# 9. Critérios de sucesso
+
+O trabalho de performance será considerado bom quando:
+- a simulação ficar perceptivelmente mais leve em sandbox
+- mapas maiores não derem sensação de UI sufocada
+- benchmark rodar com mais estabilidade
+- o custo de render cair de forma mensurável
+- o custo do tick cair de forma mensurável
+- a suíte continuar verde
+- benchmark continuar reproduzível com mesma seed/config
+
+---
+
+# 10. Minha recomendação prática
+
+Se eu fosse executar isso já no próximo ciclo, eu faria nesta ordem:
+
+1. **instrumentação de performance**
+2. **cache do mapa/base estática**
+3. **layer de veículos com atualização incremental**
+4. **throttle de overlays + summaries + replay**
+5. **índice de ocupação por tick**
+6. **benchmark render-light**
+7. **worker**
+8. **canvas**, só se ainda precisar
+
+Minha aposta honesta: só os itens **1 a 6** já devem melhorar bastante. Worker e Canvas provavelmente são o segundo round, não o primeiro.
