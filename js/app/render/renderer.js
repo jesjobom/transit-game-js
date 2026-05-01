@@ -34,6 +34,11 @@ const WORLD_STAGE_PADDING_PX = 24;
 const MIN_WORLD_SCALE = 0.58;
 
 export function createRenderer(rootElement) {
+  let staticWorldCache = {
+    key: '',
+    descriptor: null
+  };
+
   return {
     status: 'world renderer ready',
     renderPlaceholder(payload) {
@@ -52,62 +57,100 @@ export function createRenderer(rootElement) {
     },
     renderWorld(world, options = {}) {
       if (!rootElement) {
-        return;
+        return { usedStaticMapCache: false, staticCellCount: 0 };
       }
 
       const viewport = {
         width: Math.max(320, rootElement.clientWidth - 40),
         height: Math.max(320, rootElement.clientHeight - 120)
       };
+      const staticWorldCacheKey = createStaticWorldCacheKey(world.map);
+      const usedStaticMapCache = Boolean(staticWorldCache.key === staticWorldCacheKey && staticWorldCache.descriptor);
+
+      if (!usedStaticMapCache) {
+        staticWorldCache = {
+          key: staticWorldCacheKey,
+          descriptor: buildStaticWorldDescriptor(world.map)
+        };
+      }
 
       rootElement.innerHTML = buildWorldHtml(world, {
         ...options,
         viewport,
+        staticWorldDescriptor: staticWorldCache.descriptor,
         worldScale: computeWorldScale(world.map, viewport)
       });
+
+      return {
+        usedStaticMapCache,
+        staticCellCount: staticWorldCache.descriptor?.cells?.length ?? 0
+      };
     }
   };
 }
 
-export function buildWorldHtml(world, options = {}) {
-  const map = world.map;
+export function createStaticWorldCacheKey(map) {
+  return [
+    map.id,
+    map.mapSeed,
+    map.width,
+    map.height,
+    map.roads.length,
+    map.intersections.length,
+    map.spawnPoints.length
+  ].join(':');
+}
+
+export function buildStaticWorldDescriptor(map) {
   const intersectionsByPosition = new Map(
     map.intersections.map((intersection) => [toPositionKey(intersection.x, intersection.y), intersection])
   );
-  const lightsById = new Map(world.entities.lights.map((light) => [light.id, light]));
+  const spawnPointsByPosition = new Map(
+    map.spawnPoints.map((spawnPoint) => [toPositionKey(spawnPoint.x, spawnPoint.y), spawnPoint])
+  );
 
   const cells = [];
 
   for (let y = 0; y < map.height; y += 1) {
     for (let x = 0; x < map.width; x += 1) {
       const positionKey = toPositionKey(x, y);
-      const road = map.roadsByKey[positionKey];
-      const intersection = intersectionsByPosition.get(positionKey);
-      const light = intersection?.lightId ? lightsById.get(intersection.lightId) : null;
-      const lightPhase = light?.phases?.[light.phaseIndex ?? 0]?.name ?? null;
-      const spawnPoint = map.spawnPoints.find((entry) => entry.x === x && entry.y === y);
+      const road = map.roadsByKey[positionKey] ?? null;
+      const intersection = intersectionsByPosition.get(positionKey) ?? null;
+      const spawnPoint = spawnPointsByPosition.get(positionKey) ?? null;
 
-      const classes = ['map-cell'];
-      if (road) classes.push('map-cell--road');
-      if (intersection) classes.push('map-cell--intersection');
-      if (spawnPoint) classes.push('map-cell--spawn');
-      if (lightPhase) classes.push(`map-cell--light-${slugify(lightPhase)}`);
-      if (isSelectedCell(options.selectedCell, x, y)) classes.push('map-cell--selected');
-
-      const overlayMarkup = renderCellOverlay(world, { x, y, intersection, road }, options);
-      const content = road ? renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) : renderLotSurface(x, y, map);
-
-      cells.push(`
-        <div
-          class="${classes.join(' ')}"
-          data-x="${x}"
-          data-y="${y}"
-          title="x=${x}, y=${y}${lightPhase ? `, light=${escapeHtml(lightPhase)}` : ''}"
-        >${content}${overlayMarkup}</div>
-      `);
+      cells.push({
+        x,
+        y,
+        positionKey,
+        road,
+        intersection,
+        spawnPoint,
+        baseClasses: [
+          'map-cell',
+          ...(road ? ['map-cell--road'] : []),
+          ...(intersection ? ['map-cell--intersection'] : []),
+          ...(spawnPoint ? ['map-cell--spawn'] : [])
+        ],
+        baseContent: road
+          ? renderRoadSurface({ road, intersection, spawnPoint, lightPhase: null })
+          : renderLotSurface(x, y, map)
+      });
     }
   }
 
+  return {
+    mapId: map.id,
+    width: map.width,
+    height: map.height,
+    cells
+  };
+}
+
+export function buildWorldHtml(world, options = {}) {
+  const map = world.map;
+  const staticWorldDescriptor = options.staticWorldDescriptor ?? buildStaticWorldDescriptor(map);
+  const lightsById = new Map(world.entities.lights.map((light) => [light.id, light]));
+  const cells = staticWorldDescriptor.cells.map((cell) => renderWorldCell(world, cell, lightsById, options));
   const vehicleTrail = renderSelectedVehicleTrail(world, map, options);
   const vehicles = world.entities.vehicles.map((vehicle) => renderVehicle(world, vehicle, map, options));
   const summary = options.summaryLines || [];
@@ -139,6 +182,27 @@ export function buildWorldHtml(world, options = {}) {
         ${summary.map((line) => `<div>${escapeHtml(line)}</div>`).join('')}
       </div>
     </div>
+  `;
+}
+
+function renderWorldCell(world, cell, lightsById, options = {}) {
+  const light = cell.intersection?.lightId ? lightsById.get(cell.intersection.lightId) : null;
+  const lightPhase = light?.phases?.[light.phaseIndex ?? 0]?.name ?? null;
+  const classes = [...cell.baseClasses];
+
+  if (lightPhase) classes.push(`map-cell--light-${slugify(lightPhase)}`);
+  if (isSelectedCell(options.selectedCell, cell.x, cell.y)) classes.push('map-cell--selected');
+
+  const overlayMarkup = renderCellOverlay(world, { x: cell.x, y: cell.y, intersection: cell.intersection, road: cell.road }, options);
+  const dynamicLightMarkup = cell.road && cell.intersection && lightPhase ? renderTrafficLight(lightPhase) : '';
+
+  return `
+    <div
+      class="${classes.join(' ')}"
+      data-x="${cell.x}"
+      data-y="${cell.y}"
+      title="x=${cell.x}, y=${cell.y}${lightPhase ? `, light=${escapeHtml(lightPhase)}` : ''}"
+    >${injectTrafficLightMarkup(cell.baseContent, dynamicLightMarkup)}${overlayMarkup}</div>
   `;
 }
 
@@ -212,6 +276,14 @@ function renderRoadSurface({ road, intersection, spawnPoint, lightPhase }) {
       ${lightMarkup}
     </span>
   `;
+}
+
+function injectTrafficLightMarkup(markup, lightMarkup = '') {
+  if (!lightMarkup) {
+    return markup;
+  }
+
+  return markup.replace(/<\/span>\s*$/, `${lightMarkup}</span>`);
 }
 
 function renderLotSurface(x, y, map) {

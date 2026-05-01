@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildWorldHtml } from '../../js/app/render/renderer.js';
+import { buildStaticWorldDescriptor, buildWorldHtml, createRenderer } from '../../js/app/render/renderer.js';
 import { createWorldState } from '../../js/core/world.js';
 
 test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, and styled roads', () => {
@@ -145,6 +145,32 @@ test('buildWorldHtml marks selected vehicles in the vehicle layer', () => {
   assert.match(html, /vehicle--selected/);
   assert.match(html, /vehicle-trail-dot/);
   assert.match(html, /data-vehicle-trail-for="vehicle-selected"/);
+});
+
+test('buildStaticWorldDescriptor caches the static base cells for the current map', () => {
+  const world = createWorldState();
+
+  const descriptor = buildStaticWorldDescriptor(world.map);
+
+  assert.equal(descriptor.mapId, world.map.id);
+  assert.equal(descriptor.cells.length, world.map.width * world.map.height);
+  assert.ok(descriptor.cells.some((cell) => cell.baseClasses.includes('map-cell--road')));
+  assert.ok(descriptor.cells.some((cell) => String(cell.baseContent).includes('road-surface')));
+  assert.ok(descriptor.cells.some((cell) => String(cell.baseContent).includes('city-lot')));
+});
+
+test('createRenderer reuses the static world cache when the map does not change', () => {
+  const rootElement = { clientWidth: 960, clientHeight: 720, innerHTML: '' };
+  const renderer = createRenderer(rootElement);
+  const world = createWorldState();
+
+  const firstRender = renderer.renderWorld(world);
+  const secondRender = renderer.renderWorld(world);
+
+  assert.equal(firstRender.usedStaticMapCache, false);
+  assert.equal(secondRender.usedStaticMapCache, true);
+  assert.equal(secondRender.staticCellCount, world.map.width * world.map.height);
+  assert.match(rootElement.innerHTML, /world-grid/);
 });
 
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
