@@ -10,6 +10,7 @@ test('buildBenchmarkMetrics derives summary metrics from world state', () => {
   world.metrics.completedTrips = 2;
   world.metrics.spawnedVehicles = 5;
   world.metrics.blockedMoves = 4;
+  world.metrics.lightChanges = 3;
   world.metrics.collisions = 1;
   world.metrics.deadlocks = 0;
   world.metrics.movedVehicles = 7;
@@ -29,6 +30,7 @@ test('buildBenchmarkMetrics derives summary metrics from world state', () => {
   assert.equal(metrics.blockedMoveRate, 0.4);
   assert.equal(metrics.completionRate, 0.4);
   assert.equal(metrics.activeVehicles, 1);
+  assert.equal(metrics.lightChanges, 3);
   assert.equal(metrics.fairnessByDirection.north.completionRate, 1);
   assert.equal(metrics.fairnessByDirection.south.completionRate, 0.5);
   assert.equal(metrics.fairnessScore, 0.5);

@@ -11,8 +11,10 @@ export function buildBenchmarkHistoryLines(snapshots = []) {
     const throughput = formatDecimal(snapshot.metrics?.throughputPerTick);
     const completedTrips = snapshot.metrics?.completedTrips ?? '—';
     const fairness = formatDecimal(snapshot.metrics?.fairnessScore);
+    const renderAvg = formatPerfMetric(snapshot.runtimePerformance?.render?.avgMs);
+    const lightChanges = snapshot.metrics?.lightChanges ?? '—';
     const scenario = snapshot.scenarioName || snapshot.scenarioId || snapshot.mapId || 'scenario';
-    return `${index + 1}. ${scenario} | score=${score} | trips=${completedTrips} | throughput=${throughput} | fairness=${fairness} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
+    return `${index + 1}. ${scenario} | score=${score} | trips=${completedTrips} | throughput=${throughput} | fairness=${fairness} | lights=${lightChanges} | renderAvg=${renderAvg} | seed=${snapshot.simulationSeed} | mapSeed=${snapshot.mapSeed}`;
   });
 }
 
@@ -34,7 +36,10 @@ export function buildBenchmarkComparisonLines(comparison) {
     `Avg stopped Δ: ${formatSignedNumber(comparison.avgStoppedTicksDelta, 2)}`,
     `Avg queue Δ: ${formatSignedNumber(comparison.avgQueueLengthDelta, 2)}`,
     `Deadlocks Δ: ${formatSignedNumber(comparison.deadlocksDelta, 0)}`,
-    `Fairness Δ: ${formatSignedNumber(comparison.fairnessDelta, 2)}`
+    `Fairness Δ: ${formatSignedNumber(comparison.fairnessDelta, 2)}`,
+    `Light changes Δ: ${formatSignedNumber(comparison.lightChangesDelta, 0)}`,
+    `Render avg ms Δ: ${formatSignedNumber(comparison.renderAvgDelta, 2)}`,
+    `Render p95 ms Δ: ${formatSignedNumber(comparison.renderP95Delta, 2)}`
   ];
 }
 

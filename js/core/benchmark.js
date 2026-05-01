@@ -24,6 +24,7 @@ export function buildBenchmarkMetrics(world) {
   const completedTrips = world.metrics.completedTrips;
   const spawnedVehicles = world.metrics.spawnedVehicles;
   const blockedMoves = world.metrics.blockedMoves;
+  const lightChanges = world.metrics.lightChanges;
   const ticksSimulated = world.metrics.ticksSimulated;
   const collisions = world.metrics.collisions;
   const deadlocks = world.metrics.deadlocks;
@@ -48,6 +49,7 @@ export function buildBenchmarkMetrics(world) {
     activeVehicles,
     movedVehicles,
     blockedMoves,
+    lightChanges,
     collisions,
     deadlocks,
     ticksSimulated,

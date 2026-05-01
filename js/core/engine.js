@@ -661,6 +661,7 @@ function advanceTrafficLights(world) {
 
     light.phaseIndex = (light.phaseIndex + 1) % light.phases.length;
     light.remainingTicks = light.phases[light.phaseIndex].durationTicks;
+    world.metrics.lightChanges += 1;
 
     addWorldEvent(world, 'lightChanged', {
       lightId: light.id,

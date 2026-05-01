@@ -77,8 +77,9 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
       simulationSeed: 123,
       mapSeed: 456,
       mapId: 'baseline-benchmark',
-      metrics: { completedTrips: 12, throughputPerTick: 0.2, avgCompletionTicks: 5.5, avgStoppedTicks: 1.3, avgQueueLength: 0.8, deadlocks: 1, fairnessScore: 0.5 },
-      score: { total: 240 }
+      metrics: { completedTrips: 12, throughputPerTick: 0.2, avgCompletionTicks: 5.5, avgStoppedTicks: 1.3, avgQueueLength: 0.8, deadlocks: 1, fairnessScore: 0.5, lightChanges: 6 },
+      score: { total: 240 },
+      runtimePerformance: { render: { avgMs: 6.2, p95Ms: 9.4 } }
     },
     {
       id: 'run-b',
@@ -86,8 +87,9 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
       simulationSeed: 789,
       mapSeed: 987,
       mapId: 'baseline-benchmark',
-      metrics: { completedTrips: 15, throughputPerTick: 0.25, avgCompletionTicks: 4.75, avgStoppedTicks: 0.9, avgQueueLength: 0.55, deadlocks: 0, fairnessScore: 0.9 },
-      score: { total: 315 }
+      metrics: { completedTrips: 15, throughputPerTick: 0.25, avgCompletionTicks: 4.75, avgStoppedTicks: 0.9, avgQueueLength: 0.55, deadlocks: 0, fairnessScore: 0.9, lightChanges: 8 },
+      score: { total: 315 },
+      runtimePerformance: { render: { avgMs: 5.1, p95Ms: 7.8 } }
     }
   ];
 
@@ -102,11 +104,16 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
     avgStoppedTicksDelta: -0.4,
     avgQueueLengthDelta: -0.25,
     deadlocksDelta: -1,
-    fairnessDelta: 0.4
+    fairnessDelta: 0.4,
+    lightChangesDelta: 2,
+    renderAvgDelta: -1.1,
+    renderP95Delta: -1.6
   });
 
   assert.match(historyLines[0], /score=240/);
   assert.match(historyLines[0], /fairness=0.50/);
+  assert.match(historyLines[0], /lights=6/);
+  assert.match(historyLines[0], /renderAvg=6.20/);
   assert.match(historyLines[1], /seed=789/);
   assert.match(comparisonLines[0], /^A:/);
   assert.match(comparisonLines[1], /^B:/);
@@ -114,6 +121,9 @@ test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize sav
   assert.match(comparisonLines[4], /\+0.050/);
   assert.match(comparisonLines[8], /-1/);
   assert.match(comparisonLines[9], /\+0.40/);
+  assert.match(comparisonLines[10], /\+2/);
+  assert.match(comparisonLines[11], /-1.10/);
+  assert.match(comparisonLines[12], /-1.60/);
 });
 
 test('buildCellInspectionLines summarizes selected cell state and analytics', () => {

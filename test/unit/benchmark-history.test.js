@@ -40,10 +40,17 @@ function createReport(overrides = {}) {
       avgStoppedTicks: 1.25,
       avgQueueLength: 0.8,
       deadlocks: 0,
-      fairnessScore: 0.75
+      fairnessScore: 0.75,
+      lightChanges: 6
     },
     score: {
       total: 240
+    },
+    runtimePerformance: {
+      render: {
+        avgMs: 6.2,
+        p95Ms: 9.4
+      }
     },
     rules: {
       freeRightOnRed: false,
@@ -67,6 +74,7 @@ test('createBenchmarkSnapshot preserves benchmark metadata used for A/B comparis
   assert.equal(snapshot.mapSeed, 456);
   assert.equal(snapshot.metrics.completedTrips, 12);
   assert.equal(snapshot.score.total, 240);
+  assert.equal(snapshot.runtimePerformance.render.avgMs, 6.2);
   assert.match(snapshot.id, /baseline-benchmark-grid|baseline-benchmark/);
 });
 
@@ -90,10 +98,17 @@ test('createBenchmarkHistoryStore saves snapshots newest-first and builds compar
       avgStoppedTicks: 0.9,
       avgQueueLength: 0.55,
       deadlocks: 0,
-      fairnessScore: 0.9
+      fairnessScore: 0.9,
+      lightChanges: 8
     },
     score: {
       total: 315
+    },
+    runtimePerformance: {
+      render: {
+        avgMs: 5.1,
+        p95Ms: 7.8
+      }
     }
   }), {
     createdAt: '2026-05-01T10:05:00.000Z',
@@ -110,7 +125,9 @@ test('createBenchmarkHistoryStore saves snapshots newest-first and builds compar
   assert.equal(comparison.scoreDelta, 75);
   assert.equal(comparison.completedTripsDelta, 3);
   assert.equal(comparison.deadlocksDelta, 0);
+  assert.equal(comparison.lightChangesDelta, 2);
   assert.ok(Math.abs(comparison.fairnessDelta - 0.15) < 1e-9);
+  assert.ok(Math.abs(comparison.renderAvgDelta - -1.1) < 1e-9);
 });
 
 test('buildBenchmarkComparison returns null when either side is missing', () => {

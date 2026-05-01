@@ -47,7 +47,8 @@ export function createBenchmarkSnapshot(report, context = {}) {
     benchmark: structuredClone(report.benchmark ?? {}),
     rules: structuredClone(report.rules ?? {}),
     metrics: structuredClone(report.metrics ?? {}),
-    score: structuredClone(report.score ?? {})
+    score: structuredClone(report.score ?? {}),
+    runtimePerformance: structuredClone(report.runtimePerformance ?? {})
   };
 }
 
@@ -66,7 +67,10 @@ export function buildBenchmarkComparison(left, right) {
     avgStoppedTicksDelta: diffNumber(right.metrics?.avgStoppedTicks, left.metrics?.avgStoppedTicks),
     avgQueueLengthDelta: diffNumber(right.metrics?.avgQueueLength, left.metrics?.avgQueueLength),
     deadlocksDelta: diffNumber(right.metrics?.deadlocks, left.metrics?.deadlocks),
-    fairnessDelta: diffNumber(right.metrics?.fairnessScore, left.metrics?.fairnessScore)
+    fairnessDelta: diffNumber(right.metrics?.fairnessScore, left.metrics?.fairnessScore),
+    lightChangesDelta: diffNumber(right.metrics?.lightChanges, left.metrics?.lightChanges),
+    renderAvgDelta: diffNumber(right.runtimePerformance?.render?.avgMs, left.runtimePerformance?.render?.avgMs),
+    renderP95Delta: diffNumber(right.runtimePerformance?.render?.p95Ms, left.runtimePerformance?.render?.p95Ms)
   };
 }
 

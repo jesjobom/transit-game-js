@@ -81,6 +81,7 @@ export function createWorldState(options = {}) {
       spawnedVehicles: 0,
       movedVehicles: 0,
       blockedMoves: 0,
+      lightChanges: 0,
       completedTripTicks: 0,
       completedTripDurations: [],
       turnsTaken: 0,

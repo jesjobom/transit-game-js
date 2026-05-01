@@ -359,6 +359,7 @@ function boot() {
 
   function render() {
     const report = state.engine.getReport();
+    report.runtimePerformance = structuredClone(performanceTracker.getSnapshot());
     maybePersistCompletedBenchmark(report);
     const viewWorld = replayState.enabled ? (state.world.replay.frames[replayState.frameIndex] ?? state.world) : state.world;
     const viewReport = viewWorld.report ?? report;
