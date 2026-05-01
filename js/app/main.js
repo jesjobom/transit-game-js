@@ -213,7 +213,14 @@ function boot() {
   appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
   renderBenchmarkHistory();
   render();
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', handleWindowResize);
+  }
   startLoop();
+
+  function handleWindowResize() {
+    render();
+  }
 
   function applyRuntimeConfig() {
     stopLoop();

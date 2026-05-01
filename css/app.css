@@ -221,9 +221,21 @@ button {
   position: relative;
 }
 
+.world-grid-stage {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: var(--world-stage-width);
+  height: var(--world-stage-height);
+  transform: translateX(-50%) scale(var(--world-scale, 1));
+  transform-origin: top center;
+}
+
 .world-grid {
   display: grid;
   gap: 0;
+  width: var(--world-stage-width);
+  height: var(--world-stage-height);
   padding: 12px;
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));

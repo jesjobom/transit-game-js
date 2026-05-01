@@ -28,6 +28,11 @@ const LIGHT_PHASE_META = {
   }
 };
 
+
+const DEFAULT_TILE_SIZE_PX = 54;
+const WORLD_STAGE_PADDING_PX = 24;
+const MIN_WORLD_SCALE = 0.58;
+
 export function createRenderer(rootElement) {
   return {
     status: 'world renderer ready',
@@ -50,7 +55,16 @@ export function createRenderer(rootElement) {
         return;
       }
 
-      rootElement.innerHTML = buildWorldHtml(world, options);
+      const viewport = {
+        width: Math.max(320, rootElement.clientWidth - 40),
+        height: Math.max(320, rootElement.clientHeight - 120)
+      };
+
+      rootElement.innerHTML = buildWorldHtml(world, {
+        ...options,
+        viewport,
+        worldScale: computeWorldScale(world.map, viewport)
+      });
     }
   };
 }
@@ -99,19 +113,26 @@ export function buildWorldHtml(world, options = {}) {
   const summary = options.summaryLines || [];
 
   const animationDurationMs = options.animationDurationMs ?? 240;
+  const tileSizePx = options.tileSizePx ?? DEFAULT_TILE_SIZE_PX;
+  const gridPaddingPx = WORLD_STAGE_PADDING_PX;
+  const stageWidthPx = map.width * tileSizePx + gridPaddingPx;
+  const stageHeightPx = map.height * tileSizePx + gridPaddingPx;
+  const worldScale = clampWorldScale(options.worldScale ?? 1);
 
   return `
     <div class="world-view">
-      <div class="world-grid-shell" style="--vehicle-animation-duration:${animationDurationMs}ms;">
-        <div
-          class="world-grid"
-          style="grid-template-columns: repeat(${map.width}, minmax(0, 1fr));"
-        >
-          ${cells.join('')}
-        </div>
-        <div class="vehicle-layer" style="--grid-width:${map.width}; --grid-height:${map.height};">
-          ${vehicleTrail}
-          ${vehicles.join('')}
+      <div class="world-grid-shell" style="--vehicle-animation-duration:${animationDurationMs}ms; --world-scale:${worldScale.toFixed(4)}; --world-stage-width:${stageWidthPx}px; --world-stage-height:${stageHeightPx}px; height:${Math.round(stageHeightPx * worldScale)}px;">
+        <div class="world-grid-stage">
+          <div
+            class="world-grid"
+            style="grid-template-columns: repeat(${map.width}, ${tileSizePx}px);"
+          >
+            ${cells.join('')}
+          </div>
+          <div class="vehicle-layer" style="--grid-width:${map.width}; --grid-height:${map.height};">
+            ${vehicleTrail}
+            ${vehicles.join('')}
+          </div>
         </div>
       </div>
       <div class="world-summary">
@@ -119,6 +140,22 @@ export function buildWorldHtml(world, options = {}) {
       </div>
     </div>
   `;
+}
+
+function computeWorldScale(map, viewport = {}) {
+  const stageWidthPx = map.width * DEFAULT_TILE_SIZE_PX + WORLD_STAGE_PADDING_PX;
+  const stageHeightPx = map.height * DEFAULT_TILE_SIZE_PX + WORLD_STAGE_PADDING_PX;
+  const widthScale = Number.isFinite(viewport.width) ? viewport.width / stageWidthPx : 1;
+  const heightScale = Number.isFinite(viewport.height) ? viewport.height / stageHeightPx : 1;
+  return clampWorldScale(Math.min(1, widthScale, heightScale));
+}
+
+function clampWorldScale(scale) {
+  if (!Number.isFinite(scale)) {
+    return 1;
+  }
+
+  return Math.max(MIN_WORLD_SCALE, Math.min(1, scale));
 }
 
 function renderCellOverlay(world, cell, options = {}) {

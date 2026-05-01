@@ -31,6 +31,7 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
     summaryLines: ['Tick: 0', 'Vehicles: 2'],
     animationDurationMs: 320,
     motionProgress: 0.5,
+    worldScale: 0.84,
     previousWorld: createWorldState({
       vehicles: [
         { id: 'vehicle-1', x: 2, y: 2, direction: 'south', status: 'active', spawnedAtTick: 0 },
@@ -40,6 +41,8 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   });
 
   assert.match(html, /world-grid-shell/);
+  assert.match(html, /world-grid-stage/);
+  assert.match(html, /--world-scale:0.8400/);
   assert.match(html, /--vehicle-animation-duration:320ms/);
   assert.match(html, /vehicle-layer/);
   assert.match(html, /Tick: 0/);
