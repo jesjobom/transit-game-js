@@ -15,7 +15,11 @@ A versão atual do projeto fica oficialmente fechada como **V1**.
 ### Baseline validado da V1
 - **Versão visível da app:** `Sprint 31`
 - **Build tag:** `s31-variable-lanes`
-- **Último estado validado:** `55/55` testes passando
+- **Último estado validado:** `70/70` testes passando
+
+### Manutenção recente validada
+- correção para invalidar/recalcular `world.report` a cada avanço real de tick, evitando métricas live congeladas
+- renderer incremental agora evita reescrever o grid quando só a animação dos veículos mudou e o estado dinâmico das células permaneceu igual
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.

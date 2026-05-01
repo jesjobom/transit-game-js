@@ -404,6 +404,7 @@ function boot() {
         isRunning,
         overlayMode: runtimeConfig.overlayMode,
         overlayMetrics: renderThrottleCache.overlayMetrics,
+        overlayTick: renderThrottleCache.overlayTick,
         selectedCell,
         selectedVehicleId
       });

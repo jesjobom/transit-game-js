@@ -16,6 +16,29 @@ test('engine tick advances the world and metrics', () => {
   assert.equal(world.status, 'running');
 });
 
+test('engine getReport refreshes live benchmark metrics after ticks advance', () => {
+  const world = createWorldState({
+    benchmark: {
+      enabled: true,
+      mode: 'benchmark',
+      spawnRate: 0,
+      durationTicks: 20
+    }
+  });
+  const engine = createEngine(world);
+
+  const initialReport = engine.getReport();
+  assert.equal(initialReport.tick, 0);
+  assert.equal(initialReport.metrics.ticksSimulated, 0);
+
+  engine.tick();
+
+  const refreshedReport = engine.getReport();
+  assert.equal(refreshedReport.tick, 1);
+  assert.equal(refreshedReport.metrics.ticksSimulated, 1);
+  assert.notStrictEqual(refreshedReport, initialReport);
+});
+
 test('engine spawns vehicles deterministically when benchmark mode is enabled', () => {
   const world = createWorldState({
     seed: 1,

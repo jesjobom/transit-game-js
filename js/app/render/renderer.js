@@ -88,6 +88,9 @@ export function createRenderer(rootElement) {
       if (shouldHydrateFullShell) {
         rootElement.innerHTML = buildWorldHtml(world, renderOptions);
         liveDomState = canUseIncrementalDom ? captureLiveDomState(rootElement) : null;
+        if (liveDomState) {
+          liveDomState.lastGridStateKey = createDynamicGridStateKey(world, renderOptions);
+        }
       } else {
         patchLiveWorldShell(liveDomState, world, renderOptions);
       }
@@ -241,6 +244,7 @@ function captureLiveDomState(rootElement) {
     summary: rootElement.querySelector('.world-summary'),
     trailLayer: rootElement.querySelector('.vehicle-trail-layer'),
     spriteLayer: rootElement.querySelector('.vehicle-sprite-layer'),
+    lastGridStateKey: '',
     vehicleNodesById: new Map(
       [...(rootElement.querySelectorAll?.('[data-vehicle-id]') ?? [])].map((element) => [element.dataset.vehicleId, element])
     )
@@ -253,9 +257,13 @@ function patchLiveWorldShell(liveDomState, world, options = {}) {
   }
 
   const staticWorldDescriptor = options.staticWorldDescriptor ?? buildStaticWorldDescriptor(world.map);
+  const nextGridStateKey = createDynamicGridStateKey(world, options);
   liveDomState.gridShell.setAttribute('style', buildWorldShellStyle(world.map, options));
   liveDomState.grid.setAttribute('style', `grid-template-columns: repeat(${world.map.width}, ${(options.tileSizePx ?? DEFAULT_TILE_SIZE_PX)}px);`);
-  liveDomState.grid.innerHTML = buildWorldGridMarkup(world, staticWorldDescriptor, options);
+  if (liveDomState.lastGridStateKey !== nextGridStateKey) {
+    liveDomState.grid.innerHTML = buildWorldGridMarkup(world, staticWorldDescriptor, options);
+    liveDomState.lastGridStateKey = nextGridStateKey;
+  }
   liveDomState.summary.innerHTML = buildWorldSummaryMarkup(options.summaryLines || []);
   liveDomState.trailLayer.innerHTML = renderSelectedVehicleTrail(world, world.map, options);
   patchVehicleSpriteLayer(liveDomState, world, options);
@@ -327,6 +335,21 @@ function clampWorldScale(scale) {
   }
 
   return Math.max(MIN_WORLD_SCALE, Math.min(1, scale));
+}
+
+export function createDynamicGridStateKey(world, options = {}) {
+  const overlayMode = options.overlayMode ?? 'off';
+  const overlayKey = overlayMode === 'off'
+    ? 'off'
+    : String(Number.isFinite(options.overlayTick) ? options.overlayTick : world.tick);
+  const selectedCellKey = options.selectedCell
+    ? `${options.selectedCell.x},${options.selectedCell.y}`
+    : 'none';
+  const lightKey = (world.entities?.lights ?? [])
+    .map((light) => `${light.id}:${light.phaseIndex ?? 0}:${light.remainingTicks ?? 'x'}`)
+    .join('|');
+
+  return `${world.map.id}|${overlayMode}|${overlayKey}|${selectedCellKey}|${lightKey}`;
 }
 
 function renderCellOverlay(world, cell, options = {}) {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildStaticWorldDescriptor, buildVehicleLayerPatch, buildWorldHtml, createRenderer } from '../../js/app/render/renderer.js';
+import { buildStaticWorldDescriptor, buildVehicleLayerPatch, buildWorldHtml, createDynamicGridStateKey, createRenderer } from '../../js/app/render/renderer.js';
 import { createWorldState } from '../../js/core/world.js';
 
 test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, and styled roads', () => {
@@ -157,6 +157,21 @@ test('buildStaticWorldDescriptor caches the static base cells for the current ma
   assert.ok(descriptor.cells.some((cell) => cell.baseClasses.includes('map-cell--road')));
   assert.ok(descriptor.cells.some((cell) => String(cell.baseContent).includes('road-surface')));
   assert.ok(descriptor.cells.some((cell) => String(cell.baseContent).includes('city-lot')));
+});
+
+test('createDynamicGridStateKey changes only when dynamic grid inputs change', () => {
+  const world = createWorldState();
+
+  const baseKey = createDynamicGridStateKey(world, { overlayMode: 'off' });
+  world.tick = 5;
+  const sameOffKey = createDynamicGridStateKey(world, { overlayMode: 'off' });
+  const selectedCellKey = createDynamicGridStateKey(world, { overlayMode: 'off', selectedCell: { x: 1, y: 2 } });
+  const overlayKeyA = createDynamicGridStateKey(world, { overlayMode: 'flow', overlayTick: 2 });
+  const overlayKeyB = createDynamicGridStateKey(world, { overlayMode: 'flow', overlayTick: 4 });
+
+  assert.equal(baseKey, sameOffKey);
+  assert.notEqual(baseKey, selectedCellKey);
+  assert.notEqual(overlayKeyA, overlayKeyB);
 });
 
 test('createRenderer reuses the static world cache when the map does not change', () => {

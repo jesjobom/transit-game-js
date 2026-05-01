@@ -24,6 +24,7 @@ export function createEngine(world) {
     world,
     tick() {
       world.status = 'running';
+      world.report = null;
       world.tick += 1;
       world.metrics.ticksSimulated += 1;
       world.events = [];
@@ -59,7 +60,7 @@ export function createEngine(world) {
       return world.tick;
     },
     getReport() {
-      if (!world.report) {
+      if (!world.report || world.report.tick !== world.tick) {
         world.report = finalizeBenchmark(world);
       }
 
