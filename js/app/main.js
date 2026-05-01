@@ -2,6 +2,7 @@ import { createBenchmarkShell } from './benchmark/benchmark-shell.js';
 import { createBenchmarkHistoryStore } from './benchmark/history.js';
 import { createRenderer } from './render/renderer.js';
 import { createAppShell } from './ui/app-shell.js';
+import { createPerformanceTracker } from './perf/performance-tracker.js';
 import {
   buildBenchmarkComparisonLines,
   buildBenchmarkHistoryLines,
@@ -25,6 +26,7 @@ function boot() {
   let runtimeConfig = createRuntimeConfig();
   let state = createSimulationState(runtimeConfig);
   let previousWorld = snapshotRenderableWorld(state.world);
+  const performanceTracker = createPerformanceTracker();
   const renderer = createRenderer(document.getElementById('simulation-root'));
   const benchmark = createBenchmarkShell();
   const historyStore = createBenchmarkHistoryStore();
@@ -70,7 +72,8 @@ function boot() {
         return;
       }
 
-      state.engine.tick();
+      previousWorld = snapshotRenderableWorld(state.world);
+      performanceTracker.measure('tick', () => state.engine.tick());
       render();
       appShell.setRunningState(false);
     },
@@ -79,6 +82,7 @@ function boot() {
       stopReplayLoop();
       state = createSimulationState(runtimeConfig);
       previousWorld = snapshotRenderableWorld(state.world);
+      performanceTracker.reset();
       selectedVehicleId = null;
       replayState = {
         enabled: false,
@@ -227,6 +231,7 @@ function boot() {
     stopReplayLoop();
     state = createSimulationState(runtimeConfig);
     previousWorld = snapshotRenderableWorld(state.world);
+    performanceTracker.reset();
     selectedVehicleId = null;
     replayState = {
       enabled: false,
@@ -273,7 +278,7 @@ function boot() {
 
     while (tickAccumulatorMs >= getTickIntervalMs() && state.world.status !== 'completed') {
       previousWorld = snapshotRenderableWorld(state.world);
-      state.engine.tick();
+      performanceTracker.measure('tick', () => state.engine.tick());
       tickAccumulatorMs -= getTickIntervalMs();
     }
 
@@ -353,24 +358,28 @@ function boot() {
     const viewReport = viewWorld.report ?? report;
     const tickIntervalMs = getTickIntervalMs();
     const motionProgress = isRunning ? Math.min(1, tickAccumulatorMs / tickIntervalMs) : 1;
-    renderer.renderWorld(viewWorld, {
-      summaryLines: buildSimulationSummary(viewWorld, benchmark.summarize(viewReport)),
-      animationDurationMs: getAnimationDurationMs(tickIntervalMs),
-      previousWorld,
-      motionProgress,
-      tickIntervalMs,
-      isRunning,
-      overlayMode: runtimeConfig.overlayMode,
-      selectedCell,
-      selectedVehicleId
+    performanceTracker.measure('render', () => {
+      renderer.renderWorld(viewWorld, {
+        summaryLines: buildSimulationSummary(viewWorld, benchmark.summarize(viewReport)),
+        animationDurationMs: getAnimationDurationMs(tickIntervalMs),
+        previousWorld,
+        motionProgress,
+        tickIntervalMs,
+        isRunning,
+        overlayMode: runtimeConfig.overlayMode,
+        selectedCell,
+        selectedVehicleId
+      });
     });
-    appShell.renderDiagnostics({
-      metrics: buildLiveMetrics(viewWorld, viewReport),
-      lights: buildLightPhaseSummary(viewWorld),
-      events: buildRecentEventSummary(viewWorld)
+    performanceTracker.measure('diagnostics', () => {
+      appShell.renderDiagnostics({
+        metrics: buildLiveMetrics(viewWorld, viewReport, performanceTracker.getSnapshot()),
+        lights: buildLightPhaseSummary(viewWorld),
+        events: buildRecentEventSummary(viewWorld)
+      });
+      appShell.renderCellInspection(buildCellInspectionLines(viewWorld, selectedCell, selectedVehicleId));
+      appShell.syncReplayState(state.world.replay.frames, replayState);
     });
-    appShell.renderCellInspection(buildCellInspectionLines(viewWorld, selectedCell, selectedVehicleId));
-    appShell.syncReplayState(state.world.replay.frames, replayState);
   }
 
   function maybePersistCompletedBenchmark(report) {

@@ -57,8 +57,11 @@ export function buildSimulationSummary(world, benchmarkSummaryLines = []) {
   ];
 }
 
-export function buildLiveMetrics(world, report = null) {
+export function buildLiveMetrics(world, report = null, performanceMetrics = {}) {
   const metrics = report?.metrics ?? {};
+  const tickPerf = performanceMetrics.tick ?? {};
+  const renderPerf = performanceMetrics.render ?? {};
+  const diagnosticsPerf = performanceMetrics.diagnostics ?? {};
 
   return [
     { label: 'Tick', value: String(world.tick) },
@@ -77,7 +80,12 @@ export function buildLiveMetrics(world, report = null) {
     { label: 'Avg queue', value: formatDecimal(metrics.avgQueueLength) },
     { label: 'Occupancy', value: formatDecimal(metrics.avgRoadOccupancy) },
     { label: 'Fairness', value: formatDecimal(metrics.fairnessScore) },
-    { label: 'Score', value: report ? String(report.score.total) : '—' }
+    { label: 'Score', value: report ? String(report.score.total) : '—' },
+    { label: 'Tick avg ms', value: formatPerfMetric(tickPerf.avgMs) },
+    { label: 'Tick p95 ms', value: formatPerfMetric(tickPerf.p95Ms) },
+    { label: 'Render avg ms', value: formatPerfMetric(renderPerf.avgMs) },
+    { label: 'Render p95 ms', value: formatPerfMetric(renderPerf.p95Ms) },
+    { label: 'UI avg ms', value: formatPerfMetric(diagnosticsPerf.avgMs) }
   ];
 }
 
@@ -213,4 +221,8 @@ function formatSignedNumber(value, decimals = 2) {
 
   const fixed = value.toFixed(decimals);
   return value > 0 ? `+${fixed}` : fixed;
+}
+
+function formatPerfMetric(value) {
+  return Number.isFinite(value) ? value.toFixed(2) : '—';
 }

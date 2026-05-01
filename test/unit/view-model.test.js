@@ -48,6 +48,10 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   const metrics = buildLiveMetrics(world, {
     metrics: { throughputPerTick: 0.25, avgCompletionTicks: 4.5, avgStoppedTicks: 1.25, avgQueueLength: 0.75, avgRoadOccupancy: 0.4, fairnessScore: 0.6 },
     score: { total: 185 }
+  }, {
+    tick: { avgMs: 2.5, p95Ms: 4.1 },
+    render: { avgMs: 6.2, p95Ms: 9.4 },
+    diagnostics: { avgMs: 1.3 }
   });
 
   assert.deepEqual(metrics[0], { label: 'Tick', value: '9' });
@@ -58,6 +62,11 @@ test('buildLiveMetrics exposes key live counters and score', () => {
   assert.ok(metrics.some((entry) => entry.label === 'Throughput/tick' && entry.value === '0.25'));
   assert.ok(metrics.some((entry) => entry.label === 'Fairness' && entry.value === '0.60'));
   assert.ok(metrics.some((entry) => entry.label === 'Score' && entry.value === '185'));
+  assert.ok(metrics.some((entry) => entry.label === 'Tick avg ms' && entry.value === '2.50'));
+  assert.ok(metrics.some((entry) => entry.label === 'Tick p95 ms' && entry.value === '4.10'));
+  assert.ok(metrics.some((entry) => entry.label === 'Render avg ms' && entry.value === '6.20'));
+  assert.ok(metrics.some((entry) => entry.label === 'Render p95 ms' && entry.value === '9.40'));
+  assert.ok(metrics.some((entry) => entry.label === 'UI avg ms' && entry.value === '1.30'));
 });
 
 test('buildBenchmarkHistoryLines and buildBenchmarkComparisonLines summarize saved benchmark runs', () => {

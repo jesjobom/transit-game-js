@@ -2,6 +2,15 @@
 
 Plano de melhoria de performance do **transit-game-js**.
 
+## Status de execução
+
+- [x] Sprint 32 — instrumentação de performance
+- [ ] Sprint 33 — cache do mapa/base estática
+- [ ] Sprint 34 — layer de veículos com atualização incremental
+- [ ] Sprint 35 — throttle de overlays + summaries + replay
+- [ ] Sprint 36 — índice de ocupação por tick
+- [ ] Sprint 37 — benchmark render-light
+
 Este arquivo substitui o plano antigo.
 Agora o projeto já tem engine por ticks, replay, benchmark, geração procedural e suporte inicial a múltiplas faixas. O problema deixou de ser “como sair do protótipo” e passou a ser “como escalar sem a UI ficar pesada nem a simulação perder consistência”.
 
