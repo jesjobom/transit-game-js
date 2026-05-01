@@ -157,10 +157,10 @@ test('buildCellInspectionLines summarizes selected vehicle state, intent, and tr
   const lines = buildCellInspectionLines(world, { x: 4, y: 3 }, 'vehicle-7');
 
   assert.match(lines[0], /vehicle-7/);
-  assert.match(lines[3], /wait/);
-  assert.match(lines[4], /red-light/);
-  assert.match(lines[6], /2,3@t6/);
-  assert.match(lines[6], /4,3@t8/);
+  assert.match(lines[4], /wait/);
+  assert.match(lines[5], /red-light/);
+  assert.match(lines[7], /2,3@t6/);
+  assert.match(lines[7], /4,3@t8/);
 });
 
 test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics', () => {

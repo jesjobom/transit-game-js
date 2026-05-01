@@ -121,6 +121,7 @@ function buildVehicleInspectionLines(vehicle) {
     `Vehicle: ${vehicle.id}`,
     `Position: ${vehicle.x},${vehicle.y}`,
     `Direction: ${vehicle.direction}`,
+    `Lane: ${(vehicle.laneIndex ?? 0) + 1}`,
     `Intent: ${vehicle.debug?.intent ?? '—'}`,
     `Note: ${vehicle.debug?.note ?? '—'}`,
     `Spawned at: t${vehicle.spawnedAtTick ?? '—'}`,

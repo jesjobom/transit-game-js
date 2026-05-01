@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 30`
-- **Build tag:** `s30-vehicle-inspector`
-- **Último estado validado:** `52/52` testes passando
+- **Versão visível da app:** `Sprint 31`
+- **Build tag:** `s31-variable-lanes`
+- **Último estado validado:** `55/55` testes passando
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.
@@ -31,6 +31,7 @@ A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e
 - mapa bootstrap maior e menos simétrico
 - semântica explícita de direção nas vias
 - suporte base a pista bidirecional com ocupação por faixa/direção
+- vias principais do mapa bootstrap já usando múltiplas faixas variáveis por direção
 - suporte técnico a mapa customizado em memória
 
 #### Simulação e tráfego
@@ -331,8 +332,8 @@ Aprofundar a credibilidade do movimento e da modelagem das vias sem sacrificar o
 **Por que importa**
 A V1 já deixou de parecer travada, mas ainda há bastante espaço entre “animação boa” e “modelo de tráfego convincente”. Além disso, o salto de complexidade do mapa depende de a estrutura viária suportar bem combinações mais realistas.
 
-**Verificação de pendência**
-Existe movimento contínuo, easing de parada, curva melhorada e suporte base a ocupação por faixa/direção, mas ainda não há evidência de modelagem completa para múltiplas faixas por sentido, mistura rica de mão dupla/mão única, mudança de faixa, speed limit por trecho ou modelo mais rico de headway/velocidade.
+**Status após Sprint 31**
+Parcialmente concluído no estado atual: o mapa bootstrap e o modelo base agora suportam quantidade variável de faixas por direção em vias específicas, incluindo transição entre trechos com contagem diferente de faixas e remapeamento/merge implícito de veículos no avanço. Ainda ficam pendentes mudança de faixa deliberada, faixas exclusivas, limites por trecho, headway mais rico e mistura mais sofisticada de topologias.
 
 ---
 

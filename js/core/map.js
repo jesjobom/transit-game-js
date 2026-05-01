@@ -86,12 +86,12 @@ export function createBootstrapMap(options = {}) {
   const roads = [];
 
   for (let x = 0; x < width; x += 1) {
-    roads.push(createRoadCell(x, 2, ['east', 'west']));
-    roads.push(createRoadCell(x, 8, ['east', 'west']));
+    roads.push(createRoadCell(x, 2, ['east', 'west'], { east: 2, west: 2 }));
+    roads.push(createRoadCell(x, 8, ['east', 'west'], { east: 2, west: 2 }));
   }
 
   for (let x = 2; x <= 10; x += 1) {
-    roads.push(createRoadCell(x, 5, ['east', 'west']));
+    roads.push(createRoadCell(x, 5, ['east', 'west'], x >= 4 && x <= 8 ? { east: 2, west: 2 } : null));
   }
 
   for (let x = 6; x < width; x += 1) {
@@ -107,11 +107,11 @@ export function createBootstrapMap(options = {}) {
   }
 
   for (let y = 1; y < height; y += 1) {
-    roads.push(createRoadCell(6, y, ['north', 'south']));
+    roads.push(createRoadCell(6, y, ['north', 'south'], { north: 2, south: 2 }));
   }
 
   for (let y = 0; y <= 9; y += 1) {
-    roads.push(createRoadCell(10, y, ['north', 'south']));
+    roads.push(createRoadCell(10, y, ['north', 'south'], y >= 2 && y <= 8 ? { north: 2, south: 2 } : null));
   }
 
   return normalizeMap({
@@ -163,7 +163,12 @@ export function normalizeMap(map) {
       x: road.x,
       y: road.y,
       type: road.type ?? 'road',
-      allowedDirections
+      allowedDirections,
+      laneCounts: {
+        ...(existing?.laneCountByDirection ?? {}),
+        ...(road.laneCountByDirection ?? {}),
+        ...(road.laneCounts && typeof road.laneCounts === 'object' ? road.laneCounts : {})
+      }
     });
   }
 
@@ -209,17 +214,47 @@ export function getLaneDirections(map, x, y) {
   return getCell(map, x, y)?.laneDirections ?? [];
 }
 
-export function getLaneKey(direction) {
-  return `lane-${direction}`;
+export function getLaneKey(direction, laneIndex = 0) {
+  return `lane-${direction}-${laneIndex}`;
 }
 
-export function getDirectionOffset(direction) {
+export function getDirectionOffset(direction, laneIndex = 0, laneCount = 1) {
+  const crossAxisOffset = getLaneCenterOffset(laneIndex, laneCount);
   return {
-    north: { x: -8, y: 0 },
-    south: { x: 8, y: 0 },
-    east: { x: 0, y: 8 },
-    west: { x: 0, y: -8 }
+    north: { x: -8 + crossAxisOffset, y: 0 },
+    south: { x: 8 - crossAxisOffset, y: 0 },
+    east: { x: 0, y: 8 - crossAxisOffset },
+    west: { x: 0, y: -8 + crossAxisOffset }
   }[direction] ?? { x: 0, y: 0 };
+}
+
+export function getLaneCount(map, x, y, direction = null) {
+  const cell = getCell(map, x, y);
+  if (!cell) {
+    return 0;
+  }
+
+  if (!direction) {
+    return cell.laneCount ?? 0;
+  }
+
+  return cell.laneCountByDirection?.[direction] ?? 0;
+}
+
+export function resolveLaneIndexForMove(map, fromPosition, toPosition, direction, laneIndex = 0) {
+  const fromLaneCount = Math.max(1, getLaneCount(map, fromPosition.x, fromPosition.y, direction));
+  const toLaneCount = Math.max(1, getLaneCount(map, toPosition.x, toPosition.y, direction));
+
+  if (fromLaneCount === toLaneCount) {
+    return clampLaneIndex(laneIndex, toLaneCount);
+  }
+
+  if (fromLaneCount <= 1) {
+    return clampLaneIndex(laneIndex, toLaneCount);
+  }
+
+  const ratio = laneIndex / (fromLaneCount - 1 || 1);
+  return clampLaneIndex(Math.round(ratio * Math.max(0, toLaneCount - 1)), toLaneCount);
 }
 
 export function canTravelDirection(map, x, y, direction) {
@@ -266,16 +301,22 @@ export function toPositionKey(x, y) {
   return `${x},${y}`;
 }
 
-function createRoadCell(x, y, allowedDirections) {
-  return buildRoadCell({ x, y, type: 'road', allowedDirections: uniqueDirections(allowedDirections) });
+function createRoadCell(x, y, allowedDirections, laneCounts = null) {
+  return buildRoadCell({ x, y, type: 'road', allowedDirections: uniqueDirections(allowedDirections), laneCounts });
 }
 
-function buildRoadCell({ x, y, type, allowedDirections }) {
-  const laneDirections = allowedDirections.map((direction) => ({
-    key: getLaneKey(direction),
-    direction,
-    offset: getDirectionOffset(direction)
-  }));
+function buildRoadCell({ x, y, type, allowedDirections, laneCounts = null }) {
+  const laneCountByDirection = buildLaneCountByDirection(allowedDirections, laneCounts);
+  const laneDirections = allowedDirections.flatMap((direction) => {
+    const count = laneCountByDirection[direction] ?? 1;
+    return Array.from({ length: count }, (_, laneIndex) => ({
+      key: getLaneKey(direction, laneIndex),
+      direction,
+      laneIndex,
+      laneCount: count,
+      offset: getDirectionOffset(direction, laneIndex, count)
+    }));
+  });
 
   return {
     x,
@@ -283,12 +324,49 @@ function buildRoadCell({ x, y, type, allowedDirections }) {
     type,
     allowedDirections,
     laneDirections,
-    laneCount: laneDirections.length
+    laneCount: laneDirections.length,
+    laneCountByDirection
   };
 }
 
 function uniqueDirections(directions) {
   return DIRECTION_ORDER.filter((direction) => directions.includes(direction));
+}
+
+function buildLaneCountByDirection(allowedDirections, laneCounts) {
+  const normalized = {};
+
+  for (const direction of allowedDirections) {
+    normalized[direction] = normalizeLaneCountValue(laneCounts, direction);
+  }
+
+  return normalized;
+}
+
+function normalizeLaneCountValue(laneCounts, direction) {
+  if (typeof laneCounts === 'number' && Number.isFinite(laneCounts)) {
+    return Math.max(1, Math.round(laneCounts));
+  }
+
+  if (laneCounts && typeof laneCounts === 'object' && Number.isFinite(laneCounts[direction])) {
+    return Math.max(1, Math.round(laneCounts[direction]));
+  }
+
+  return 1;
+}
+
+function getLaneCenterOffset(laneIndex, laneCount) {
+  if (laneCount <= 1) {
+    return 0;
+  }
+
+  const spacing = laneCount === 2 ? 5 : 4;
+  const centeredIndex = laneIndex - ((laneCount - 1) / 2);
+  return centeredIndex * spacing;
+}
+
+function clampLaneIndex(laneIndex, laneCount) {
+  return Math.max(0, Math.min(Math.max(0, laneCount - 1), Math.round(laneIndex)));
 }
 
 function pickSpreadPositions(size, count, rng) {

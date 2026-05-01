@@ -322,7 +322,7 @@ function renderVehicle(world, vehicle, map, options = {}) {
       data-y="${vehicle.y}"
       data-motion-kind="${escapeHtml(renderState.motionKind)}"
       style="left:${renderState.position.x}%; top:${renderState.position.y}%; --vehicle-render-offset-x:${renderState.offset.x}px; --vehicle-render-offset-y:${renderState.offset.y}px; --vehicle-render-angle:${renderState.angle}deg; --vehicle-motion-progress:${renderState.progress.toFixed(3)}; --vehicle-color:${escapeHtml(color.fill)}; --vehicle-color-dark:${escapeHtml(color.shadow)}; --vehicle-color-light:${escapeHtml(color.highlight)};"
-      title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}"
+      title="${escapeHtml(vehicle.id)} lane=${escapeHtml(vehicle.direction)}#${escapeHtml((vehicle.laneIndex ?? 0) + 1)}"
       aria-label="${escapeHtml(vehicle.id)}"
     >
       <span class="vehicle-svg">
@@ -344,8 +344,8 @@ function getVehicleRenderState(world, vehicle, map, options) {
   const turnEvent = world.events.find((event) => event.type === 'vehicleTurned' && event.payload.vehicleId === vehicle.id);
   const motionKind = turnEvent ? 'turn' : movedEvent ? 'straight' : 'idle';
   const fromDirection = turnEvent?.payload.from ?? previousVehicle?.direction ?? vehicle.direction;
-  const startOffset = getVehicleRenderOffset(fromDirection);
-  const endOffset = getVehicleRenderOffset(vehicle.direction);
+  const startOffset = getVehicleRenderOffset(map, previousVehicle ?? vehicle, fromDirection);
+  const endOffset = getVehicleRenderOffset(map, vehicle, vehicle.direction);
   const shouldSlowDown = motionKind === 'straight' && shouldSlowDownAhead(world, vehicle);
   const progress = motionKind === 'straight' ? shapeStraightMotionProgress(baseProgress, shouldSlowDown) : baseProgress;
 
@@ -382,8 +382,9 @@ function getVehicleRenderState(world, vehicle, map, options) {
   };
 }
 
-function getVehicleRenderOffset(direction) {
-  const laneOffset = getDirectionOffset(direction);
+function getVehicleRenderOffset(map, vehicle, direction) {
+  const laneCount = Math.max(1, getCell(map, vehicle.x, vehicle.y)?.laneCountByDirection?.[direction] ?? 1);
+  const laneOffset = getDirectionOffset(direction, vehicle.laneIndex ?? 0, laneCount);
   const queueOffset = {
     north: { x: 0, y: 4 },
     south: { x: 0, y: -4 },

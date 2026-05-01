@@ -141,6 +141,7 @@ export function hydrateVehicle(world, vehicle) {
   return {
     ...vehicle,
     originDirection: vehicle.originDirection ?? vehicle.direction,
+    laneIndex: Number.isFinite(vehicle.laneIndex) ? vehicle.laneIndex : 0,
     color: vehicle.color ?? createVehicleColor(world, vehicle.id ?? `${vehicle.x},${vehicle.y},${vehicle.direction}`),
     debug: hydrateVehicleDebug(vehicle)
   };

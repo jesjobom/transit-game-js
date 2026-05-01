@@ -406,3 +406,68 @@ test('engine records intersection throughput for metrics when vehicles enter int
 
   assert.equal(world.metrics.intersectionThroughputByKey['6,5'], 1);
 });
+
+
+test('engine allows same-direction vehicles to use parallel lanes on multi-lane roads', () => {
+  const world = createWorldState({
+    mapMode: 'custom',
+    map: {
+      id: 'parallel-lanes-test',
+      width: 2,
+      height: 1,
+      roads: [
+        { x: 0, y: 0, allowedDirections: ['east'], laneCounts: { east: 2 } },
+        { x: 1, y: 0, allowedDirections: ['east'], laneCounts: { east: 2 } }
+      ],
+      spawnPoints: []
+    },
+    vehicles: [
+      { id: 'vehicle-a', x: 0, y: 0, direction: 'east', laneIndex: 0, status: 'active', spawnedAtTick: 0 },
+      { id: 'vehicle-b', x: 0, y: 0, direction: 'east', laneIndex: 1, status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  assert.deepEqual(
+    world.entities.vehicles.map((vehicle) => ({ id: vehicle.id, x: vehicle.x, laneIndex: vehicle.laneIndex })),
+    [
+      { id: 'vehicle-a', x: 1, laneIndex: 0 },
+      { id: 'vehicle-b', x: 1, laneIndex: 1 }
+    ]
+  );
+});
+
+test('engine remaps lanes through narrowing roads and blocks merge conflicts', () => {
+  const world = createWorldState({
+    mapMode: 'custom',
+    map: {
+      id: 'merge-conflict-test',
+      width: 3,
+      height: 1,
+      roads: [
+        { x: 0, y: 0, allowedDirections: ['east'], laneCounts: { east: 2 } },
+        { x: 1, y: 0, allowedDirections: ['east'], laneCounts: { east: 2 } },
+        { x: 2, y: 0, allowedDirections: ['east'], laneCounts: { east: 1 } }
+      ],
+      spawnPoints: []
+    },
+    vehicles: [
+      { id: 'vehicle-front', x: 1, y: 0, direction: 'east', laneIndex: 0, status: 'active', spawnedAtTick: 0 },
+      { id: 'vehicle-back', x: 1, y: 0, direction: 'east', laneIndex: 1, status: 'active', spawnedAtTick: 0 }
+    ]
+  });
+  const engine = createEngine(world);
+
+  engine.tick();
+
+  const front = world.entities.vehicles.find((vehicle) => vehicle.id === 'vehicle-front');
+  const back = world.entities.vehicles.find((vehicle) => vehicle.id === 'vehicle-back');
+  assert.equal(front.x, 2);
+  assert.equal(front.laneIndex, 0);
+  assert.equal(back.x, 1);
+  assert.equal(back.laneIndex, 1);
+  const blocked = world.events.find((event) => event.type === 'vehicleBlocked' && event.payload.vehicleId === 'vehicle-back');
+  assert.equal(blocked.payload.reason, 'lane-occupied');
+});

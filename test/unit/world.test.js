@@ -12,7 +12,7 @@ test('createWorldState builds the Sprint 8 structure with defaults', () => {
   assert.equal(world.map.id, 'bootstrap-grid');
   assert.equal(world.map.roads.length, 67);
   assert.equal(world.map.spawnPoints.length, 8);
-  assert.equal(world.map.roadsByKey['6,5'].laneCount, 4);
+  assert.equal(world.map.roadsByKey['6,5'].laneCount, 8);
   assert.equal(world.config.tickRate, 10);
   assert.equal(world.config.rules.freeRightOnRed, false);
   assert.equal(world.config.benchmark.mode, 'sandbox');
