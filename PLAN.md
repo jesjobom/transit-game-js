@@ -11,6 +11,12 @@ Plano de melhoria de performance do **transit-game-js**.
 - [x] Sprint 36 — índice de ocupação por tick
 - [x] Sprint 37 — benchmark render-light
 
+## Fechamento publicado
+
+- baseline público alinhado para `Sprint 37`
+- build tag público alinhado para `s37-render-light-benchmark`
+- suíte atual validada em `70/70` testes passando
+
 Este arquivo substitui o plano antigo.
 Agora o projeto já tem engine por ticks, replay, benchmark, geração procedural e suporte inicial a múltiplas faixas. O problema deixou de ser “como sair do protótipo” e passou a ser “como escalar sem a UI ficar pesada nem a simulação perder consistência”.
 

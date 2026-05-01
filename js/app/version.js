@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 31';
-export const BUILD_TAG = 's31-variable-lanes';
+export const APP_VERSION = 'Sprint 37';
+export const BUILD_TAG = 's37-render-light-benchmark';

@@ -13,9 +13,17 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 31`
-- **Build tag:** `s31-variable-lanes`
+- **Versão visível da app:** `Sprint 37`
+- **Build tag:** `s37-render-light-benchmark`
 - **Último estado validado:** `70/70` testes passando
+
+### Sprints de performance já concluídas e publicadas
+- **Sprint 32** — instrumentação de performance para tick/render/diagnostics
+- **Sprint 33** — cache do mapa/base estática
+- **Sprint 34** — layer de veículos com atualização incremental
+- **Sprint 35** — throttle de overlays + summaries + replay
+- **Sprint 36** — índice de ocupação por tick
+- **Sprint 37** — benchmark render-light
 
 ### Manutenção recente validada
 - correção para invalidar/recalcular `world.report` a cada avanço real de tick, evitando métricas live congeladas
