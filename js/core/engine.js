@@ -28,9 +28,13 @@ export function createEngine(world) {
       world.metrics.ticksSimulated += 1;
       world.events = [];
 
+      const tickContext = {
+        occupancyIndex: createOccupancyIndex(world)
+      };
+
       advanceTrafficLights(world);
-      const tickStats = moveVehicles(world);
-      maybeSpawnVehicle(world);
+      const tickStats = moveVehicles(world, tickContext);
+      maybeSpawnVehicle(world, tickContext);
       updateDerivedTickMetrics(world, tickStats);
 
       if (shouldFinalizeBenchmark(world)) {
@@ -69,7 +73,7 @@ function shouldFinalizeBenchmark(world) {
   return benchmark.enabled && benchmark.durationTicks > 0 && world.tick >= benchmark.durationTicks;
 }
 
-function maybeSpawnVehicle(world) {
+function maybeSpawnVehicle(world, tickContext = null) {
   const { benchmark, maxVehicles } = world.config;
   const vehicles = world.entities.vehicles;
   const spawnPoints = world.map.spawnPoints;
@@ -94,7 +98,7 @@ function maybeSpawnVehicle(world) {
   }
 
   const spawnLaneIndex = pickSpawnLaneIndex(world, selectedSpawn);
-  const spawnBlockReason = getOccupancyBlockReason(world, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction, null, spawnLaneIndex);
+  const spawnBlockReason = getOccupancyBlockReason(world, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction, null, spawnLaneIndex, tickContext);
   if (spawnBlockReason) {
     world.metrics.blockedMoves += 1;
     addWorldEvent(world, 'vehicleSpawnBlocked', {
@@ -120,6 +124,7 @@ function maybeSpawnVehicle(world) {
   });
 
   vehicles.push(vehicle);
+  registerVehicleOccupancy(tickContext?.occupancyIndex, world, vehicle);
   world.metrics.spawnedVehicles += 1;
   recordDirectionalMetric(world, vehicle.originDirection, 'spawned');
   addWorldEvent(world, 'vehicleSpawned', {
@@ -132,7 +137,7 @@ function maybeSpawnVehicle(world) {
   });
 }
 
-function moveVehicles(world) {
+function moveVehicles(world, tickContext = null) {
   const survivors = [];
   const stats = {
     movedCount: 0,
@@ -161,13 +166,14 @@ function moveVehicles(world) {
         y: vehicle.y,
         direction: vehicle.direction,
         laneKey: getLaneKey(vehicle.direction, vehicle.laneIndex ?? 0),
-      laneIndex: vehicle.laneIndex ?? 0
+        laneIndex: vehicle.laneIndex ?? 0
       });
+      unregisterVehicleOccupancy(tickContext?.occupancyIndex, world, vehicle);
       continue;
     }
 
     const nextLaneIndex = resolveNextLaneIndex(world, vehicle, nextStepPosition);
-    const block = getVehicleBlock(world, vehicle, nextStepPosition, nextLaneIndex);
+    const block = getVehicleBlock(world, vehicle, nextStepPosition, nextLaneIndex, tickContext);
     if (block) {
       setVehicleIntent(world, vehicle, getBlockedVehicleIntent(block), block.reason);
       stats.blockedCount += 1;
@@ -199,6 +205,7 @@ function moveVehicles(world) {
 
     const previousDirection = vehicle.direction;
     const previousLaneIndex = vehicle.laneIndex ?? 0;
+    unregisterVehicleOccupancy(tickContext?.occupancyIndex, world, vehicle, previousDirection, previousLaneIndex);
     vehicle.x = nextStepPosition.x;
     vehicle.y = nextStepPosition.y;
     vehicle.laneIndex = nextLaneIndex;
@@ -214,6 +221,7 @@ function moveVehicles(world) {
     stats.movedCount += 1;
     world.metrics.movedVehicles += 1;
     recordDirectionalMetric(world, vehicle.originDirection, 'moved');
+    registerVehicleOccupancy(tickContext?.occupancyIndex, world, vehicle);
     recordCellMetric(world, vehicle.x, vehicle.y, 'passThroughCount');
     recordIntersectionThroughput(world, nextStepPosition);
     addWorldEvent(world, 'vehicleMoved', {
@@ -459,7 +467,7 @@ function getDirectionWeight(world, currentDirection, candidateDirection) {
   return world.config.routing.allowReverse ? 0.1 : 0;
 }
 
-function getVehicleBlock(world, vehicle, nextPosition, nextLaneIndex) {
+function getVehicleBlock(world, vehicle, nextPosition, nextLaneIndex, tickContext = null) {
   if (!canTravelDirection(world.map, nextPosition.x, nextPosition.y, vehicle.direction)) {
     return { reason: 'invalid-direction' };
   }
@@ -469,12 +477,12 @@ function getVehicleBlock(world, vehicle, nextPosition, nextLaneIndex) {
     return fourWayStopBlock;
   }
 
-  const occupancyBlock = getOccupancyBlockReason(world, nextPosition.x, nextPosition.y, vehicle.direction, vehicle.id, nextLaneIndex);
+  const occupancyBlock = getOccupancyBlockReason(world, nextPosition.x, nextPosition.y, vehicle.direction, vehicle.id, nextLaneIndex, tickContext);
   if (occupancyBlock) {
     return occupancyBlock;
   }
 
-  const intersectionQueueBlock = getIntersectionQueueBlock(world, vehicle, nextPosition);
+  const intersectionQueueBlock = getIntersectionQueueBlock(world, vehicle, nextPosition, tickContext);
   if (intersectionQueueBlock) {
     return intersectionQueueBlock;
   }
@@ -539,7 +547,7 @@ function getFourWayStopBlock(world, vehicle, nextPosition) {
   };
 }
 
-function getIntersectionQueueBlock(world, vehicle, nextPosition) {
+function getIntersectionQueueBlock(world, vehicle, nextPosition, tickContext = null) {
   if (!world.config.rules.doNotBlockIntersection) {
     return null;
   }
@@ -559,7 +567,7 @@ function getIntersectionQueueBlock(world, vehicle, nextPosition) {
   }
 
   const downstreamLaneIndex = resolveLaneIndexForMove(world.map, nextPosition, exitPosition, vehicle.direction, vehicle.laneIndex ?? 0);
-  const downstreamOccupancyBlock = getOccupancyBlockReason(world, exitPosition.x, exitPosition.y, vehicle.direction, vehicle.id, downstreamLaneIndex);
+  const downstreamOccupancyBlock = getOccupancyBlockReason(world, exitPosition.x, exitPosition.y, vehicle.direction, vehicle.id, downstreamLaneIndex, tickContext);
   if (downstreamOccupancyBlock) {
     return {
       reason: 'would-block-intersection',
@@ -574,15 +582,9 @@ function isRightTurnOnRed(world, vehicle) {
   return vehicle.plannedDirection ? turnRight(vehicle.direction) === vehicle.plannedDirection : false;
 }
 
-function getOccupancyBlockReason(world, x, y, direction, ignoredVehicleId = null, laneIndex = 0) {
+function getOccupancyBlockReason(world, x, y, direction, ignoredVehicleId = null, laneIndex = 0, tickContext = null) {
   const occupancyKey = getOccupancyKey(world, x, y, direction, laneIndex);
-  const blockingVehicle = world.entities.vehicles.find((vehicle) => {
-    if (ignoredVehicleId && vehicle.id === ignoredVehicleId) {
-      return false;
-    }
-
-    return getOccupancyKey(world, vehicle.x, vehicle.y, vehicle.direction, vehicle.laneIndex ?? 0) === occupancyKey;
-  });
+  const blockingVehicle = findBlockingVehicle(world, occupancyKey, ignoredVehicleId, tickContext?.occupancyIndex);
 
   if (!blockingVehicle) {
     return null;
@@ -600,6 +602,41 @@ function getOccupancyKey(world, x, y, direction, laneIndex = 0) {
   }
 
   return `lane:${toPositionKey(x, y)}:${getLaneKey(direction, laneIndex)}`;
+}
+
+export function createOccupancyIndex(world) {
+  const vehiclesByKey = new Map();
+
+  for (const vehicle of world.entities.vehicles) {
+    vehiclesByKey.set(getOccupancyKey(world, vehicle.x, vehicle.y, vehicle.direction, vehicle.laneIndex ?? 0), vehicle);
+  }
+
+  return {
+    vehiclesByKey
+  };
+}
+
+function findBlockingVehicle(world, occupancyKey, ignoredVehicleId = null, occupancyIndex = null) {
+  const indexedVehicle = occupancyIndex?.vehiclesByKey?.get(occupancyKey) ?? null;
+  if (indexedVehicle && (!ignoredVehicleId || indexedVehicle.id !== ignoredVehicleId)) {
+    return indexedVehicle;
+  }
+
+  return world.entities.vehicles.find((vehicle) => {
+    if (ignoredVehicleId && vehicle.id === ignoredVehicleId) {
+      return false;
+    }
+
+    return getOccupancyKey(world, vehicle.x, vehicle.y, vehicle.direction, vehicle.laneIndex ?? 0) === occupancyKey;
+  }) ?? null;
+}
+
+function registerVehicleOccupancy(occupancyIndex, world, vehicle) {
+  occupancyIndex?.vehiclesByKey?.set(getOccupancyKey(world, vehicle.x, vehicle.y, vehicle.direction, vehicle.laneIndex ?? 0), vehicle);
+}
+
+function unregisterVehicleOccupancy(occupancyIndex, world, vehicle, direction = vehicle.direction, laneIndex = vehicle.laneIndex ?? 0) {
+  occupancyIndex?.vehiclesByKey?.delete(getOccupancyKey(world, vehicle.x, vehicle.y, direction, laneIndex));
 }
 
 function advanceTrafficLights(world) {

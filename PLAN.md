@@ -8,7 +8,7 @@ Plano de melhoria de performance do **transit-game-js**.
 - [x] Sprint 33 — cache do mapa/base estática
 - [x] Sprint 34 — layer de veículos com atualização incremental
 - [x] Sprint 35 — throttle de overlays + summaries + replay
-- [ ] Sprint 36 — índice de ocupação por tick
+- [x] Sprint 36 — índice de ocupação por tick
 - [ ] Sprint 37 — benchmark render-light
 
 Este arquivo substitui o plano antigo.
