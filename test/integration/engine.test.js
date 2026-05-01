@@ -220,6 +220,27 @@ test('engine can turn vehicles at intersections deterministically', () => {
   assert.equal(world.events[0].type, 'vehicleTurned');
 });
 
+test('engine samples replay frames based on the configured capture cadence', () => {
+  const world = createWorldState({
+    seed: 3,
+    benchmark: {
+      enabled: true,
+      mode: 'benchmark',
+      spawnRate: 0,
+      durationTicks: 5
+    },
+    replay: {
+      captureEveryTicks: 2
+    }
+  });
+  const engine = createEngine(world);
+
+  world.replay.frames = [];
+  engine.runTicks(5);
+
+  assert.deepEqual(world.replay.frames.map((frame) => frame.tick), [2, 4, 5]);
+});
+
 test('engine finalizes benchmark report when duration is reached', () => {
   const world = createWorldState({
     seed: 2,

@@ -335,8 +335,9 @@ function renderCellOverlay(world, cell, options = {}) {
     return '';
   }
 
+  const overlayMetrics = options.overlayMetrics ?? world.metrics;
   const positionKey = toPositionKey(cell.x, cell.y);
-  const cellStats = world.metrics.cellStatsByKey?.[positionKey] ?? {};
+  const cellStats = overlayMetrics.cellStatsByKey?.[positionKey] ?? {};
   let tone = 'neutral';
   let value = '';
 
@@ -347,7 +348,7 @@ function renderCellOverlay(world, cell, options = {}) {
     value = String(cellStats.passThroughCount ?? 0);
     tone = getOverlayTone(cellStats.passThroughCount ?? 0, [1, 4, 8]);
   } else if (overlayMode === 'deadlock') {
-    const deadlockPressure = (cellStats.blockedTicks ?? 0) + ((cell.intersection ? world.metrics.intersectionThroughputByKey?.[positionKey] ?? 0 : 0) === 0 ? 0 : 1);
+    const deadlockPressure = (cellStats.blockedTicks ?? 0) + ((cell.intersection ? overlayMetrics.intersectionThroughputByKey?.[positionKey] ?? 0 : 0) === 0 ? 0 : 1);
     value = String(cellStats.blockedTicks ?? 0);
     tone = getOverlayTone(deadlockPressure, [2, 5, 9]);
   }

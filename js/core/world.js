@@ -21,6 +21,10 @@ const DEFAULT_ROUTING = {
   allowReverse: false
 };
 
+const DEFAULT_REPLAY = {
+  captureEveryTicks: 1
+};
+
 export function createWorldState(options = {}) {
   const simulationSeed = normalizeSeed(options.seed);
   const mapSeed = normalizeSeed(options.mapSeed ?? simulationSeed);
@@ -59,6 +63,10 @@ export function createWorldState(options = {}) {
       benchmark: {
         ...DEFAULT_BENCHMARK,
         ...(options.benchmark || {})
+      },
+      replay: {
+        ...DEFAULT_REPLAY,
+        ...(options.replay || {})
       }
     },
     entities: {
@@ -194,6 +202,24 @@ export function captureReplayFrame(world) {
 
   world.replay.frames.push(frame);
   return frame;
+}
+
+export function shouldCaptureReplayFrame(world) {
+  const interval = Math.max(1, Math.round(world.config?.replay?.captureEveryTicks ?? 1));
+
+  if (world.tick === 0 || world.status === 'completed') {
+    return true;
+  }
+
+  return interval <= 1 || world.tick % interval === 0;
+}
+
+export function maybeCaptureReplayFrame(world) {
+  if (!shouldCaptureReplayFrame(world)) {
+    return null;
+  }
+
+  return captureReplayFrame(world);
 }
 
 function worldLike(simulationSeed) {

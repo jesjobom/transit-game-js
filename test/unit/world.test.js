@@ -16,6 +16,7 @@ test('createWorldState builds the Sprint 8 structure with defaults', () => {
   assert.equal(world.config.tickRate, 10);
   assert.equal(world.config.rules.freeRightOnRed, false);
   assert.equal(world.config.benchmark.mode, 'sandbox');
+  assert.equal(world.config.replay.captureEveryTicks, 1);
   assert.equal(world.config.routing.allowReverse, false);
   assert.deepEqual(world.entities.vehicles, []);
   assert.equal(world.metrics.ticksSimulated, 0);
@@ -38,7 +39,8 @@ test('createWorldState merges custom configuration and seeds', () => {
     tickRate: 20,
     routing: { straightWeight: 0.7, allowReverse: true },
     rules: { freeRightOnRed: true },
-    benchmark: { enabled: true, mode: 'benchmark', spawnRate: 0.5 }
+    benchmark: { enabled: true, mode: 'benchmark', spawnRate: 0.5 },
+    replay: { captureEveryTicks: 3 }
   });
 
   assert.equal(world.seed, 99);
@@ -52,6 +54,7 @@ test('createWorldState merges custom configuration and seeds', () => {
   assert.equal(world.config.benchmark.enabled, true);
   assert.equal(world.config.benchmark.mode, 'benchmark');
   assert.equal(world.config.benchmark.spawnRate, 0.5);
+  assert.equal(world.config.replay.captureEveryTicks, 3);
 });
 
 test('createWorldState auto-creates procedural lights for generated intersections', () => {
