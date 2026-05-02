@@ -30,7 +30,8 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onGridCellSelect,
       onReplayToggle,
       onReplayPlayPause,
-      onReplayFrameChange
+      onReplayFrameChange,
+      onPanelToggle
     } = {}) {
       bindButton('control-play-pause', onPlayPause);
       bindButton('control-step', onStep);
@@ -55,6 +56,10 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindButton('control-replay-toggle', onReplayToggle);
       bindButton('control-replay-play-pause', onReplayPlayPause);
       bindRangeControl('control-replay-frame', onReplayFrameChange);
+      bindDetailsToggle('panel-advanced', onPanelToggle);
+      bindDetailsToggle('panel-replay', onPanelToggle);
+      bindDetailsToggle('panel-diagnostics', onPanelToggle);
+      bindDetailsToggle('panel-benchmark-lab', onPanelToggle);
     },
     setSpeedState(speedMultiplier, tickIntervalMs) {
       const speedValue = document.getElementById('control-speed-value');
@@ -165,6 +170,14 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       setElementHidden('benchmark-compare-controls', !hasComparisonData);
       setElementHidden('benchmark-compare-section', !hasComparisonData);
       setElementHidden('cell-inspector-section', !selectedCell && !selectedVehicleId);
+    },
+    getPanelState() {
+      return {
+        advancedOpen: isPanelOpen('panel-advanced'),
+        replayOpen: isPanelOpen('panel-replay'),
+        diagnosticsOpen: isPanelOpen('panel-diagnostics'),
+        benchmarkLabOpen: isPanelOpen('panel-benchmark-lab')
+      };
     }
   };
 }
@@ -295,6 +308,15 @@ function bindGridCellSelection(id, handler) {
   };
 }
 
+function bindDetailsToggle(id, handler) {
+  const element = document.getElementById(id);
+  if (!element || typeof handler !== 'function') {
+    return;
+  }
+
+  element.ontoggle = () => handler(id, Boolean(element.open));
+}
+
 function bindFileControl(id, handler) {
   const element = document.getElementById(id);
   if (!element || typeof handler !== 'function') {
@@ -354,6 +376,11 @@ function setElementHidden(id, hidden) {
   }
 
   element.hidden = Boolean(hidden);
+}
+
+function isPanelOpen(id) {
+  const element = document.getElementById(id);
+  return Boolean(element?.open);
 }
 
 function formatSpeedMultiplier(value) {

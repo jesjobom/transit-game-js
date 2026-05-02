@@ -6,7 +6,7 @@ Plano de simplificação de UX e redução de overhead do **transit-game-js**.
 - [x] Sprint 38 — UI Cleanup
 - [x] Sprint 39 — Collapsible Panels
 - [x] Sprint 40 — Contextual Visibility
-- [ ] Sprint 41 — Diagnostics Gating
+- [x] Sprint 41 — Diagnostics Gating
 - [ ] Sprint 42 — Optional Replay
 - [ ] Sprint 43 — UX Polish
 
@@ -409,17 +409,19 @@ A UI para de mostrar controles irrelevantes no contexto errado.
 
 ## Sprint 41 — gating de diagnóstico e performance tracker
 
+**Status:** concluído
+
 ### Entrega
-- só medir perf detalhada quando Diagnostics ou Benchmark Lab exigirem
-- parar de montar summaries diagnósticos quando a seção estiver fechada
-- manter apenas resumo curto sempre ativo
+- [x] só medir perf detalhada quando Diagnostics ou Benchmark Lab exigirem
+- [x] parar de montar summaries diagnósticos quando a seção estiver fechada
+- [x] manter apenas resumo curto sempre ativo
 
 ### Inclui
-- gating de `performanceTracker.measure(...)`
-- gating de `buildLiveMetrics(...)`
-- gating de `buildLightPhaseSummary(...)`
-- gating de `buildRecentEventSummary(...)`
-- gating de inspection detalhada
+- [x] gating de `performanceTracker.measure(...)`
+- [x] gating de `buildLiveMetrics(...)`
+- [x] gating de `buildLightPhaseSummary(...)`
+- [x] gating de `buildRecentEventSummary(...)`
+- [x] gating de inspection detalhada
 
 ### Resultado esperado
 Menos trabalho por frame/tick quando a UI está em modo normal.

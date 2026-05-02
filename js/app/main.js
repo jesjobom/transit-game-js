@@ -191,6 +191,11 @@ function boot() {
       replayState.frameIndex = Math.max(0, Math.min(state.world.replay.frames.length - 1, Math.round(frameIndex)));
       render();
     },
+    onPanelToggle() {
+      renderThrottleCache.diagnosticsTick = -1;
+      renderThrottleCache.inspectionTick = -1;
+      render();
+    },
     async onImportScenario(file) {
       try {
         const parsed = parseScenarioJson(await file.text());
@@ -366,6 +371,9 @@ function boot() {
     maybePersistCompletedBenchmark(report);
     const viewWorld = replayState.enabled ? (state.world.replay.frames[replayState.frameIndex] ?? state.world) : state.world;
     const viewReport = viewWorld.report ?? report;
+    const panelState = appShell.getPanelState();
+    const diagnosticsVisible = panelState.diagnosticsOpen;
+    const benchmarkLabVisible = panelState.benchmarkLabOpen;
     const tickIntervalMs = getTickIntervalMs();
     const motionProgress = isRunning ? Math.min(1, tickAccumulatorMs / tickIntervalMs) : 1;
     const forceUiRefresh = !isRunning || replayState.enabled || viewWorld.status === 'completed';
@@ -383,18 +391,20 @@ function boot() {
       renderThrottleCache.summaryTick = viewWorld.tick;
     }
 
-    if (shouldRefreshAtTick(viewWorld.tick, renderThrottleCache.diagnosticsTick, DIAGNOSTIC_REFRESH_INTERVAL_TICKS, forceUiRefresh)) {
-      renderThrottleCache.diagnostics = {
-        metrics: buildLiveMetrics(viewWorld, viewReport, performanceTracker.getSnapshot()),
-        lights: buildLightPhaseSummary(viewWorld),
-        events: buildRecentEventSummary(viewWorld)
-      };
-      renderThrottleCache.diagnosticsTick = viewWorld.tick;
-    }
+    if (diagnosticsVisible) {
+      if (shouldRefreshAtTick(viewWorld.tick, renderThrottleCache.diagnosticsTick, DIAGNOSTIC_REFRESH_INTERVAL_TICKS, forceUiRefresh)) {
+        renderThrottleCache.diagnostics = {
+          metrics: buildLiveMetrics(viewWorld, viewReport, performanceTracker.getSnapshot()),
+          lights: buildLightPhaseSummary(viewWorld),
+          events: buildRecentEventSummary(viewWorld)
+        };
+        renderThrottleCache.diagnosticsTick = viewWorld.tick;
+      }
 
-    if (shouldRefreshAtTick(viewWorld.tick, renderThrottleCache.inspectionTick, DIAGNOSTIC_REFRESH_INTERVAL_TICKS, forceUiRefresh)) {
-      renderThrottleCache.inspectionLines = buildCellInspectionLines(viewWorld, selectedCell, selectedVehicleId);
-      renderThrottleCache.inspectionTick = viewWorld.tick;
+      if (shouldRefreshAtTick(viewWorld.tick, renderThrottleCache.inspectionTick, DIAGNOSTIC_REFRESH_INTERVAL_TICKS, forceUiRefresh)) {
+        renderThrottleCache.inspectionLines = buildCellInspectionLines(viewWorld, selectedCell, selectedVehicleId);
+        renderThrottleCache.inspectionTick = viewWorld.tick;
+      }
     }
 
     performanceTracker.measure('render', () => {
@@ -412,13 +422,21 @@ function boot() {
         selectedVehicleId
       });
     });
-    performanceTracker.measure('diagnostics', () => {
+    const renderUiPanels = () => {
       appShell.renderSummary(buildPrimarySummaryMetrics(viewWorld, viewReport));
-      appShell.renderDiagnostics(renderThrottleCache.diagnostics);
-      appShell.renderCellInspection(renderThrottleCache.inspectionLines);
+      if (diagnosticsVisible) {
+        appShell.renderDiagnostics(renderThrottleCache.diagnostics);
+        appShell.renderCellInspection(renderThrottleCache.inspectionLines);
+      }
       appShell.syncReplayState(state.world.replay.frames, replayState);
       syncUiVisibility();
-    });
+    };
+
+    if (diagnosticsVisible || benchmarkLabVisible) {
+      performanceTracker.measure('diagnostics', renderUiPanels);
+    } else {
+      renderUiPanels();
+    }
   }
 
   function maybePersistCompletedBenchmark(report) {

@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 40';
-export const BUILD_TAG = 's40-contextual-visibility';
+export const APP_VERSION = 'Sprint 41';
+export const BUILD_TAG = 's41-diagnostics-gating';

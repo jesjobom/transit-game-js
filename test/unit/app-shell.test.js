@@ -22,7 +22,9 @@ function createElement(id) {
     onclick: null,
     onchange: null,
     oninput: null,
-    innerHTML: ''
+    innerHTML: '',
+    open: false,
+    ontoggle: null
   };
 }
 
@@ -70,7 +72,11 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['replay-controls-detail', createElement('replay-controls-detail')],
     ['benchmark-compare-controls', createElement('benchmark-compare-controls')],
     ['benchmark-compare-section', createElement('benchmark-compare-section')],
-    ['cell-inspector-section', createElement('cell-inspector-section')]
+    ['cell-inspector-section', createElement('cell-inspector-section')],
+    ['panel-advanced', createElement('panel-advanced')],
+    ['panel-replay', createElement('panel-replay')],
+    ['panel-diagnostics', createElement('panel-diagnostics')],
+    ['panel-benchmark-lab', createElement('panel-benchmark-lab')]
   ]);
 
   const originalDocument = globalThis.document;
@@ -96,6 +102,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     let replayToggleCalls = 0;
     let replayPlayPauseCalls = 0;
     const replayFrameCalls = [];
+    const panelToggleCalls = [];
     const appShell = createAppShell({
       world: {},
       engine: { status: 'ready' },
@@ -151,6 +158,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       },
       onReplayFrameChange(frameIndex) {
         replayFrameCalls.push(frameIndex);
+      },
+      onPanelToggle(id, isOpen) {
+        panelToggleCalls.push([id, isOpen]);
       }
     });
 
@@ -178,9 +188,12 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     elements.get('control-replay-play-pause').onclick();
     elements.get('control-replay-frame').value = '2';
     elements.get('control-replay-frame').oninput();
+    elements.get('panel-diagnostics').open = true;
+    elements.get('panel-diagnostics').ontoggle();
     assert.equal(replayToggleCalls, 1);
     assert.equal(replayPlayPauseCalls, 1);
     assert.deepEqual(replayFrameCalls, [2]);
+    assert.deepEqual(panelToggleCalls, [['panel-diagnostics', true]]);
 
     appShell.setSpeedState(1.5, 280);
     assert.equal(elements.get('control-speed-value').textContent, '1.5× · 280ms/tick');
@@ -291,12 +304,20 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       selectedCell: { x: 7, y: 3 },
       selectedVehicleId: 'vehicle-9'
     });
+    elements.get('panel-replay').open = true;
+    elements.get('panel-benchmark-lab').open = true;
     assert.equal(elements.get('benchmark-controls').hidden, false);
     assert.equal(elements.get('procedural-controls').hidden, false);
     assert.equal(elements.get('replay-controls-detail').hidden, false);
     assert.equal(elements.get('benchmark-compare-controls').hidden, false);
     assert.equal(elements.get('benchmark-compare-section').hidden, false);
     assert.equal(elements.get('cell-inspector-section').hidden, false);
+    assert.deepEqual(appShell.getPanelState(), {
+      advancedOpen: false,
+      replayOpen: true,
+      diagnosticsOpen: true,
+      benchmarkLabOpen: true
+    });
   } finally {
     globalThis.document = originalDocument;
   }
