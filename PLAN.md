@@ -5,7 +5,7 @@ Plano de simplificação de UX e redução de overhead do **transit-game-js**.
 ## Status de execução
 - [x] Sprint 38 — UI Cleanup
 - [x] Sprint 39 — Collapsible Panels
-- [ ] Sprint 40 — Contextual Visibility
+- [x] Sprint 40 — Contextual Visibility
 - [ ] Sprint 41 — Diagnostics Gating
 - [ ] Sprint 42 — Optional Replay
 - [ ] Sprint 43 — UX Polish
@@ -393,12 +393,14 @@ Capacidade avançada preservada, ruído visual bem menor.
 
 ## Sprint 40 — exibição contextual por modo e estado
 
+**Status:** concluído
+
 ### Entrega
-- esconder controles de benchmark em sandbox
-- esconder controles procedurais fora de mapMode procedural
-- esconder replay controls quando replay estiver desligado
-- esconder compare quando não houver snapshots suficientes
-- esconder inspector quando não houver seleção
+- [x] esconder controles de benchmark em sandbox
+- [x] esconder controles procedurais fora de mapMode procedural
+- [x] esconder replay controls quando replay estiver desligado
+- [x] esconder compare quando não houver snapshots suficientes
+- [x] esconder inspector quando não houver seleção
 
 ### Resultado esperado
 A UI para de mostrar controles irrelevantes no contexto errado.

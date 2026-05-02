@@ -156,6 +156,15 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
         playPauseButton.textContent = replayState.isPlaying ? 'Pause Replay' : 'Play Replay';
         playPauseButton.disabled = frames.length <= 1;
       }
+    },
+    syncUiVisibility({ config = {}, replayState = {}, historySnapshots = [], selectedCell = null, selectedVehicleId = null } = {}) {
+      setElementHidden('benchmark-controls', config.mode !== 'benchmark');
+      setElementHidden('procedural-controls', config.mapMode !== 'procedural');
+      setElementHidden('replay-controls-detail', !replayState.enabled);
+      const hasComparisonData = Array.isArray(historySnapshots) && historySnapshots.length >= 2;
+      setElementHidden('benchmark-compare-controls', !hasComparisonData);
+      setElementHidden('benchmark-compare-section', !hasComparisonData);
+      setElementHidden('cell-inspector-section', !selectedCell && !selectedVehicleId);
     }
   };
 }
@@ -336,6 +345,15 @@ function syncHistorySelectOptions(id, snapshots, selectedId) {
   } else if (snapshots[0]) {
     element.value = snapshots[0].id;
   }
+}
+
+function setElementHidden(id, hidden) {
+  const element = document.getElementById(id);
+  if (!element) {
+    return;
+  }
+
+  element.hidden = Boolean(hidden);
 }
 
 function formatSpeedMultiplier(value) {

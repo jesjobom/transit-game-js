@@ -13,8 +13,8 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 39`
-- **Build tag:** `s39-collapsible-panels`
+- **Versão visível da app:** `Sprint 40`
+- **Build tag:** `s40-contextual-visibility`
 - **Último estado validado:** `72/72` testes passando
 
 ### Sprints de performance já concluídas e publicadas
@@ -28,11 +28,13 @@ A versão atual do projeto fica oficialmente fechada como **V1**.
 ### Sprints de simplificação já concluídas e publicadas
 - **Sprint 38** — limpeza estrutural da UI principal, remoção de ruído dev e resumo lateral curto por padrão
 - **Sprint 39** — painéis colapsáveis para Advanced, Replay, Diagnostics e Benchmark Lab
+- **Sprint 40** — visibilidade contextual por modo, replay, comparação e inspeção
 
 ### Manutenção recente validada
 - correção para invalidar/recalcular `world.report` a cada avanço real de tick, evitando métricas live congeladas
 - renderer incremental agora evita reescrever o grid quando só a animação dos veículos mudou e o estado dinâmico das células permaneceu igual
 - controles principais agora aparecem primeiro e a lateral padrão foi reduzida para um resumo curto
+- a UI agora esconde blocos irrelevantes conforme modo, tipo de mapa, estado de replay, histórico disponível e seleção ativa
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.

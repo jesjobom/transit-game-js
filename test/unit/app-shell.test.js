@@ -18,6 +18,7 @@ function createElement(id) {
     },
     dataset: {},
     disabled: false,
+    hidden: false,
     onclick: null,
     onchange: null,
     oninput: null,
@@ -63,7 +64,13 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['benchmark-history-list', createElement('benchmark-history-list')],
     ['benchmark-compare-summary', createElement('benchmark-compare-summary')],
     ['cell-inspection-summary', createElement('cell-inspection-summary')],
-    ['simulation-root', createElement('simulation-root')]
+    ['simulation-root', createElement('simulation-root')],
+    ['benchmark-controls', createElement('benchmark-controls')],
+    ['procedural-controls', createElement('procedural-controls')],
+    ['replay-controls-detail', createElement('replay-controls-detail')],
+    ['benchmark-compare-controls', createElement('benchmark-compare-controls')],
+    ['benchmark-compare-section', createElement('benchmark-compare-section')],
+    ['cell-inspector-section', createElement('cell-inspector-section')]
   ]);
 
   const originalDocument = globalThis.document;
@@ -262,6 +269,34 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-procedural-signal-rate').value, '0.5');
     assert.equal(elements.get('control-overlay-mode').value, 'flow');
     assert.equal(elements.get('rule-free-right-on-red').checked, true);
+
+    appShell.syncUiVisibility({
+      config: { mode: 'sandbox', mapMode: 'fixed' },
+      replayState: { enabled: false },
+      historySnapshots: [{ id: 'only-run' }],
+      selectedCell: null,
+      selectedVehicleId: null
+    });
+    assert.equal(elements.get('benchmark-controls').hidden, true);
+    assert.equal(elements.get('procedural-controls').hidden, true);
+    assert.equal(elements.get('replay-controls-detail').hidden, true);
+    assert.equal(elements.get('benchmark-compare-controls').hidden, true);
+    assert.equal(elements.get('benchmark-compare-section').hidden, true);
+    assert.equal(elements.get('cell-inspector-section').hidden, true);
+
+    appShell.syncUiVisibility({
+      config: { mode: 'benchmark', mapMode: 'procedural' },
+      replayState: { enabled: true },
+      historySnapshots: [{ id: 'run-a' }, { id: 'run-b' }],
+      selectedCell: { x: 7, y: 3 },
+      selectedVehicleId: 'vehicle-9'
+    });
+    assert.equal(elements.get('benchmark-controls').hidden, false);
+    assert.equal(elements.get('procedural-controls').hidden, false);
+    assert.equal(elements.get('replay-controls-detail').hidden, false);
+    assert.equal(elements.get('benchmark-compare-controls').hidden, false);
+    assert.equal(elements.get('benchmark-compare-section').hidden, false);
+    assert.equal(elements.get('cell-inspector-section').hidden, false);
   } finally {
     globalThis.document = originalDocument;
   }

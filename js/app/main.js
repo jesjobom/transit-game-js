@@ -222,6 +222,7 @@ function boot() {
   appShell.syncSimulationConfig(runtimeConfig);
   appShell.setSpeedState(speedMultiplier, getTickIntervalMs());
   renderBenchmarkHistory();
+  syncUiVisibility();
   render();
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', handleWindowResize);
@@ -247,6 +248,7 @@ function boot() {
     };
     appShell.syncScenarioCatalog(getScenarioCatalog(runtimeConfig.importedScenarios), runtimeConfig.scenarioId);
     appShell.syncSimulationConfig(runtimeConfig);
+    syncUiVisibility();
     render();
     if (runtimeConfig.mode === 'benchmark') {
       startLoop();
@@ -415,6 +417,7 @@ function boot() {
       appShell.renderDiagnostics(renderThrottleCache.diagnostics);
       appShell.renderCellInspection(renderThrottleCache.inspectionLines);
       appShell.syncReplayState(state.world.replay.frames, replayState);
+      syncUiVisibility();
     });
   }
 
@@ -446,6 +449,17 @@ function boot() {
       '---',
       ...buildBenchmarkComparisonLines(comparison)
     ]);
+    syncUiVisibility();
+  }
+
+  function syncUiVisibility() {
+    appShell.syncUiVisibility({
+      config: runtimeConfig,
+      replayState,
+      historySnapshots,
+      selectedCell,
+      selectedVehicleId
+    });
   }
 
   function getTickIntervalMs() {
