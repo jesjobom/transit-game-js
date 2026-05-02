@@ -24,6 +24,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onProceduralHeightChange,
       onProceduralDensityChange,
       onProceduralSignalRateChange,
+      onLightPhaseDurationChange,
       onImportScenario,
       onHistorySelectionChange,
       onOverlayModeChange,
@@ -50,6 +51,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindNumberControl('control-procedural-height', onProceduralHeightChange);
       bindNumberControl('control-procedural-density', onProceduralDensityChange);
       bindNumberControl('control-procedural-signal-rate', onProceduralSignalRateChange);
+      bindNumberControl('control-light-phase-duration', onLightPhaseDurationChange);
       bindSelectControl('control-overlay-mode', onOverlayModeChange);
       bindFileControl('control-scenario-import', onImportScenario);
       bindHistoryCompareControls(onHistorySelectionChange);
@@ -108,6 +110,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       syncNumericValue('control-procedural-height', config.procedural?.height ?? 13);
       syncNumericValue('control-procedural-density', config.procedural?.density ?? 0.6);
       syncNumericValue('control-procedural-signal-rate', config.procedural?.signalRate ?? 0.45);
+      syncNumericValue('control-light-phase-duration', config.lightPhaseDurationTicks ?? 5);
       syncSelectValue('control-overlay-mode', config.overlayMode ?? 'off');
       syncCheckboxValue('control-replay-enabled', config.replayEnabled !== false);
     },

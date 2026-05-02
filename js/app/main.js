@@ -11,8 +11,7 @@ import {
   buildLightPhaseSummary,
   buildLiveMetrics,
   buildPrimarySummaryMetrics,
-  buildRecentEventSummary,
-  buildSimulationSummary
+  buildRecentEventSummary
 } from './ui/view-model.js';
 import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
@@ -119,7 +118,7 @@ function boot() {
       applyRuntimeConfig();
     },
     onSpawnRateChange(nextSpawnRate) {
-      runtimeConfig.spawnRate = Math.max(0, Math.min(1, Number(nextSpawnRate)));
+      runtimeConfig.spawnRate = Math.max(0, Math.min(8, Number(nextSpawnRate)));
       applyRuntimeConfig();
     },
     onScenarioChange(nextScenarioId) {
@@ -144,6 +143,10 @@ function boot() {
     },
     onProceduralSignalRateChange(nextSignalRate) {
       runtimeConfig.procedural.signalRate = Math.max(0, Math.min(1, Number(nextSignalRate)));
+      applyRuntimeConfig();
+    },
+    onLightPhaseDurationChange(nextDuration) {
+      runtimeConfig.lightPhaseDurationTicks = Math.max(2, Math.min(20, Math.round(nextDuration)));
       applyRuntimeConfig();
     },
     onHistorySelectionChange(leftId, rightId) {
@@ -225,7 +228,7 @@ function boot() {
         }
         if (parsed.scenario.benchmarkDefaults) {
           runtimeConfig.benchmarkDurationTicks = parsed.scenario.benchmarkDefaults.durationTicks;
-          runtimeConfig.spawnRate = parsed.scenario.benchmarkDefaults.spawnRate;
+          runtimeConfig.spawnRate = Math.max(0, Math.min(8, Number(parsed.scenario.benchmarkDefaults.spawnRate ?? runtimeConfig.spawnRate)));
         }
         applyRuntimeConfig();
       } catch (error) {
@@ -397,11 +400,6 @@ function boot() {
       renderThrottleCache.overlayTick = viewWorld.tick;
     }
 
-    if (shouldRefreshAtTick(viewWorld.tick, renderThrottleCache.summaryTick, DIAGNOSTIC_REFRESH_INTERVAL_TICKS, forceUiRefresh)) {
-      renderThrottleCache.summaryLines = buildSimulationSummary(viewWorld, benchmark.summarize(viewReport));
-      renderThrottleCache.summaryTick = viewWorld.tick;
-    }
-
     if (diagnosticsVisible) {
       if (shouldRefreshAtTick(viewWorld.tick, renderThrottleCache.diagnosticsTick, DIAGNOSTIC_REFRESH_INTERVAL_TICKS, forceUiRefresh)) {
         renderThrottleCache.diagnostics = {
@@ -420,7 +418,6 @@ function boot() {
 
     performanceTracker.measure('render', () => {
       renderer.renderWorld(viewWorld, {
-        summaryLines: renderThrottleCache.summaryLines,
         animationDurationMs: getAnimationDurationMs(tickIntervalMs),
         previousWorld,
         motionProgress,
@@ -539,6 +536,7 @@ function createRuntimeConfig() {
       signalRate: 0.45
     },
     overlayMode: 'off',
+    lightPhaseDurationTicks: 5,
     rules: {
       freeRightOnRed: false,
       fourWayStop: false,

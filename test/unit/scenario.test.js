@@ -25,6 +25,7 @@ test('buildWorldOptionsFromScenario applies runtime mode, sandbox vehicles, and 
     mode: 'sandbox',
     benchmarkDurationTicks: 60,
     spawnRate: 0.55,
+    lightPhaseDurationTicks: 7,
     rules: {
       freeRightOnRed: false,
       fourWayStop: false,
@@ -35,11 +36,15 @@ test('buildWorldOptionsFromScenario applies runtime mode, sandbox vehicles, and 
   assert.equal(sandboxWorld.benchmark.enabled, false);
   assert.equal(sandboxWorld.benchmark.mode, 'sandbox');
   assert.equal(sandboxWorld.vehicles.length, 3);
+  assert.equal(sandboxWorld.maxVehicles, 240);
+  assert.equal(sandboxWorld.lightsConfig.phaseDurationTicks, 7);
+  assert.ok(sandboxWorld.lights.every((light) => light.remainingTicks === 7));
 
   const benchmarkWorld = buildWorldOptionsFromScenario(scenario, {
     mode: 'benchmark',
     benchmarkDurationTicks: 90,
-    spawnRate: 0.4,
+    spawnRate: 2.5,
+    lightPhaseDurationTicks: 9,
     mapMode: 'procedural',
     procedural: {
       width: 17,
@@ -56,7 +61,12 @@ test('buildWorldOptionsFromScenario applies runtime mode, sandbox vehicles, and 
 
   assert.equal(benchmarkWorld.benchmark.enabled, true);
   assert.equal(benchmarkWorld.benchmark.durationTicks, 90);
-  assert.equal(benchmarkWorld.benchmark.spawnRate, 0.4);
+  assert.equal(benchmarkWorld.benchmark.spawnRate, 2.5);
+   assert.equal(benchmarkWorld.mapMode, 'procedural');
+   assert.equal(benchmarkWorld.procedural.width, 17);
+   assert.equal(benchmarkWorld.vehicles.length, 0);
+   assert.equal(benchmarkWorld.rules.freeRightOnRed, true);
++  assert.equal(benchmarkWorld.lightsConfig.phaseDurationTicks, 9);
   assert.equal(benchmarkWorld.mapMode, 'procedural');
   assert.equal(benchmarkWorld.procedural.width, 17);
   assert.equal(benchmarkWorld.vehicles.length, 0);

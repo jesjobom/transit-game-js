@@ -30,8 +30,6 @@ test('createRenderThrottleCache starts empty and reusable', () => {
   assert.deepEqual(createRenderThrottleCache(), {
     overlayTick: -1,
     overlayMetrics: null,
-    summaryTick: -1,
-    summaryLines: [],
     diagnosticsTick: -1,
     diagnostics: {
       metrics: [],

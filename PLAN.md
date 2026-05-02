@@ -9,9 +9,17 @@ Plano de simplificação de UX e redução de overhead do **transit-game-js**.
 - [x] Sprint 41 — Diagnostics Gating
 - [x] Sprint 42 — Optional Replay
 - [x] Sprint 43 — UX Polish
+- [x] Sprint 44 — Traffic UX Tuning
 
 As sprints de performance anteriores já foram concluídas.
 Agora o foco passa a ser **limpar a experiência**, separar melhor o que é fluxo principal versus laboratório/debug, e **parar de pagar custo de coleta/renderização quando a informação nem está visível**.
+
+### Fechado na Sprint 44
+- curva de veículos recalibrada para alinhar melhor início/fim da animação de conversão
+- spawn rate expandido para múltiplas tentativas por tick, permitindo stress real do mapa
+- resumo redundante removido de baixo do mapa
+- semáforos ficaram mais lentos por padrão e ganharam controle explícito de duração de fase
+- controles principais/avançados/replay agora têm tooltips explicando impacto na simulação
 
 ---
 

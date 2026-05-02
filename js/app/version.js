@@ -1,2 +1,2 @@
-export const APP_VERSION = 'Sprint 43';
-export const BUILD_TAG = 's43-ux-polish';
+export const APP_VERSION = 'Sprint 44';
+export const BUILD_TAG = 's44-traffic-ux-tuning';

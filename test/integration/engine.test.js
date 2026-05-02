@@ -62,6 +62,25 @@ test('engine spawns vehicles deterministically when benchmark mode is enabled', 
   assert.equal(world.events.at(-1).type, 'vehicleSpawned');
 });
 
+test('engine supports spawn rates above one vehicle attempt per tick for stress runs', () => {
+  const world = createWorldState({
+    seed: 7,
+    maxVehicles: 20,
+    benchmark: {
+      enabled: true,
+      mode: 'benchmark',
+      spawnRate: 2.5,
+      durationTicks: 20
+    }
+  });
+  const engine = createEngine(world);
+
+  engine.runTicks(3);
+
+  assert.ok(world.metrics.spawnedVehicles > 3);
+  assert.ok(world.entities.vehicles.length > 3);
+});
+
 test('engine moves vehicles forward and completes trips at map exits', () => {
   const world = createWorldState({
     vehicles: [
@@ -107,6 +126,31 @@ test('engine blocks movement that violates road direction on a custom one-way ma
   assert.equal(world.metrics.blockedMoves, 1);
   assert.equal(world.events[0].type, 'vehicleBlocked');
   assert.equal(world.events[0].payload.reason, 'invalid-direction');
+});
+
+test('engine keeps light phases longer when configured with slower defaults', () => {
+  const world = createWorldState({
+    lightsConfig: { phaseDurationTicks: 5 },
+    lights: [
+      {
+        id: 'main-crossing',
+        phaseIndex: 0,
+        remainingTicks: 5,
+        phases: [
+          { name: 'north-south', durationTicks: 5, allowedDirections: ['north', 'south'] },
+          { name: 'east-west', durationTicks: 5, allowedDirections: ['east', 'west'] }
+        ]
+      }
+    ]
+  });
+  const engine = createEngine(world);
+  const initialPhaseIndex = world.entities.lights[0].phaseIndex;
+
+  engine.runTicks(4);
+  assert.equal(world.entities.lights[0].phaseIndex, initialPhaseIndex);
+
+  engine.tick();
+  assert.notEqual(world.entities.lights[0].phaseIndex, initialPhaseIndex);
 });
 
 test('engine respects traffic light direction gating at controlled intersections', () => {

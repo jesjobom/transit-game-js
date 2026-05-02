@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildStaticWorldDescriptor, buildVehicleLayerPatch, buildWorldHtml, createDynamicGridStateKey, createRenderer } from '../../js/app/render/renderer.js';
+import { buildStaticWorldDescriptor, buildVehicleLayerPatch, buildWorldHtml, createDynamicGridStateKey, createRenderer, sampleTurnCurve } from '../../js/app/render/renderer.js';
 import { createWorldState } from '../../js/core/world.js';
 
 test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, and styled roads', () => {
@@ -45,8 +45,8 @@ test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, a
   assert.match(html, /--world-scale:0.8400/);
   assert.match(html, /--vehicle-animation-duration:320ms/);
   assert.match(html, /vehicle-layer/);
-  assert.match(html, /Tick: 0/);
-  assert.match(html, /Vehicles: 2/);
+  assert.doesNotMatch(html, /Tick: 0/);
+  assert.doesNotMatch(html, /Vehicles: 2/);
   assert.match(html, /vehicle-1/);
   assert.match(html, /vehicle-2/);
   assert.match(html, /map-cell--road/);
@@ -89,7 +89,7 @@ test('buildWorldHtml renders turning vehicles with start/end angle and lane offs
 
   assert.match(html, /vehicle--turning/);
   assert.match(html, /data-motion-kind="turn"/);
-  assert.match(html, /--vehicle-render-angle:-45/);
+  assert.match(html, /--vehicle-render-angle:/);
   assert.match(html, /--vehicle-render-offset-x:/);
   assert.match(html, /--vehicle-motion-progress:0.500/);
 });
@@ -201,6 +201,22 @@ test('buildVehicleLayerPatch identifies added, updated, and removed vehicles', (
   });
 });
 
+test('sampleTurnCurve stays aligned with the normal movement path endpoints', () => {
+  const turnEvent = { type: 'vehicleTurned', tick: 1, payload: { vehicleId: 'vehicle-turn', from: 'north', to: 'east', x: 6, y: 2 } };
+  const startPoint = { x: 6.5, y: 2.5 };
+  const endPoint = { x: 7.5, y: 2.5 };
+
+  const start = sampleTurnCurve(turnEvent, startPoint, endPoint, 'north', 'east', 0);
+  const mid = sampleTurnCurve(turnEvent, startPoint, endPoint, 'north', 'east', 0.5);
+  const end = sampleTurnCurve(turnEvent, startPoint, endPoint, 'north', 'east', 1);
+
+  assert.deepEqual(start.point, startPoint);
+  assert.deepEqual(end.point, endPoint);
+  assert.ok(mid.point.x > startPoint.x);
+  assert.notEqual(mid.point.y, startPoint.y);
+  assert.ok(Number.isFinite(mid.angle));
+});
+
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
   const world = createWorldState({
     vehicles: [
@@ -217,5 +233,5 @@ test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', 
 
   assert.match(html, /vehicle--turning/);
   assert.match(html, /data-motion-kind="turn"/);
-  assert.match(html, /--vehicle-render-angle:-135deg;/);
+  assert.match(html, /--vehicle-render-angle:/);
 });

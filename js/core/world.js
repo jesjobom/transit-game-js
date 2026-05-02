@@ -26,6 +26,10 @@ const DEFAULT_REPLAY = {
   captureEveryTicks: 1
 };
 
+const DEFAULT_LIGHTS = {
+  phaseDurationTicks: 5
+};
+
 export function createWorldState(options = {}) {
   const simulationSeed = normalizeSeed(options.seed);
   const mapSeed = normalizeSeed(options.mapSeed ?? simulationSeed);
@@ -52,7 +56,7 @@ export function createWorldState(options = {}) {
     status: 'idle',
     config: {
       tickRate: options.tickRate ?? 10,
-      maxVehicles: options.maxVehicles ?? 25,
+      maxVehicles: options.maxVehicles ?? 240,
       routing: {
         ...DEFAULT_ROUTING,
         ...(options.routing || {})
@@ -68,11 +72,15 @@ export function createWorldState(options = {}) {
       replay: {
         ...DEFAULT_REPLAY,
         ...(options.replay || {})
+      },
+      lights: {
+        ...DEFAULT_LIGHTS,
+        ...(options.lightsConfig || {})
       }
     },
     entities: {
       vehicles: Array.isArray(options.vehicles) ? structuredClone(options.vehicles).map((vehicle) => hydrateVehicle(worldLike(simulationSeed), vehicle)) : [],
-      lights: createLightEntitiesForMap(map, options.lights, options.mapMode)
+      lights: createLightEntitiesForMap(map, options.lights, options.mapMode, options.lightsConfig?.phaseDurationTicks)
     },
     metrics: {
       completedTrips: 0,
@@ -240,8 +248,18 @@ function createCellMetricEntry() {
   };
 }
 
-function createLightEntitiesForMap(map, lights = [], mapMode) {
-  const baseLights = Array.isArray(lights) ? structuredClone(lights) : [];
+function createLightEntitiesForMap(map, lights = [], mapMode, phaseDurationTicks = 5) {
+  const normalizedDuration = Math.max(2, Math.min(20, Math.round(phaseDurationTicks)));
+  const baseLights = Array.isArray(lights)
+    ? structuredClone(lights).map((light) => ({
+        ...light,
+        remainingTicks: normalizedDuration,
+        phases: (light.phases ?? []).map((phase) => ({
+          ...phase,
+          durationTicks: normalizedDuration
+        }))
+      }))
+    : [];
 
   if (mapMode !== 'procedural') {
     return baseLights;
@@ -257,10 +275,10 @@ function createLightEntitiesForMap(map, lights = [], mapMode) {
     byId.set(intersection.lightId, {
       id: intersection.lightId,
       phaseIndex: 0,
-      remainingTicks: 3,
+      remainingTicks: normalizedDuration,
       phases: [
-        { name: 'north-south', durationTicks: 3, allowedDirections: ['north', 'south'] },
-        { name: 'east-west', durationTicks: 3, allowedDirections: ['east', 'west'] }
+        { name: 'north-south', durationTicks: normalizedDuration, allowedDirections: ['north', 'south'] },
+        { name: 'east-west', durationTicks: normalizedDuration, allowedDirections: ['east', 'west'] }
       ]
     });
   }

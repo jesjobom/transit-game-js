@@ -55,6 +55,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['control-procedural-height', Object.assign(createElement('control-procedural-height'), { value: '13' })],
     ['control-procedural-density', Object.assign(createElement('control-procedural-density'), { value: '0.6' })],
     ['control-procedural-signal-rate', Object.assign(createElement('control-procedural-signal-rate'), { value: '0.45' })],
+    ['control-light-phase-duration', Object.assign(createElement('control-light-phase-duration'), { value: '5' })],
     ['control-overlay-mode', Object.assign(createElement('control-overlay-mode'), { value: 'off' })],
     ['control-scenario-import', Object.assign(createElement('control-scenario-import'), { files: [] })],
     ['control-history-a', Object.assign(createElement('control-history-a'), { value: '' })],
@@ -99,6 +100,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     const proceduralHeightCalls = [];
     const proceduralDensityCalls = [];
     const proceduralSignalCalls = [];
+    const lightPhaseDurationCalls = [];
     const selectedCells = [];
     let replayToggleCalls = 0;
     let replayPlayPauseCalls = 0;
@@ -143,6 +145,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       onProceduralSignalRateChange(value) {
         proceduralSignalCalls.push(value);
       },
+      onLightPhaseDurationChange(value) {
+        lightPhaseDurationCalls.push(value);
+      },
       onHistorySelectionChange(leftId, rightId) {
         historySelections.push([leftId, rightId]);
       },
@@ -178,6 +183,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.deepEqual(proceduralHeightCalls, [13]);
     assert.deepEqual(proceduralDensityCalls, [0.6]);
     assert.deepEqual(proceduralSignalCalls, [0.45]);
+    assert.deepEqual(lightPhaseDurationCalls, [5]);
     assert.deepEqual(overlayModes, ['off']);
     assert.deepEqual(ruleCalls, [
       ['freeRightOnRed', false],
@@ -273,6 +279,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
         density: 0.7,
         signalRate: 0.5
       },
+      lightPhaseDurationTicks: 9,
       overlayMode: 'flow',
       replayEnabled: false,
       rules: {
@@ -289,6 +296,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-procedural-height').value, '15');
     assert.equal(elements.get('control-procedural-density').value, '0.7');
     assert.equal(elements.get('control-procedural-signal-rate').value, '0.5');
+    assert.equal(elements.get('control-light-phase-duration').value, '9');
     assert.equal(elements.get('control-overlay-mode').value, 'flow');
     assert.equal(elements.get('control-replay-enabled').checked, false);
     assert.equal(elements.get('rule-free-right-on-red').checked, true);

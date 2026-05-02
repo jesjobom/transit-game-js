@@ -25,8 +25,6 @@ export function createRenderThrottleCache() {
   return {
     overlayTick: -1,
     overlayMetrics: null,
-    summaryTick: -1,
-    summaryLines: [],
     diagnosticsTick: -1,
     diagnostics: {
       metrics: [],

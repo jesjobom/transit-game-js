@@ -181,9 +181,6 @@ export function buildWorldHtml(world, options = {}) {
           </div>
         </div>
       </div>
-      <div class="world-summary">
-        ${buildWorldSummaryMarkup(options.summaryLines || [])}
-      </div>
     </div>
   `;
 }
@@ -201,10 +198,6 @@ function buildWorldShellStyle(map, options = {}) {
 function buildWorldGridMarkup(world, staticWorldDescriptor, options = {}) {
   const lightsById = new Map(world.entities.lights.map((light) => [light.id, light]));
   return staticWorldDescriptor.cells.map((cell) => renderWorldCell(world, cell, lightsById, options)).join('');
-}
-
-function buildWorldSummaryMarkup(summaryLines = []) {
-  return summaryLines.map((line) => `<div>${escapeHtml(line)}</div>`).join('');
 }
 
 function buildVehicleSpriteMarkup(world, map, options = {}) {
@@ -241,7 +234,6 @@ function captureLiveDomState(rootElement) {
     rootElement,
     gridShell: rootElement.querySelector('.world-grid-shell'),
     grid: rootElement.querySelector('.world-grid'),
-    summary: rootElement.querySelector('.world-summary'),
     trailLayer: rootElement.querySelector('.vehicle-trail-layer'),
     spriteLayer: rootElement.querySelector('.vehicle-sprite-layer'),
     lastGridStateKey: '',
@@ -252,7 +244,7 @@ function captureLiveDomState(rootElement) {
 }
 
 function patchLiveWorldShell(liveDomState, world, options = {}) {
-  if (!liveDomState?.grid || !liveDomState?.summary || !liveDomState?.gridShell || !liveDomState?.trailLayer || !liveDomState?.spriteLayer) {
+  if (!liveDomState?.grid || !liveDomState?.gridShell || !liveDomState?.trailLayer || !liveDomState?.spriteLayer) {
     return;
   }
 
@@ -264,7 +256,6 @@ function patchLiveWorldShell(liveDomState, world, options = {}) {
     liveDomState.grid.innerHTML = buildWorldGridMarkup(world, staticWorldDescriptor, options);
     liveDomState.lastGridStateKey = nextGridStateKey;
   }
-  liveDomState.summary.innerHTML = buildWorldSummaryMarkup(options.summaryLines || []);
   liveDomState.trailLayer.innerHTML = renderSelectedVehicleTrail(world, world.map, options);
   patchVehicleSpriteLayer(liveDomState, world, options);
 }
@@ -749,40 +740,19 @@ function shapeStraightMotionProgress(progress, shouldSlowDown) {
   return Math.min(0.94, eased * 0.94);
 }
 
-function sampleTurnCurve(turnEvent, startPoint, endPoint, fromDirection, toDirection, progress) {
+export function sampleTurnCurve(turnEvent, startPoint, endPoint, fromDirection, toDirection, progress) {
   const intersectionPoint = {
     x: (turnEvent?.payload?.x ?? startPoint.x) + 0.5,
     y: (turnEvent?.payload?.y ?? startPoint.y) + 0.5
   };
-  const entryPoint = getIntersectionEntryPoint(intersectionPoint, fromDirection);
-  const exitPoint = getIntersectionExitPoint(intersectionPoint, toDirection);
-  const preArcRatio = 0.1;
-  const postArcRatio = 0.1;
+  const fromVector = getDirectionVector(fromDirection);
+  const toVector = getDirectionVector(toDirection);
+  const controlPoint = {
+    x: intersectionPoint.x + (toVector.x - fromVector.x) * 0.35,
+    y: intersectionPoint.y + (toVector.y - fromVector.y) * 0.35
+  };
 
-  if (progress <= preArcRatio) {
-    const stageProgress = progress / preArcRatio;
-    const point = lerpPoint(startPoint, entryPoint, stageProgress);
-    const tangent = subtractPoint(entryPoint, startPoint);
-
-    return {
-      point,
-      angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
-    };
-  }
-
-  if (progress >= 1 - postArcRatio) {
-    const stageProgress = (progress - (1 - postArcRatio)) / postArcRatio;
-    const point = lerpPoint(exitPoint, endPoint, stageProgress);
-    const tangent = subtractPoint(endPoint, exitPoint);
-
-    return {
-      point,
-      angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
-    };
-  }
-
-  const arcProgress = (progress - preArcRatio) / (1 - preArcRatio - postArcRatio);
-  return sampleIntersectionTurnArc(intersectionPoint, fromDirection, toDirection, arcProgress);
+  return sampleQuadraticBezier(startPoint, controlPoint, endPoint, progress);
 }
 
 function getIntersectionEntryPoint(intersectionCenter, direction) {
@@ -801,30 +771,19 @@ function getIntersectionExitPoint(intersectionCenter, direction) {
   };
 }
 
-function sampleIntersectionTurnArc(intersectionCenter, fromDirection, toDirection, progress) {
-  const fromVector = getDirectionVector(fromDirection);
-  const toVector = getDirectionVector(toDirection);
-  const startPoint = getIntersectionEntryPoint(intersectionCenter, fromDirection);
-  const endPoint = getIntersectionExitPoint(intersectionCenter, toDirection);
-  const arcCenter = {
-    x: intersectionCenter.x + (toVector.x - fromVector.x) * 0.5,
-    y: intersectionCenter.y + (toVector.y - fromVector.y) * 0.5
+function sampleQuadraticBezier(startPoint, controlPoint, endPoint, progress) {
+  const inverse = 1 - progress;
+  const point = {
+    x: inverse * inverse * startPoint.x + 2 * inverse * progress * controlPoint.x + progress * progress * endPoint.x,
+    y: inverse * inverse * startPoint.y + 2 * inverse * progress * controlPoint.y + progress * progress * endPoint.y
   };
-  const startAngle = Math.atan2(startPoint.y - arcCenter.y, startPoint.x - arcCenter.x);
-  const endAngle = Math.atan2(endPoint.y - arcCenter.y, endPoint.x - arcCenter.x);
-  const delta = normalizeAngleDeltaRadians(endAngle - startAngle);
-  const angle = startAngle + delta * progress;
-  const radius = 0.5;
   const tangent = {
-    x: -Math.sin(angle) * delta,
-    y: Math.cos(angle) * delta
+    x: 2 * inverse * (controlPoint.x - startPoint.x) + 2 * progress * (endPoint.x - controlPoint.x),
+    y: 2 * inverse * (controlPoint.y - startPoint.y) + 2 * progress * (endPoint.y - controlPoint.y)
   };
 
   return {
-    point: {
-      x: arcCenter.x + Math.cos(angle) * radius,
-      y: arcCenter.y + Math.sin(angle) * radius
-    },
+    point,
     angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
   };
 }
@@ -836,16 +795,6 @@ function getDirectionVector(direction) {
     south: { x: 0, y: 1 },
     west: { x: -1, y: 0 }
   }[direction] ?? { x: 0, y: 0 };
-}
-
-function normalizeAngleDeltaRadians(delta) {
-  let normalized = ((delta + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
-
-  if (normalized === -Math.PI) {
-    normalized = Math.PI;
-  }
-
-  return normalized;
 }
 
 function toPercentPoint(point, map) {

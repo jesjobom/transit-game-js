@@ -24,14 +24,14 @@
             <div class="control-field__header">
               <label for="control-scenario">Scenario preset</label>
             </div>
-            <select id="control-scenario"></select>
+            <select id="control-scenario" title="Choose the traffic scenario, map, and baseline setup for the run."></select>
           </div>
           <div class="control-grid control-grid--two-up">
             <div class="control-field">
               <div class="control-field__header">
                 <label for="control-mode">Simulation mode</label>
               </div>
-              <select id="control-mode">
+              <select id="control-mode" title="Benchmark is for reproducible stress runs. Sandbox is for manual exploration.">
                 <option value="benchmark">Benchmark</option>
                 <option value="sandbox">Sandbox</option>
               </select>
@@ -40,7 +40,7 @@
               <div class="control-field__header">
                 <label for="control-overlay-mode">Overlay</label>
               </div>
-              <select id="control-overlay-mode">
+              <select id="control-overlay-mode" title="Show extra map overlays for congestion, flow, or deadlock pressure.">
                 <option value="off">Off</option>
                 <option value="congestion">Congestion</option>
                 <option value="flow">Flow</option>
@@ -53,7 +53,7 @@
               <label for="control-speed">Simulation speed</label>
               <span id="control-speed-value" class="control-value">0.75×</span>
             </div>
-            <input id="control-speed" type="range" min="0.5" max="2" step="0.25" value="0.75" />
+            <input id="control-speed" type="range" min="0.5" max="2" step="0.25" value="0.75" title="Change how quickly simulation ticks advance. Higher is faster." />
             <div class="control-scale">
               <span>0.5×</span>
               <span>1.0×</span>
@@ -61,21 +61,21 @@
             </div>
           </div>
           <div class="control-buttons">
-            <button id="control-play-pause" type="button">Pause</button>
-            <button id="control-reset" type="button">Reset</button>
+            <button id="control-play-pause" type="button" title="Pause or resume the simulation.">Pause</button>
+            <button id="control-reset" type="button" title="Restart the current scenario with the current settings.">Reset</button>
           </div>
 
           <details id="panel-advanced" class="tool-panel">
             <summary><span>Advanced</span><small>maps, rules, benchmark tuning</small></summary>
             <div class="tool-panel__body">
               <div class="control-buttons control-buttons--secondary">
-                <button id="control-step" type="button">+1 Tick</button>
+                <button id="control-step" type="button" title="Advance the simulation by exactly one tick.">+1 Tick</button>
               </div>
               <div class="control-field">
                 <div class="control-field__header">
                   <label for="control-map-mode">Map generator</label>
                 </div>
-                <select id="control-map-mode">
+                <select id="control-map-mode" title="Switch between the built-in fixed map and a generated procedural one.">
                   <option value="fixed">Fixed</option>
                   <option value="procedural">Procedural</option>
                 </select>
@@ -85,25 +85,33 @@
                   <div class="control-field__header">
                     <label for="control-procedural-width">Proc width</label>
                   </div>
-                  <input id="control-procedural-width" type="number" min="9" max="25" step="2" value="15" />
+                  <input id="control-procedural-width" type="number" min="9" max="25" step="2" value="15" title="Number of columns in the generated map. Larger maps have more room for traffic." />
                 </div>
                 <div class="control-field">
                   <div class="control-field__header">
                     <label for="control-procedural-height">Proc height</label>
                   </div>
-                  <input id="control-procedural-height" type="number" min="9" max="25" step="2" value="13" />
+                  <input id="control-procedural-height" type="number" min="9" max="25" step="2" value="13" title="Number of rows in the generated map. Larger maps have more room for traffic." />
                 </div>
                 <div class="control-field">
                   <div class="control-field__header">
                     <label for="control-procedural-density">Road density</label>
                   </div>
-                  <input id="control-procedural-density" type="number" min="0.3" max="0.9" step="0.05" value="0.6" />
+                  <input id="control-procedural-density" type="number" min="0.3" max="0.9" step="0.05" value="0.6" title="How much of the generated map becomes road. Higher density means more roads and intersections." />
                 </div>
                 <div class="control-field">
                   <div class="control-field__header">
                     <label for="control-procedural-signal-rate">Signal rate</label>
                   </div>
-                  <input id="control-procedural-signal-rate" type="number" min="0" max="1" step="0.05" value="0.45" />
+                  <input id="control-procedural-signal-rate" type="number" min="0" max="1" step="0.05" value="0.45" title="Chance that a generated intersection receives a traffic light." />
+                </div>
+              </div>
+              <div class="control-grid control-grid--two-up">
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-light-phase-duration">Light phase ticks</label>
+                  </div>
+                  <input id="control-light-phase-duration" type="number" min="2" max="20" step="1" value="5" title="How many ticks each traffic-light phase lasts before switching. Higher values make lights slower." />
                 </div>
               </div>
               <div id="benchmark-controls" class="control-grid control-grid--two-up">
@@ -111,26 +119,26 @@
                   <div class="control-field__header">
                     <label for="control-benchmark-duration">Benchmark duration</label>
                   </div>
-                  <input id="control-benchmark-duration" type="number" min="0" step="10" value="60" />
+                  <input id="control-benchmark-duration" type="number" min="0" step="10" value="60" title="Total benchmark duration in simulation ticks." />
                 </div>
                 <div class="control-field">
                   <div class="control-field__header">
                     <label for="control-spawn-rate">Spawn rate</label>
                   </div>
-                  <input id="control-spawn-rate" type="number" min="0" max="1" step="0.05" value="0.55" />
+                  <input id="control-spawn-rate" type="number" min="0" max="8" step="0.25" value="0.55" title="Vehicle spawn attempts per tick. Values above 1 can inject multiple vehicles per tick for stress tests." />
                 </div>
               </div>
               <fieldset class="control-group">
                 <legend>Active rules</legend>
-                <label class="toggle-row"><input id="rule-free-right-on-red" type="checkbox" /> Free right on red</label>
-                <label class="toggle-row"><input id="rule-four-way-stop" type="checkbox" /> Four-way stop</label>
-                <label class="toggle-row"><input id="rule-do-not-block-intersection" type="checkbox" /> Do not block intersection</label>
+                <label class="toggle-row" title="Allow right turns on red when the outgoing lane is safe."><input id="rule-free-right-on-red" type="checkbox" /> Free right on red</label>
+                <label class="toggle-row" title="Force uncontrolled intersections to behave like a four-way stop."><input id="rule-four-way-stop" type="checkbox" /> Four-way stop</label>
+                <label class="toggle-row" title="Prevent vehicles from entering intersections when they cannot clear the exit lane."><input id="rule-do-not-block-intersection" type="checkbox" /> Do not block intersection</label>
               </fieldset>
               <div class="control-field">
                 <div class="control-field__header">
                   <label for="control-scenario-import">Import scenario JSON</label>
                 </div>
-                <input id="control-scenario-import" type="file" accept="application/json,.json" />
+                <input id="control-scenario-import" type="file" accept="application/json,.json" title="Load a custom scenario definition from a JSON file." />
               </div>
             </div>
           </details>
@@ -139,19 +147,19 @@
             <summary><span>Replay</span><small>timeline and recording controls</small></summary>
             <div class="tool-panel__body">
               <div class="control-buttons control-buttons--secondary">
-                <button id="control-replay-toggle" type="button">Replay</button>
+                <button id="control-replay-toggle" type="button" title="Enter or leave replay mode using captured frames.">Replay</button>
               </div>
-              <label class="toggle-row"><input id="control-replay-enabled" type="checkbox" checked /> Record replay</label>
+              <label class="toggle-row" title="Store replay frames while the simulation runs. Turning this off reduces memory and serialization cost."><input id="control-replay-enabled" type="checkbox" checked /> Record replay</label>
               <div id="replay-controls-detail">
                 <div class="control-buttons control-buttons--secondary">
-                  <button id="control-replay-play-pause" type="button">Play Replay</button>
+                  <button id="control-replay-play-pause" type="button" title="Play or pause the captured replay timeline.">Play Replay</button>
                 </div>
                 <div class="control-field">
                   <div class="control-field__header">
                     <label for="control-replay-frame">Replay frame</label>
                     <span id="control-replay-frame-value" class="control-value">no replay</span>
                   </div>
-                  <input id="control-replay-frame" type="range" min="0" max="0" step="1" value="0" />
+                  <input id="control-replay-frame" type="range" min="0" max="0" step="1" value="0" title="Scrub through the captured replay frames manually." />
                 </div>
               </div>
             </div>

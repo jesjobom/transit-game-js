@@ -79,63 +79,65 @@ function maybeSpawnVehicle(world, tickContext = null) {
   const vehicles = world.entities.vehicles;
   const spawnPoints = world.map.spawnPoints;
 
-  if (!benchmark.enabled || benchmark.spawnRate <= 0 || spawnPoints.length === 0) {
+  if (!benchmark.enabled || benchmark.spawnRate <= 0 || spawnPoints.length === 0 || vehicles.length >= maxVehicles) {
     return;
   }
 
-  if (vehicles.length >= maxVehicles) {
-    return;
-  }
+  const wholeAttempts = Math.floor(benchmark.spawnRate);
+  const fractionalAttempt = benchmark.spawnRate - wholeAttempts;
+  const totalAttempts = wholeAttempts + (nextRandomFloat(world) < fractionalAttempt ? 1 : 0);
 
-  if (nextRandomFloat(world) > benchmark.spawnRate) {
-    return;
-  }
+  for (let attemptIndex = 0; attemptIndex < totalAttempts; attemptIndex += 1) {
+    if (vehicles.length >= maxVehicles) {
+      return;
+    }
 
-  const selectedSpawn = spawnPoints[Math.floor(nextRandomFloat(world) * spawnPoints.length)] ?? spawnPoints[0];
+    const selectedSpawn = spawnPoints[Math.floor(nextRandomFloat(world) * spawnPoints.length)] ?? spawnPoints[0];
 
-  if (!canTravelDirection(world.map, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction)) {
-    addWorldEvent(world, 'vehicleSpawnRejected', { spawnPointId: selectedSpawn.id, reason: 'invalid-direction' });
-    return;
-  }
+    if (!canTravelDirection(world.map, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction)) {
+      addWorldEvent(world, 'vehicleSpawnRejected', { spawnPointId: selectedSpawn.id, reason: 'invalid-direction' });
+      continue;
+    }
 
-  const spawnLaneIndex = pickSpawnLaneIndex(world, selectedSpawn);
-  const spawnBlockReason = getOccupancyBlockReason(world, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction, null, spawnLaneIndex, tickContext);
-  if (spawnBlockReason) {
-    world.metrics.blockedMoves += 1;
-    addWorldEvent(world, 'vehicleSpawnBlocked', {
-      spawnPointId: selectedSpawn.id,
-      reason: spawnBlockReason.reason,
-      blockingVehicleId: spawnBlockReason.blockingVehicleId,
-      laneKey: getLaneKey(selectedSpawn.direction, spawnLaneIndex),
-      laneIndex: spawnLaneIndex
+    const spawnLaneIndex = pickSpawnLaneIndex(world, selectedSpawn);
+    const spawnBlockReason = getOccupancyBlockReason(world, selectedSpawn.x, selectedSpawn.y, selectedSpawn.direction, null, spawnLaneIndex, tickContext);
+    if (spawnBlockReason) {
+      world.metrics.blockedMoves += 1;
+      addWorldEvent(world, 'vehicleSpawnBlocked', {
+        spawnPointId: selectedSpawn.id,
+        reason: spawnBlockReason.reason,
+        blockingVehicleId: spawnBlockReason.blockingVehicleId,
+        laneKey: getLaneKey(selectedSpawn.direction, spawnLaneIndex),
+        laneIndex: spawnLaneIndex
+      });
+      continue;
+    }
+
+    const vehicle = hydrateSpawnedVehicle(world, {
+      id: `vehicle-${world.metrics.spawnedVehicles + 1}`,
+      spawnedAtTick: world.tick,
+      x: selectedSpawn.x,
+      y: selectedSpawn.y,
+      direction: selectedSpawn.direction,
+      originDirection: selectedSpawn.direction,
+      laneIndex: spawnLaneIndex,
+      status: 'active',
+      color: createVehicleColor(world, `spawn-${world.metrics.spawnedVehicles + 1}`)
     });
-    return;
+
+    vehicles.push(vehicle);
+    registerVehicleOccupancy(tickContext?.occupancyIndex, world, vehicle);
+    world.metrics.spawnedVehicles += 1;
+    recordDirectionalMetric(world, vehicle.originDirection, 'spawned');
+    addWorldEvent(world, 'vehicleSpawned', {
+      vehicleId: vehicle.id,
+      x: vehicle.x,
+      y: vehicle.y,
+      direction: vehicle.direction,
+      spawnPointId: selectedSpawn.id,
+      laneKey: getLaneKey(vehicle.direction)
+    });
   }
-
-  const vehicle = hydrateSpawnedVehicle(world, {
-    id: `vehicle-${world.metrics.spawnedVehicles + 1}`,
-    spawnedAtTick: world.tick,
-    x: selectedSpawn.x,
-    y: selectedSpawn.y,
-    direction: selectedSpawn.direction,
-    originDirection: selectedSpawn.direction,
-    laneIndex: spawnLaneIndex,
-    status: 'active',
-    color: createVehicleColor(world, `spawn-${world.metrics.spawnedVehicles + 1}`)
-  });
-
-  vehicles.push(vehicle);
-  registerVehicleOccupancy(tickContext?.occupancyIndex, world, vehicle);
-  world.metrics.spawnedVehicles += 1;
-  recordDirectionalMetric(world, vehicle.originDirection, 'spawned');
-  addWorldEvent(world, 'vehicleSpawned', {
-    vehicleId: vehicle.id,
-    x: vehicle.x,
-    y: vehicle.y,
-    direction: vehicle.direction,
-    spawnPointId: selectedSpawn.id,
-    laneKey: getLaneKey(vehicle.direction)
-  });
 }
 
 function moveVehicles(world, tickContext = null) {

@@ -226,7 +226,7 @@ test('buildLightPhaseSummary and buildRecentEventSummary summarize diagnostics',
   const lightLines = buildLightPhaseSummary(world);
   const eventLines = buildRecentEventSummary(world);
 
-  assert.deepEqual(lightLines, ['main-crossing: east-west (2)']);
+  assert.deepEqual(lightLines, ['main-crossing: east-west (5)']);
   assert.match(eventLines[0], /vehicleBlocked/);
   assert.match(eventLines[0], /vehicle-1 @ 2,4/);
   assert.match(eventLines[0], /reason=red-light/);

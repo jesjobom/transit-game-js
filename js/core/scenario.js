@@ -79,13 +79,20 @@ export function buildWorldOptionsFromScenario(scenario, runtimeConfig) {
   const isBenchmarkMode = runtimeConfig.mode === 'benchmark';
   const normalized = normalizeScenarioDefinition(scenario).scenario;
 
+  const lightPhaseDurationTicks = runtimeConfig.lightPhaseDurationTicks ?? 5;
+
   return {
     ...structuredClone(normalized.worldOptions),
     mapMode: runtimeConfig.mapMode ?? normalized.worldOptions.mapMode,
+    maxVehicles: runtimeConfig.maxVehicles ?? 240,
     procedural: {
       ...(structuredClone(normalized.worldOptions.procedural ?? {})),
       ...(structuredClone(runtimeConfig.procedural ?? {}))
     },
+    lightsConfig: {
+      phaseDurationTicks: lightPhaseDurationTicks
+    },
+    lights: applyLightPhaseDuration(normalized.worldOptions.lights ?? [], lightPhaseDurationTicks),
     benchmark: {
       enabled: isBenchmarkMode,
       mode: isBenchmarkMode ? 'benchmark' : 'sandbox',
@@ -100,7 +107,7 @@ export function buildWorldOptionsFromScenario(scenario, runtimeConfig) {
 }
 
 export function createDefaultLights() {
-  return [
+  return applyLightPhaseDuration([
     {
       id: 'north-crossing',
       phaseIndex: 0,
@@ -146,7 +153,20 @@ export function createDefaultLights() {
         { name: 'east-west', durationTicks: 2, allowedDirections: ['east', 'west'] }
       ]
     }
-  ];
+  ], 5);
+}
+
+function applyLightPhaseDuration(lights = [], phaseDurationTicks = 5) {
+  const normalizedDuration = Math.max(2, Math.min(20, Math.round(phaseDurationTicks)));
+
+  return structuredClone(lights).map((light) => ({
+    ...light,
+    remainingTicks: normalizedDuration,
+    phases: (light.phases ?? []).map((phase) => ({
+      ...phase,
+      durationTicks: normalizedDuration
+    }))
+  }));
 }
 
 const BUILTIN_SCENARIOS = [

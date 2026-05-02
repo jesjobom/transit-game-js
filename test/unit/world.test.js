@@ -14,6 +14,7 @@ test('createWorldState builds the Sprint 8 structure with defaults', () => {
   assert.equal(world.map.spawnPoints.length, 8);
   assert.equal(world.map.roadsByKey['6,5'].laneCount, 8);
   assert.equal(world.config.tickRate, 10);
+  assert.equal(world.config.maxVehicles, 240);
   assert.equal(world.config.rules.freeRightOnRed, false);
   assert.equal(world.config.benchmark.mode, 'sandbox');
   assert.equal(world.config.replay.enabled, true);
@@ -41,6 +42,7 @@ test('createWorldState merges custom configuration and seeds', () => {
     routing: { straightWeight: 0.7, allowReverse: true },
     rules: { freeRightOnRed: true },
     benchmark: { enabled: true, mode: 'benchmark', spawnRate: 0.5 },
+    lightsConfig: { phaseDurationTicks: 9 },
     replay: { enabled: false, captureEveryTicks: 3 }
   });
 
@@ -55,6 +57,8 @@ test('createWorldState merges custom configuration and seeds', () => {
   assert.equal(world.config.benchmark.enabled, true);
   assert.equal(world.config.benchmark.mode, 'benchmark');
   assert.equal(world.config.benchmark.spawnRate, 0.5);
+  assert.equal(world.config.lights.phaseDurationTicks, 9);
+  assert.ok(world.entities.lights.every((light) => light.remainingTicks === 9));
   assert.equal(world.config.replay.enabled, false);
   assert.equal(world.config.replay.captureEveryTicks, 3);
 });
