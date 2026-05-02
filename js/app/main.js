@@ -145,6 +145,11 @@ function boot() {
       runtimeConfig.procedural.signalRate = Math.max(0, Math.min(1, Number(nextSignalRate)));
       applyRuntimeConfig();
     },
+    onMapZoomChange(nextZoomLevel) {
+      runtimeConfig.mapZoom = Math.max(0.2, Math.min(1.6, Number(nextZoomLevel)));
+      appShell.setMapZoomState(runtimeConfig.mapZoom);
+      render();
+    },
     onLightPhaseDurationChange(nextDuration) {
       runtimeConfig.lightPhaseDurationTicks = Math.max(2, Math.min(20, Math.round(nextDuration)));
       applyRuntimeConfig();
@@ -427,7 +432,8 @@ function boot() {
         overlayMetrics: renderThrottleCache.overlayMetrics,
         overlayTick: renderThrottleCache.overlayTick,
         selectedCell,
-        selectedVehicleId
+        selectedVehicleId,
+        zoomLevel: runtimeConfig.mapZoom
       });
     });
     const renderUiPanels = () => {
@@ -536,6 +542,7 @@ function createRuntimeConfig() {
       signalRate: 0.45
     },
     overlayMode: 'off',
+    mapZoom: 1,
     lightPhaseDurationTicks: 5,
     rules: {
       freeRightOnRed: false,

@@ -55,6 +55,8 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['control-procedural-height', Object.assign(createElement('control-procedural-height'), { value: '13' })],
     ['control-procedural-density', Object.assign(createElement('control-procedural-density'), { value: '0.6' })],
     ['control-procedural-signal-rate', Object.assign(createElement('control-procedural-signal-rate'), { value: '0.45' })],
+    ['control-map-zoom', Object.assign(createElement('control-map-zoom'), { value: '1' })],
+    ['control-map-zoom-value', createElement('control-map-zoom-value')],
     ['control-light-phase-duration', Object.assign(createElement('control-light-phase-duration'), { value: '5' })],
     ['control-overlay-mode', Object.assign(createElement('control-overlay-mode'), { value: 'off' })],
     ['control-scenario-import', Object.assign(createElement('control-scenario-import'), { files: [] })],
@@ -100,6 +102,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     const proceduralHeightCalls = [];
     const proceduralDensityCalls = [];
     const proceduralSignalCalls = [];
+    const mapZoomCalls = [];
     const lightPhaseDurationCalls = [];
     const selectedCells = [];
     let replayToggleCalls = 0;
@@ -145,6 +148,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       onProceduralSignalRateChange(value) {
         proceduralSignalCalls.push(value);
       },
+      onMapZoomChange(value) {
+        mapZoomCalls.push(value);
+      },
       onLightPhaseDurationChange(value) {
         lightPhaseDurationCalls.push(value);
       },
@@ -183,6 +189,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.deepEqual(proceduralHeightCalls, [13]);
     assert.deepEqual(proceduralDensityCalls, [0.6]);
     assert.deepEqual(proceduralSignalCalls, [0.45]);
+    assert.deepEqual(mapZoomCalls, []);
     assert.deepEqual(lightPhaseDurationCalls, [5]);
     assert.deepEqual(overlayModes, ['off']);
     assert.deepEqual(ruleCalls, [
@@ -194,6 +201,10 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     elements.get('control-speed').value = '1.5';
     elements.get('control-speed').oninput();
     assert.deepEqual(speedCalls, [0.75, 1.5]);
+
+    elements.get('control-map-zoom').value = '0.8';
+    elements.get('control-map-zoom').oninput();
+    assert.deepEqual(mapZoomCalls, [0.8]);
 
     elements.get('control-replay-toggle').onclick();
     elements.get('control-replay-play-pause').onclick();
@@ -242,6 +253,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
 
     appShell.renderSummary([{ label: 'Status', value: 'running' }]);
     assert.match(elements.get('summary-metrics').innerHTML, /running/);
+    appShell.setMapZoomState(0.85);
+    assert.equal(elements.get('control-map-zoom').value, '0.85');
+    assert.equal(elements.get('control-map-zoom-value').textContent, '85%');
 
     appShell.renderBenchmarkComparison(['A: baseline', 'Score Δ (B-A): +10']);
     assert.match(elements.get('benchmark-compare-summary').innerHTML, /Score Δ/);
@@ -281,6 +295,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       },
       lightPhaseDurationTicks: 9,
       overlayMode: 'flow',
+      mapZoom: 0.7,
       replayEnabled: false,
       rules: {
         freeRightOnRed: true,
@@ -298,6 +313,8 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-procedural-signal-rate').value, '0.5');
     assert.equal(elements.get('control-light-phase-duration').value, '9');
     assert.equal(elements.get('control-overlay-mode').value, 'flow');
+    assert.equal(elements.get('control-map-zoom').value, '0.7');
+    assert.equal(elements.get('control-map-zoom-value').textContent, '70%');
     assert.equal(elements.get('control-replay-enabled').checked, false);
     assert.equal(elements.get('rule-free-right-on-red').checked, true);
 

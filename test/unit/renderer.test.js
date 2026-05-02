@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildStaticWorldDescriptor, buildVehicleLayerPatch, buildWorldHtml, createDynamicGridStateKey, createRenderer, sampleTurnCurve } from '../../js/app/render/renderer.js';
+import { buildStaticWorldDescriptor, buildVehicleLayerPatch, buildWorldHtml, computeWorldScale, createDynamicGridStateKey, createRenderer, sampleTurnCurve } from '../../js/app/render/renderer.js';
 import { createWorldState } from '../../js/core/world.js';
 
 test('buildWorldHtml renders animated vehicle layer, dedicated traffic lights, and styled roads', () => {
@@ -214,7 +214,26 @@ test('sampleTurnCurve stays aligned with the normal movement path endpoints', ()
   assert.deepEqual(end.point, endPoint);
   assert.ok(mid.point.x > startPoint.x);
   assert.notEqual(mid.point.y, startPoint.y);
+  assert.ok(mid.point.x < 6.8);
+  assert.ok(Math.abs(mid.point.x - 6.6464) < 0.02);
+  assert.ok(Math.abs(mid.point.y - 2.6464) < 0.02);
   assert.ok(Number.isFinite(mid.angle));
+});
+
+
+test('computeWorldScale fits larger maps below the old minimum and honors zoom level', () => {
+  const world = createWorldState({
+    mapMode: 'procedural',
+    procedural: { width: 25, height: 25, density: 0.8, signalRate: 0.5 }
+  });
+
+  const autoFitScale = computeWorldScale(world.map, { width: 320, height: 320 }, 1);
+  const zoomedOutScale = computeWorldScale(world.map, { width: 320, height: 320 }, 0.8);
+  const zoomedInScale = computeWorldScale(world.map, { width: 320, height: 320 }, 1.2);
+
+  assert.ok(autoFitScale < 0.58);
+  assert.ok(zoomedOutScale < autoFitScale);
+  assert.ok(zoomedInScale > autoFitScale);
 });
 
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {

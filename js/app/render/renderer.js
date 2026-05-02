@@ -31,7 +31,8 @@ const LIGHT_PHASE_META = {
 
 const DEFAULT_TILE_SIZE_PX = 54;
 const WORLD_STAGE_PADDING_PX = 24;
-const MIN_WORLD_SCALE = 0.58;
+const MIN_WORLD_SCALE = 0.2;
+const MAX_WORLD_SCALE = 1.6;
 
 export function createRenderer(rootElement) {
   let staticWorldCache = {
@@ -79,7 +80,7 @@ export function createRenderer(rootElement) {
         ...options,
         viewport,
         staticWorldDescriptor: staticWorldCache.descriptor,
-        worldScale: computeWorldScale(world.map, viewport)
+        worldScale: computeWorldScale(world.map, viewport, options.zoomLevel)
       };
 
       const canUseIncrementalDom = hasIncrementalDomSupport(rootElement);
@@ -312,12 +313,14 @@ function applyVehicleDescriptorToNode(node, descriptor) {
   node.setAttribute('aria-label', descriptor.ariaLabel);
 }
 
-function computeWorldScale(map, viewport = {}) {
+export function computeWorldScale(map, viewport = {}, zoomLevel = 1) {
   const stageWidthPx = map.width * DEFAULT_TILE_SIZE_PX + WORLD_STAGE_PADDING_PX;
   const stageHeightPx = map.height * DEFAULT_TILE_SIZE_PX + WORLD_STAGE_PADDING_PX;
   const widthScale = Number.isFinite(viewport.width) ? viewport.width / stageWidthPx : 1;
   const heightScale = Number.isFinite(viewport.height) ? viewport.height / stageHeightPx : 1;
-  return clampWorldScale(Math.min(1, widthScale, heightScale));
+  const fitScale = Math.min(1, widthScale, heightScale);
+  const normalizedZoomLevel = Number.isFinite(zoomLevel) ? zoomLevel : 1;
+  return clampWorldScale(fitScale * normalizedZoomLevel);
 }
 
 function clampWorldScale(scale) {
@@ -325,7 +328,7 @@ function clampWorldScale(scale) {
     return 1;
   }
 
-  return Math.max(MIN_WORLD_SCALE, Math.min(1, scale));
+  return Math.max(MIN_WORLD_SCALE, Math.min(MAX_WORLD_SCALE, scale));
 }
 
 export function createDynamicGridStateKey(world, options = {}) {
@@ -745,14 +748,35 @@ export function sampleTurnCurve(turnEvent, startPoint, endPoint, fromDirection, 
     x: (turnEvent?.payload?.x ?? startPoint.x) + 0.5,
     y: (turnEvent?.payload?.y ?? startPoint.y) + 0.5
   };
-  const fromVector = getDirectionVector(fromDirection);
-  const toVector = getDirectionVector(toDirection);
-  const controlPoint = {
-    x: intersectionPoint.x + (toVector.x - fromVector.x) * 0.35,
-    y: intersectionPoint.y + (toVector.y - fromVector.y) * 0.35
-  };
+  const entryPoint = getIntersectionEntryPoint(intersectionPoint, fromDirection);
+  const exitPoint = getIntersectionExitPoint(intersectionPoint, toDirection);
+  const preArcRatio = 0.1;
+  const postArcRatio = 0.1;
 
-  return sampleQuadraticBezier(startPoint, controlPoint, endPoint, progress);
+  if (progress <= preArcRatio) {
+    const stageProgress = progress / preArcRatio;
+    const point = lerpPoint(startPoint, entryPoint, stageProgress);
+    const tangent = subtractPoint(entryPoint, startPoint);
+
+    return {
+      point,
+      angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
+    };
+  }
+
+  if (progress >= 1 - postArcRatio) {
+    const stageProgress = (progress - (1 - postArcRatio)) / postArcRatio;
+    const point = lerpPoint(exitPoint, endPoint, stageProgress);
+    const tangent = subtractPoint(endPoint, exitPoint);
+
+    return {
+      point,
+      angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
+    };
+  }
+
+  const arcProgress = (progress - preArcRatio) / (1 - preArcRatio - postArcRatio);
+  return sampleIntersectionTurnArc(intersectionPoint, fromDirection, toDirection, arcProgress);
 }
 
 function getIntersectionEntryPoint(intersectionCenter, direction) {
@@ -771,19 +795,30 @@ function getIntersectionExitPoint(intersectionCenter, direction) {
   };
 }
 
-function sampleQuadraticBezier(startPoint, controlPoint, endPoint, progress) {
-  const inverse = 1 - progress;
-  const point = {
-    x: inverse * inverse * startPoint.x + 2 * inverse * progress * controlPoint.x + progress * progress * endPoint.x,
-    y: inverse * inverse * startPoint.y + 2 * inverse * progress * controlPoint.y + progress * progress * endPoint.y
+function sampleIntersectionTurnArc(intersectionCenter, fromDirection, toDirection, progress) {
+  const fromVector = getDirectionVector(fromDirection);
+  const toVector = getDirectionVector(toDirection);
+  const startPoint = getIntersectionEntryPoint(intersectionCenter, fromDirection);
+  const endPoint = getIntersectionExitPoint(intersectionCenter, toDirection);
+  const arcCenter = {
+    x: intersectionCenter.x + (toVector.x - fromVector.x) * 0.5,
+    y: intersectionCenter.y + (toVector.y - fromVector.y) * 0.5
   };
+  const startAngle = Math.atan2(startPoint.y - arcCenter.y, startPoint.x - arcCenter.x);
+  const endAngle = Math.atan2(endPoint.y - arcCenter.y, endPoint.x - arcCenter.x);
+  const delta = normalizeAngleDeltaRadians(endAngle - startAngle);
+  const angle = startAngle + delta * progress;
+  const radius = 0.5;
   const tangent = {
-    x: 2 * inverse * (controlPoint.x - startPoint.x) + 2 * progress * (endPoint.x - controlPoint.x),
-    y: 2 * inverse * (controlPoint.y - startPoint.y) + 2 * progress * (endPoint.y - controlPoint.y)
+    x: -Math.sin(angle) * delta,
+    y: Math.cos(angle) * delta
   };
 
   return {
-    point,
+    point: {
+      x: arcCenter.x + Math.cos(angle) * radius,
+      y: arcCenter.y + Math.sin(angle) * radius
+    },
     angle: Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
   };
 }
@@ -795,6 +830,16 @@ function getDirectionVector(direction) {
     south: { x: 0, y: 1 },
     west: { x: -1, y: 0 }
   }[direction] ?? { x: 0, y: 0 };
+}
+
+function normalizeAngleDeltaRadians(delta) {
+  let normalized = ((delta + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+
+  if (normalized === -Math.PI) {
+    normalized = Math.PI;
+  }
+
+  return normalized;
 }
 
 function toPercentPoint(point, map) {

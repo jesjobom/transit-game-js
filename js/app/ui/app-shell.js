@@ -24,6 +24,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onProceduralHeightChange,
       onProceduralDensityChange,
       onProceduralSignalRateChange,
+      onMapZoomChange,
       onLightPhaseDurationChange,
       onImportScenario,
       onHistorySelectionChange,
@@ -51,6 +52,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindNumberControl('control-procedural-height', onProceduralHeightChange);
       bindNumberControl('control-procedural-density', onProceduralDensityChange);
       bindNumberControl('control-procedural-signal-rate', onProceduralSignalRateChange);
+      bindRangeControl('control-map-zoom', onMapZoomChange);
       bindNumberControl('control-light-phase-duration', onLightPhaseDurationChange);
       bindSelectControl('control-overlay-mode', onOverlayModeChange);
       bindFileControl('control-scenario-import', onImportScenario);
@@ -110,12 +112,17 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       syncNumericValue('control-procedural-height', config.procedural?.height ?? 13);
       syncNumericValue('control-procedural-density', config.procedural?.density ?? 0.6);
       syncNumericValue('control-procedural-signal-rate', config.procedural?.signalRate ?? 0.45);
+      this.setMapZoomState(config.mapZoom ?? 1);
       syncNumericValue('control-light-phase-duration', config.lightPhaseDurationTicks ?? 5);
       syncSelectValue('control-overlay-mode', config.overlayMode ?? 'off');
       syncCheckboxValue('control-replay-enabled', config.replayEnabled !== false);
     },
     renderSummary(metrics = []) {
       renderMetricList('summary-metrics', metrics);
+    },
+    setMapZoomState(zoomLevel = 1) {
+      syncNumericValue('control-map-zoom', zoomLevel);
+      setTextContent('control-map-zoom-value', `${Math.round(Number(zoomLevel) * 100)}%`);
     },
     renderDiagnostics({ metrics = [], lights = [], events = [] } = {}) {
       renderMetricList('live-metrics', metrics);
@@ -194,6 +201,15 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       element.open = Boolean(open);
     }
   };
+}
+
+function setTextContent(id, value) {
+  const element = document.getElementById(id);
+  if (!element) {
+    return;
+  }
+
+  element.textContent = value;
 }
 
 function setStatus(id, value) {
