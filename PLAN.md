@@ -4,7 +4,7 @@ Plano de simplificação de UX e redução de overhead do **transit-game-js**.
 
 ## Status de execução
 - [x] Sprint 38 — UI Cleanup
-- [ ] Sprint 39 — Collapsible Panels
+- [x] Sprint 39 — Collapsible Panels
 - [ ] Sprint 40 — Contextual Visibility
 - [ ] Sprint 41 — Diagnostics Gating
 - [ ] Sprint 42 — Optional Replay
@@ -374,15 +374,17 @@ A tela deixa de parecer painel de debug e passa a parecer simulador utilizável.
 
 ## Sprint 39 — painéis colapsáveis para Advanced / Replay / Diagnostics / Benchmark Lab
 
+**Status:** concluído
+
 ### Entrega
-- criar seções escondidas/colapsáveis
-- mover controles e blocos informacionais para os painéis corretos
+- [x] criar seções escondidas/colapsáveis
+- [x] mover controles e blocos informacionais para os painéis corretos
 
 ### Distribuição esperada
-- Advanced: procedural/import/regras/benchmark tuning
-- Replay: replay toggle + play + slider
-- Diagnostics: status técnico + métricas + luzes + eventos + inspector detalhado
-- Benchmark Lab: histórico + comparação
+- [x] Advanced: procedural/import/regras/benchmark tuning
+- [x] Replay: replay toggle + play + slider
+- [x] Diagnostics: status técnico + métricas + luzes + eventos + inspector detalhado
+- [x] Benchmark Lab: histórico + comparação
 
 ### Resultado esperado
 Capacidade avançada preservada, ruído visual bem menor.

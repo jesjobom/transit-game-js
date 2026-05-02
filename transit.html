@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s38-ui-cleanup" />
+    <link rel="stylesheet" href="css/app.css?v=s39-collapsible-panels" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,13 +13,13 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 38</div>
+        <div class="version-badge">Sprint 39</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Main run controls first. Advanced tuning and lab tools will move behind dedicated panels in the next cleanup sprints.</p>
+          <p>Main run controls stay visible. Tuning, replay, diagnostics, and benchmark lab now live behind dedicated panels.</p>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-scenario">Scenario preset</label>
@@ -50,67 +50,6 @@
           </div>
           <div class="control-field">
             <div class="control-field__header">
-              <label for="control-map-mode">Map generator</label>
-            </div>
-            <select id="control-map-mode">
-              <option value="fixed">Fixed</option>
-              <option value="procedural">Procedural</option>
-            </select>
-          </div>
-          <div class="control-grid control-grid--two-up">
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-procedural-width">Proc width</label>
-              </div>
-              <input id="control-procedural-width" type="number" min="9" max="25" step="2" value="15" />
-            </div>
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-procedural-height">Proc height</label>
-              </div>
-              <input id="control-procedural-height" type="number" min="9" max="25" step="2" value="13" />
-            </div>
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-procedural-density">Road density</label>
-              </div>
-              <input id="control-procedural-density" type="number" min="0.3" max="0.9" step="0.05" value="0.6" />
-            </div>
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-procedural-signal-rate">Signal rate</label>
-              </div>
-              <input id="control-procedural-signal-rate" type="number" min="0" max="1" step="0.05" value="0.45" />
-            </div>
-          </div>
-          <div class="control-field">
-            <div class="control-field__header">
-              <label for="control-scenario-import">Import scenario JSON</label>
-            </div>
-            <input id="control-scenario-import" type="file" accept="application/json,.json" />
-          </div>
-          <div class="control-grid control-grid--two-up">
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-benchmark-duration">Benchmark duration</label>
-              </div>
-              <input id="control-benchmark-duration" type="number" min="0" step="10" value="60" />
-            </div>
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-spawn-rate">Spawn rate</label>
-              </div>
-              <input id="control-spawn-rate" type="number" min="0" max="1" step="0.05" value="0.55" />
-            </div>
-          </div>
-          <fieldset class="control-group">
-            <legend>Active rules</legend>
-            <label class="toggle-row"><input id="rule-free-right-on-red" type="checkbox" /> Free right on red</label>
-            <label class="toggle-row"><input id="rule-four-way-stop" type="checkbox" /> Four-way stop</label>
-            <label class="toggle-row"><input id="rule-do-not-block-intersection" type="checkbox" /> Do not block intersection</label>
-          </fieldset>
-          <div class="control-field">
-            <div class="control-field__header">
               <label for="control-speed">Simulation speed</label>
               <span id="control-speed-value" class="control-value">0.75×</span>
             </div>
@@ -124,20 +63,94 @@
           <div class="control-buttons">
             <button id="control-play-pause" type="button">Pause</button>
             <button id="control-reset" type="button">Reset</button>
-            <button id="control-step" type="button">+1 Tick</button>
           </div>
 
-          <div class="control-buttons control-buttons--secondary">
-            <button id="control-replay-toggle" type="button">Replay</button>
-            <button id="control-replay-play-pause" type="button">Play Replay</button>
-          </div>
-          <div class="control-field">
-            <div class="control-field__header">
-              <label for="control-replay-frame">Replay frame</label>
-              <span id="control-replay-frame-value" class="control-value">no replay</span>
+          <details id="panel-advanced" class="tool-panel">
+            <summary>Advanced</summary>
+            <div class="tool-panel__body">
+              <div class="control-buttons control-buttons--secondary">
+                <button id="control-step" type="button">+1 Tick</button>
+              </div>
+              <div class="control-field">
+                <div class="control-field__header">
+                  <label for="control-map-mode">Map generator</label>
+                </div>
+                <select id="control-map-mode">
+                  <option value="fixed">Fixed</option>
+                  <option value="procedural">Procedural</option>
+                </select>
+              </div>
+              <div class="control-grid control-grid--two-up">
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-procedural-width">Proc width</label>
+                  </div>
+                  <input id="control-procedural-width" type="number" min="9" max="25" step="2" value="15" />
+                </div>
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-procedural-height">Proc height</label>
+                  </div>
+                  <input id="control-procedural-height" type="number" min="9" max="25" step="2" value="13" />
+                </div>
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-procedural-density">Road density</label>
+                  </div>
+                  <input id="control-procedural-density" type="number" min="0.3" max="0.9" step="0.05" value="0.6" />
+                </div>
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-procedural-signal-rate">Signal rate</label>
+                  </div>
+                  <input id="control-procedural-signal-rate" type="number" min="0" max="1" step="0.05" value="0.45" />
+                </div>
+              </div>
+              <div class="control-grid control-grid--two-up">
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-benchmark-duration">Benchmark duration</label>
+                  </div>
+                  <input id="control-benchmark-duration" type="number" min="0" step="10" value="60" />
+                </div>
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-spawn-rate">Spawn rate</label>
+                  </div>
+                  <input id="control-spawn-rate" type="number" min="0" max="1" step="0.05" value="0.55" />
+                </div>
+              </div>
+              <fieldset class="control-group">
+                <legend>Active rules</legend>
+                <label class="toggle-row"><input id="rule-free-right-on-red" type="checkbox" /> Free right on red</label>
+                <label class="toggle-row"><input id="rule-four-way-stop" type="checkbox" /> Four-way stop</label>
+                <label class="toggle-row"><input id="rule-do-not-block-intersection" type="checkbox" /> Do not block intersection</label>
+              </fieldset>
+              <div class="control-field">
+                <div class="control-field__header">
+                  <label for="control-scenario-import">Import scenario JSON</label>
+                </div>
+                <input id="control-scenario-import" type="file" accept="application/json,.json" />
+              </div>
             </div>
-            <input id="control-replay-frame" type="range" min="0" max="0" step="1" value="0" />
-          </div>
+          </details>
+
+          <details id="panel-replay" class="tool-panel">
+            <summary>Replay</summary>
+            <div class="tool-panel__body">
+              <div class="control-buttons control-buttons--secondary">
+                <button id="control-replay-toggle" type="button">Replay</button>
+                <button id="control-replay-play-pause" type="button">Play Replay</button>
+              </div>
+              <div class="control-field">
+                <div class="control-field__header">
+                  <label for="control-replay-frame">Replay frame</label>
+                  <span id="control-replay-frame-value" class="control-value">no replay</span>
+                </div>
+                <input id="control-replay-frame" type="range" min="0" max="0" step="1" value="0" />
+              </div>
+            </div>
+          </details>
         </section>
 
         <section class="panel panel--viewport">
@@ -151,48 +164,65 @@
             <div><dt>Status</dt><dd>booting</dd></div>
           </dl>
 
-          <h3>Live Metrics</h3>
-          <dl id="live-metrics" class="status-list status-list--compact"></dl>
+          <details id="panel-diagnostics" class="tool-panel">
+            <summary>Diagnostics</summary>
+            <div class="tool-panel__body">
+              <h3>Runtime Status</h3>
+              <dl class="status-list">
+                <div><dt>App</dt><dd id="status-app">booting</dd></div>
+                <div><dt>Renderer</dt><dd id="status-renderer">pending</dd></div>
+                <div><dt>Engine</dt><dd id="status-engine">pending</dd></div>
+              </dl>
 
-          <h3>Traffic Lights</h3>
-          <ul id="light-summary" class="info-list">
-            <li>Loading light states…</li>
-          </ul>
+              <h3>Live Metrics</h3>
+              <dl id="live-metrics" class="status-list status-list--compact"></dl>
 
-          <h3>Recent Events</h3>
-          <ul id="event-summary" class="info-list">
-            <li>Waiting for simulation events…</li>
-          </ul>
+              <h3>Traffic Lights</h3>
+              <ul id="light-summary" class="info-list">
+                <li>Loading light states…</li>
+              </ul>
 
-          <h3>Benchmark History</h3>
-          <ol id="benchmark-history-list" class="info-list">
-            <li>No benchmark snapshots saved yet</li>
-          </ol>
+              <h3>Recent Events</h3>
+              <ul id="event-summary" class="info-list">
+                <li>Waiting for simulation events…</li>
+              </ul>
 
-          <div class="control-grid control-grid--two-up">
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-history-a">Compare A</label>
-              </div>
-              <select id="control-history-a"></select>
+              <h3>Cell Inspector</h3>
+              <ul id="cell-inspection-summary" class="info-list">
+                <li>Click a road or intersection cell to inspect it</li>
+              </ul>
             </div>
-            <div class="control-field">
-              <div class="control-field__header">
-                <label for="control-history-b">Compare B</label>
+          </details>
+
+          <details id="panel-benchmark-lab" class="tool-panel">
+            <summary>Benchmark Lab</summary>
+            <div class="tool-panel__body">
+              <h3>Benchmark History</h3>
+              <ol id="benchmark-history-list" class="info-list">
+                <li>No benchmark snapshots saved yet</li>
+              </ol>
+
+              <div class="control-grid control-grid--two-up">
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-history-a">Compare A</label>
+                  </div>
+                  <select id="control-history-a"></select>
+                </div>
+                <div class="control-field">
+                  <div class="control-field__header">
+                    <label for="control-history-b">Compare B</label>
+                  </div>
+                  <select id="control-history-b"></select>
+                </div>
               </div>
-              <select id="control-history-b"></select>
+
+              <h3>Benchmark Compare</h3>
+              <ul id="benchmark-compare-summary" class="info-list">
+                <li>Pick two benchmark snapshots to compare</li>
+              </ul>
             </div>
-          </div>
-
-          <h3>Benchmark Compare</h3>
-          <ul id="benchmark-compare-summary" class="info-list">
-            <li>Pick two benchmark snapshots to compare</li>
-          </ul>
-
-          <h3>Cell Inspector</h3>
-          <ul id="cell-inspection-summary" class="info-list">
-            <li>Click a road or intersection cell to inspect it</li>
-          </ul>
+          </details>
         </aside>
       </main>
 
@@ -201,6 +231,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s38-ui-cleanup"></script>
+    <script type="module" src="js/app/main.js?v=s39-collapsible-panels"></script>
   </body>
 </html>
