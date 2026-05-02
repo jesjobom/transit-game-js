@@ -10,6 +10,7 @@ import {
   buildCellInspectionLines,
   buildLightPhaseSummary,
   buildLiveMetrics,
+  buildPrimarySummaryMetrics,
   buildRecentEventSummary,
   buildSimulationSummary
 } from './ui/view-model.js';
@@ -410,6 +411,7 @@ function boot() {
       });
     });
     performanceTracker.measure('diagnostics', () => {
+      appShell.renderSummary(buildPrimarySummaryMetrics(viewWorld, viewReport));
       appShell.renderDiagnostics(renderThrottleCache.diagnostics);
       appShell.renderCellInspection(renderThrottleCache.inspectionLines);
       appShell.syncReplayState(state.world.replay.frames, replayState);

@@ -103,6 +103,9 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       syncNumericValue('control-procedural-signal-rate', config.procedural?.signalRate ?? 0.45);
       syncSelectValue('control-overlay-mode', config.overlayMode ?? 'off');
     },
+    renderSummary(metrics = []) {
+      renderMetricList('summary-metrics', metrics);
+    },
     renderDiagnostics({ metrics = [], lights = [], events = [] } = {}) {
       renderMetricList('live-metrics', metrics);
       renderTextList('light-summary', lights);

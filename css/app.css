@@ -181,6 +181,10 @@ button {
   flex-wrap: wrap;
 }
 
+.control-buttons--secondary {
+  margin-top: -6px;
+}
+
 .control-buttons button {
   border: 1px solid rgba(56, 189, 248, 0.35);
   background: rgba(14, 165, 233, 0.12);
@@ -716,6 +720,10 @@ button {
   display: grid;
   gap: 14px;
   margin: 0;
+}
+
+#summary-metrics {
+  margin-bottom: 8px;
 }
 
 .status-list--compact {

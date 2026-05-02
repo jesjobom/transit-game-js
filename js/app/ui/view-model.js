@@ -62,6 +62,23 @@ export function buildSimulationSummary(world, benchmarkSummaryLines = []) {
   ];
 }
 
+export function buildPrimarySummaryMetrics(world, report = null) {
+  const metrics = report?.metrics ?? {};
+  const activeRules = Object.entries(world.config.rules || {})
+    .filter(([, enabled]) => enabled)
+    .map(([rule]) => rule)
+    .join(', ');
+
+  return [
+    { label: 'Status', value: world.status },
+    { label: 'Tick', value: String(world.tick) },
+    { label: 'Active vehicles', value: String(world.entities.vehicles.length) },
+    { label: 'Throughput/tick', value: formatDecimal(metrics.throughputPerTick) },
+    { label: 'Score', value: report ? String(report.score.total) : '—' },
+    { label: 'Rules', value: activeRules || 'default' }
+  ];
+}
+
 export function buildLiveMetrics(world, report = null, performanceMetrics = {}) {
   const metrics = report?.metrics ?? {};
   const tickPerf = performanceMetrics.tick ?? {};

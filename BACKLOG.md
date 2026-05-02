@@ -13,9 +13,9 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 37`
-- **Build tag:** `s37-render-light-benchmark`
-- **Último estado validado:** `70/70` testes passando
+- **Versão visível da app:** `Sprint 38`
+- **Build tag:** `s38-ui-cleanup`
+- **Último estado validado:** `71/71` testes passando
 
 ### Sprints de performance já concluídas e publicadas
 - **Sprint 32** — instrumentação de performance para tick/render/diagnostics
@@ -25,9 +25,13 @@ A versão atual do projeto fica oficialmente fechada como **V1**.
 - **Sprint 36** — índice de ocupação por tick
 - **Sprint 37** — benchmark render-light
 
+### Sprints de simplificação já concluídas e publicadas
+- **Sprint 38** — limpeza estrutural da UI principal, remoção de ruído dev e resumo lateral curto por padrão
+
 ### Manutenção recente validada
 - correção para invalidar/recalcular `world.report` a cada avanço real de tick, evitando métricas live congeladas
 - renderer incremental agora evita reescrever o grid quando só a animação dos veículos mudou e o estado dinâmico das células permaneceu igual
+- controles principais agora aparecem primeiro e a lateral padrão foi reduzida para um resumo curto
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.

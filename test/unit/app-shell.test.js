@@ -56,6 +56,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['control-history-a', Object.assign(createElement('control-history-a'), { value: '' })],
     ['control-history-b', Object.assign(createElement('control-history-b'), { value: '' })],
     ['control-speed-value', createElement('control-speed-value')],
+    ['summary-metrics', createElement('summary-metrics')],
     ['live-metrics', createElement('live-metrics')],
     ['light-summary', createElement('light-summary')],
     ['event-summary', createElement('event-summary')],
@@ -204,6 +205,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     elements.get('control-history-b').value = 'run-a';
     elements.get('control-history-a').onchange();
     assert.deepEqual(historySelections.at(-1), ['run-b', 'run-a']);
+
+    appShell.renderSummary([{ label: 'Status', value: 'running' }]);
+    assert.match(elements.get('summary-metrics').innerHTML, /running/);
 
     appShell.renderBenchmarkComparison(['A: baseline', 'Score Δ (B-A): +10']);
     assert.match(elements.get('benchmark-compare-summary').innerHTML, /Score Δ/);

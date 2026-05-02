@@ -7,6 +7,7 @@ import {
   buildCellInspectionLines,
   buildLightPhaseSummary,
   buildLiveMetrics,
+  buildPrimarySummaryMetrics,
   buildRecentEventSummary,
   buildSimulationSummary
 } from '../../js/app/ui/view-model.js';
@@ -29,6 +30,26 @@ test('buildSimulationSummary includes version, seeds, status, and benchmark summ
   assert.match(lines.join('\n'), /Status: running/);
   assert.match(lines.join('\n'), /Active vehicles: 1/);
   assert.match(lines.join('\n'), /Score: 12/);
+});
+
+test('buildPrimarySummaryMetrics exposes the short default summary', () => {
+  const world = createWorldState();
+  world.tick = 9;
+  world.status = 'running';
+  world.entities.vehicles = [{ id: 'v1' }, { id: 'v2' }];
+  world.config.rules.freeRightOnRed = true;
+
+  const metrics = buildPrimarySummaryMetrics(world, {
+    metrics: { throughputPerTick: 0.25 },
+    score: { total: 185 }
+  });
+
+  assert.deepEqual(metrics[0], { label: 'Status', value: 'running' });
+  assert.ok(metrics.some((entry) => entry.label === 'Tick' && entry.value === '9'));
+  assert.ok(metrics.some((entry) => entry.label === 'Active vehicles' && entry.value === '2'));
+  assert.ok(metrics.some((entry) => entry.label === 'Throughput/tick' && entry.value === '0.25'));
+  assert.ok(metrics.some((entry) => entry.label === 'Score' && entry.value === '185'));
+  assert.ok(metrics.some((entry) => entry.label === 'Rules' && entry.value === 'freeRightOnRed'));
 });
 
 test('buildLiveMetrics exposes key live counters and score', () => {

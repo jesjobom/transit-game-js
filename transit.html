@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s37-render-light-benchmark" />
+    <link rel="stylesheet" href="css/app.css?v=s38-ui-cleanup" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,27 +13,40 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 37</div>
+        <div class="version-badge">Sprint 38</div>
       </header>
 
       <main class="layout">
         <section class="panel panel--controls">
           <h2>Controls</h2>
-          <p>Current focus: procedural map generation with reproducible seed-based layouts and runtime tuning controls.</p>
-          <div class="control-field">
-            <div class="control-field__header">
-              <label for="control-mode">Simulation mode</label>
-            </div>
-            <select id="control-mode">
-              <option value="benchmark">Benchmark</option>
-              <option value="sandbox">Sandbox</option>
-            </select>
-          </div>
+          <p>Main run controls first. Advanced tuning and lab tools will move behind dedicated panels in the next cleanup sprints.</p>
           <div class="control-field">
             <div class="control-field__header">
               <label for="control-scenario">Scenario preset</label>
             </div>
             <select id="control-scenario"></select>
+          </div>
+          <div class="control-grid control-grid--two-up">
+            <div class="control-field">
+              <div class="control-field__header">
+                <label for="control-mode">Simulation mode</label>
+              </div>
+              <select id="control-mode">
+                <option value="benchmark">Benchmark</option>
+                <option value="sandbox">Sandbox</option>
+              </select>
+            </div>
+            <div class="control-field">
+              <div class="control-field__header">
+                <label for="control-overlay-mode">Overlay</label>
+              </div>
+              <select id="control-overlay-mode">
+                <option value="off">Off</option>
+                <option value="congestion">Congestion</option>
+                <option value="flow">Flow</option>
+                <option value="deadlock">Deadlock pressure</option>
+              </select>
+            </div>
           </div>
           <div class="control-field">
             <div class="control-field__header">
@@ -69,17 +82,6 @@
               </div>
               <input id="control-procedural-signal-rate" type="number" min="0" max="1" step="0.05" value="0.45" />
             </div>
-          </div>
-          <div class="control-field">
-            <div class="control-field__header">
-              <label for="control-overlay-mode">Overlay</label>
-            </div>
-            <select id="control-overlay-mode">
-              <option value="off">Off</option>
-              <option value="congestion">Congestion</option>
-              <option value="flow">Flow</option>
-              <option value="deadlock">Deadlock pressure</option>
-            </select>
           </div>
           <div class="control-field">
             <div class="control-field__header">
@@ -121,11 +123,11 @@
           </div>
           <div class="control-buttons">
             <button id="control-play-pause" type="button">Pause</button>
-            <button id="control-step" type="button">+1 Tick</button>
             <button id="control-reset" type="button">Reset</button>
+            <button id="control-step" type="button">+1 Tick</button>
           </div>
 
-          <div class="control-buttons">
+          <div class="control-buttons control-buttons--secondary">
             <button id="control-replay-toggle" type="button">Replay</button>
             <button id="control-replay-play-pause" type="button">Play Replay</button>
           </div>
@@ -136,11 +138,6 @@
             </div>
             <input id="control-replay-frame" type="range" min="0" max="0" step="1" value="0" />
           </div>
-          <ul>
-            <li>Legacy version lives under <code>legacy/</code></li>
-            <li>Core engine lives under <code>js/core/</code></li>
-            <li>Raw map/vehicle rendering lives under <code>js/app/render/</code></li>
-          </ul>
         </section>
 
         <section class="panel panel--viewport">
@@ -149,11 +146,9 @@
         </section>
 
         <aside class="panel panel--status">
-          <h2>Status</h2>
-          <dl class="status-list">
-            <div><dt>App</dt><dd id="status-app">booting</dd></div>
-            <div><dt>Renderer</dt><dd id="status-renderer">pending</dd></div>
-            <div><dt>Engine</dt><dd id="status-engine">pending</dd></div>
+          <h2>Summary</h2>
+          <dl id="summary-metrics" class="status-list status-list--compact">
+            <div><dt>Status</dt><dd>booting</dd></div>
           </dl>
 
           <h3>Live Metrics</h3>
@@ -206,6 +201,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s37-render-light-benchmark"></script>
+    <script type="module" src="js/app/main.js?v=s38-ui-cleanup"></script>
   </body>
 </html>
