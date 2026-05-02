@@ -11,6 +11,7 @@ test('transit html groups advanced tooling behind dedicated panels', () => {
   assert.match(html, /<summary>Advanced<\/summary>/);
   assert.match(html, /<details id="panel-replay"/);
   assert.match(html, /<summary>Replay<\/summary>/);
+  assert.match(html, /id="control-replay-enabled"/);
   assert.match(html, /<details id="panel-diagnostics"/);
   assert.match(html, /<summary>Diagnostics<\/summary>/);
   assert.match(html, /<details id="panel-benchmark-lab"/);

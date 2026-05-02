@@ -7,7 +7,7 @@ Plano de simplificação de UX e redução de overhead do **transit-game-js**.
 - [x] Sprint 39 — Collapsible Panels
 - [x] Sprint 40 — Contextual Visibility
 - [x] Sprint 41 — Diagnostics Gating
-- [ ] Sprint 42 — Optional Replay
+- [x] Sprint 42 — Optional Replay
 - [ ] Sprint 43 — UX Polish
 
 As sprints de performance anteriores já foram concluídas.
@@ -430,14 +430,16 @@ Menos trabalho por frame/tick quando a UI está em modo normal.
 
 ## Sprint 42 — replay opcional e redução de custo de observabilidade granular
 
+**Status:** concluído
+
 ### Entrega
-- tornar replay capture configurável
-- avaliar coleta condicional de métricas por célula quando overlay/inspector estiverem desligados
+- [x] tornar replay capture configurável
+- [ ] avaliar coleta condicional de métricas por célula quando overlay/inspector estiverem desligados
 
 ### Inclui
-- opção explícita de replay
-- benchmark vs sandbox com políticas diferentes de replay
-- coleta granular dependente de necessidade real
+- [x] opção explícita de replay
+- [x] benchmark vs sandbox com políticas diferentes de replay
+- [ ] coleta granular dependente de necessidade real
 
 ### Resultado esperado
 Menos uso de memória e menos serialização desnecessária.

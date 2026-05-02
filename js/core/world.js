@@ -22,6 +22,7 @@ const DEFAULT_ROUTING = {
 };
 
 const DEFAULT_REPLAY = {
+  enabled: true,
   captureEveryTicks: 1
 };
 
@@ -206,6 +207,10 @@ export function captureReplayFrame(world) {
 }
 
 export function shouldCaptureReplayFrame(world) {
+  if (world.config?.replay?.enabled === false) {
+    return false;
+  }
+
   const interval = Math.max(1, Math.round(world.config?.replay?.captureEveryTicks ?? 1));
 
   if (world.tick === 0 || world.status === 'completed') {

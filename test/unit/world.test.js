@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { addWorldEvent, captureReplayFrame, createWorldState, nextRandomFloat } from '../../js/core/world.js';
+import { addWorldEvent, captureReplayFrame, createWorldState, maybeCaptureReplayFrame, nextRandomFloat, shouldCaptureReplayFrame } from '../../js/core/world.js';
 
 test('createWorldState builds the Sprint 8 structure with defaults', () => {
   const world = createWorldState();
@@ -16,6 +16,7 @@ test('createWorldState builds the Sprint 8 structure with defaults', () => {
   assert.equal(world.config.tickRate, 10);
   assert.equal(world.config.rules.freeRightOnRed, false);
   assert.equal(world.config.benchmark.mode, 'sandbox');
+  assert.equal(world.config.replay.enabled, true);
   assert.equal(world.config.replay.captureEveryTicks, 1);
   assert.equal(world.config.routing.allowReverse, false);
   assert.deepEqual(world.entities.vehicles, []);
@@ -40,7 +41,7 @@ test('createWorldState merges custom configuration and seeds', () => {
     routing: { straightWeight: 0.7, allowReverse: true },
     rules: { freeRightOnRed: true },
     benchmark: { enabled: true, mode: 'benchmark', spawnRate: 0.5 },
-    replay: { captureEveryTicks: 3 }
+    replay: { enabled: false, captureEveryTicks: 3 }
   });
 
   assert.equal(world.seed, 99);
@@ -54,6 +55,7 @@ test('createWorldState merges custom configuration and seeds', () => {
   assert.equal(world.config.benchmark.enabled, true);
   assert.equal(world.config.benchmark.mode, 'benchmark');
   assert.equal(world.config.benchmark.spawnRate, 0.5);
+  assert.equal(world.config.replay.enabled, false);
   assert.equal(world.config.replay.captureEveryTicks, 3);
 });
 
@@ -98,6 +100,16 @@ test('captureReplayFrame stores serializable timeline snapshots', () => {
   assert.equal(frame.tick, 3);
   assert.equal(frame.entities.vehicles[0].id, 'vehicle-a');
   assert.equal(frame.scenarioId, 'baseline-benchmark');
+});
+
+test('replay capture can be disabled explicitly', () => {
+  const world = createWorldState({ replay: { enabled: false, captureEveryTicks: 2 } });
+  world.tick = 4;
+  world.status = 'running';
+
+  assert.equal(shouldCaptureReplayFrame(world), false);
+  assert.equal(maybeCaptureReplayFrame(world), null);
+  assert.equal(world.replay.frames.length, 0);
 });
 
 test('world random helper updates rng state and addWorldEvent records the current tick', () => {

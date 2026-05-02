@@ -31,6 +31,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onReplayToggle,
       onReplayPlayPause,
       onReplayFrameChange,
+      onReplayEnabledChange,
       onPanelToggle
     } = {}) {
       bindButton('control-play-pause', onPlayPause);
@@ -56,6 +57,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindButton('control-replay-toggle', onReplayToggle);
       bindButton('control-replay-play-pause', onReplayPlayPause);
       bindRangeControl('control-replay-frame', onReplayFrameChange);
+      bindCheckboxControl('control-replay-enabled', onReplayEnabledChange);
       bindDetailsToggle('panel-advanced', onPanelToggle);
       bindDetailsToggle('panel-replay', onPanelToggle);
       bindDetailsToggle('panel-diagnostics', onPanelToggle);
@@ -107,6 +109,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       syncNumericValue('control-procedural-density', config.procedural?.density ?? 0.6);
       syncNumericValue('control-procedural-signal-rate', config.procedural?.signalRate ?? 0.45);
       syncSelectValue('control-overlay-mode', config.overlayMode ?? 'off');
+      syncCheckboxValue('control-replay-enabled', config.replayEnabled !== false);
     },
     renderSummary(metrics = []) {
       renderMetricList('summary-metrics', metrics);

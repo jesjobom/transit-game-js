@@ -41,6 +41,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['control-replay-play-pause', createElement('control-replay-play-pause')],
     ['control-replay-frame', Object.assign(createElement('control-replay-frame'), { value: '0', min: '0', max: '0' })],
     ['control-replay-frame-value', createElement('control-replay-frame-value')],
+    ['control-replay-enabled', Object.assign(createElement('control-replay-enabled'), { checked: true })],
     ['control-mode', Object.assign(createElement('control-mode'), { value: 'benchmark' })],
     ['control-speed', Object.assign(createElement('control-speed'), { value: '0.75' })],
     ['control-benchmark-duration', Object.assign(createElement('control-benchmark-duration'), { value: '60' })],
@@ -102,6 +103,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     let replayToggleCalls = 0;
     let replayPlayPauseCalls = 0;
     const replayFrameCalls = [];
+    const replayEnabledCalls = [];
     const panelToggleCalls = [];
     const appShell = createAppShell({
       world: {},
@@ -159,6 +161,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       onReplayFrameChange(frameIndex) {
         replayFrameCalls.push(frameIndex);
       },
+      onReplayEnabledChange(enabled) {
+        replayEnabledCalls.push(enabled);
+      },
       onPanelToggle(id, isOpen) {
         panelToggleCalls.push([id, isOpen]);
       }
@@ -188,11 +193,14 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     elements.get('control-replay-play-pause').onclick();
     elements.get('control-replay-frame').value = '2';
     elements.get('control-replay-frame').oninput();
+    elements.get('control-replay-enabled').checked = false;
+    elements.get('control-replay-enabled').onchange();
     elements.get('panel-diagnostics').open = true;
     elements.get('panel-diagnostics').ontoggle();
     assert.equal(replayToggleCalls, 1);
     assert.equal(replayPlayPauseCalls, 1);
     assert.deepEqual(replayFrameCalls, [2]);
+    assert.deepEqual(replayEnabledCalls, [true, false]);
     assert.deepEqual(panelToggleCalls, [['panel-diagnostics', true]]);
 
     appShell.setSpeedState(1.5, 280);
@@ -266,6 +274,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
         signalRate: 0.5
       },
       overlayMode: 'flow',
+      replayEnabled: false,
       rules: {
         freeRightOnRed: true,
         fourWayStop: true,
@@ -281,6 +290,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-procedural-density').value, '0.7');
     assert.equal(elements.get('control-procedural-signal-rate').value, '0.5');
     assert.equal(elements.get('control-overlay-mode').value, 'flow');
+    assert.equal(elements.get('control-replay-enabled').checked, false);
     assert.equal(elements.get('rule-free-right-on-red').checked, true);
 
     appShell.syncUiVisibility({

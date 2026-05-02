@@ -16,7 +16,7 @@ import {
 } from './ui/view-model.js';
 import { APP_VERSION, BUILD_TAG } from './version.js';
 import { createEngine } from '../core/engine.js';
-import { captureReplayFrame, createWorldState } from '../core/world.js';
+import { maybeCaptureReplayFrame, createWorldState } from '../core/world.js';
 import { buildWorldOptionsFromScenario, getScenarioById, getScenarioCatalog, parseScenarioJson } from '../core/scenario.js';
 
 const BASE_TICK_INTERVAL_MS = 420;
@@ -107,6 +107,7 @@ function boot() {
     },
     onModeChange(nextMode) {
       runtimeConfig.mode = nextMode === 'sandbox' ? 'sandbox' : 'benchmark';
+      runtimeConfig.replayEnabled = runtimeConfig.mode === 'benchmark';
       applyRuntimeConfig();
     },
     onRuleChange(ruleKey, enabled) {
@@ -190,6 +191,10 @@ function boot() {
       stopReplayLoop();
       replayState.frameIndex = Math.max(0, Math.min(state.world.replay.frames.length - 1, Math.round(frameIndex)));
       render();
+    },
+    onReplayEnabledChange(enabled) {
+      runtimeConfig.replayEnabled = enabled;
+      applyRuntimeConfig();
     },
     onPanelToggle() {
       renderThrottleCache.diagnosticsTick = -1;
@@ -499,12 +504,13 @@ function createSimulationState(runtimeConfig = createRuntimeConfig()) {
   const world = createWorldState({
     ...buildWorldOptionsFromScenario(scenario, runtimeConfig),
     replay: {
-      captureEveryTicks: runtimeConfig.mode === 'benchmark' ? 2 : 1
+      enabled: runtimeConfig.replayEnabled,
+      captureEveryTicks: runtimeConfig.replayEnabled ? (runtimeConfig.mode === 'benchmark' ? 2 : 1) : 1
     }
   });
   world.scenarioId = scenario.id;
   world.scenarioName = scenario.name;
-  captureReplayFrame(world);
+  maybeCaptureReplayFrame(world);
   return {
     world,
     engine: createEngine(world)
@@ -514,6 +520,7 @@ function createSimulationState(runtimeConfig = createRuntimeConfig()) {
 function createRuntimeConfig() {
   return {
     mode: 'benchmark',
+    replayEnabled: true,
     scenarioId: 'baseline-benchmark',
     importedScenarios: [],
     benchmarkDurationTicks: 60,
