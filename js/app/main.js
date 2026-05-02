@@ -157,6 +157,9 @@ function boot() {
     onGridCellSelect(cell) {
       selectedCell = { x: cell.x, y: cell.y };
       selectedVehicleId = cell.vehicleId ?? null;
+      if (selectedCell || selectedVehicleId) {
+        appShell.setPanelOpen('panel-diagnostics', true);
+      }
       render();
     },
     onReplayToggle() {
@@ -166,6 +169,7 @@ function boot() {
       if (replayState.enabled) {
         stopLoop();
         replayState.frameIndex = Math.max(0, state.world.replay.frames.length - 1);
+        appShell.setPanelOpen('panel-replay', true);
       }
       render();
     },
@@ -173,6 +177,7 @@ function boot() {
       if (!replayState.enabled) {
         replayState.enabled = true;
         replayState.frameIndex = 0;
+        appShell.setPanelOpen('panel-replay', true);
       }
 
       replayState.isPlaying = !replayState.isPlaying;
@@ -190,6 +195,7 @@ function boot() {
       stopLoop();
       stopReplayLoop();
       replayState.frameIndex = Math.max(0, Math.min(state.world.replay.frames.length - 1, Math.round(frameIndex)));
+      appShell.setPanelOpen('panel-replay', true);
       render();
     },
     onReplayEnabledChange(enabled) {

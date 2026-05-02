@@ -13,8 +13,8 @@ Tudo que já foi entregue, substituído ou perdeu sentido com a arquitetura nova
 A versão atual do projeto fica oficialmente fechada como **V1**.
 
 ### Baseline validado da V1
-- **Versão visível da app:** `Sprint 42`
-- **Build tag:** `s42-optional-replay`
+- **Versão visível da app:** `Sprint 43`
+- **Build tag:** `s43-ux-polish`
 - **Último estado validado:** `73/73` testes passando
 
 ### Sprints de performance já concluídas e publicadas
@@ -31,6 +31,7 @@ A versão atual do projeto fica oficialmente fechada como **V1**.
 - **Sprint 40** — visibilidade contextual por modo, replay, comparação e inspeção
 - **Sprint 41** — diagnostics/perf detalhada só quando painéis relevantes estão abertos
 - **Sprint 42** — replay opcional com política padrão diferente entre benchmark e sandbox
+- **Sprint 43** — polish final de UX com painéis auto-contextuais e labels mais claras
 
 ### Manutenção recente validada
 - correção para invalidar/recalcular `world.report` a cada avanço real de tick, evitando métricas live congeladas
@@ -39,6 +40,7 @@ A versão atual do projeto fica oficialmente fechada como **V1**.
 - a UI agora esconde blocos irrelevantes conforme modo, tipo de mapa, estado de replay, histórico disponível e seleção ativa
 - a montagem de diagnostics detalhados e a medição de custo desse bloco agora só acontecem quando Diagnostics ou Benchmark Lab estão realmente em uso
 - replay deixou de ser obrigatório: benchmark começa com gravação ligada, sandbox reseta com gravação desligada e a captura pode ser desabilitada explicitamente
+- os painéis agora explicam melhor seu propósito e abrem automaticamente em fluxos em que o usuário claramente precisa deles
 
 ### O que a V1 já entrega
 A V1 já tem base técnica suficiente para deixar de ser um protótipo frágil e virar um simulador inicial consistente.

@@ -181,6 +181,14 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
         diagnosticsOpen: isPanelOpen('panel-diagnostics'),
         benchmarkLabOpen: isPanelOpen('panel-benchmark-lab')
       };
+    },
+    setPanelOpen(id, open) {
+      const element = document.getElementById(id);
+      if (!element) {
+        return;
+      }
+
+      element.open = Boolean(open);
     }
   };
 }

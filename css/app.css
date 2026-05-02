@@ -738,8 +738,19 @@ button {
   cursor: pointer;
   list-style: none;
   padding: 14px 16px;
-  font-weight: 600;
   color: #dbeafe;
+  display: grid;
+  gap: 2px;
+}
+
+.tool-panel summary span {
+  font-weight: 600;
+}
+
+.tool-panel summary small {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 500;
 }
 
 .tool-panel summary::-webkit-details-marker {

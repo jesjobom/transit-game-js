@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transit Game JS - Next</title>
-    <link rel="stylesheet" href="css/app.css?v=s42-optional-replay" />
+    <link rel="stylesheet" href="css/app.css?v=s43-ux-polish" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,7 +13,7 @@
           <h1>Transit Game JS</h1>
           <p class="subtitle">Next-generation simulation bootstrap</p>
         </div>
-        <div class="version-badge">Sprint 42</div>
+        <div class="version-badge">Sprint 43</div>
       </header>
 
       <main class="layout">
@@ -66,7 +66,7 @@
           </div>
 
           <details id="panel-advanced" class="tool-panel">
-            <summary>Advanced</summary>
+            <summary><span>Advanced</span><small>maps, rules, benchmark tuning</small></summary>
             <div class="tool-panel__body">
               <div class="control-buttons control-buttons--secondary">
                 <button id="control-step" type="button">+1 Tick</button>
@@ -136,7 +136,7 @@
           </details>
 
           <details id="panel-replay" class="tool-panel">
-            <summary>Replay</summary>
+            <summary><span>Replay</span><small>timeline and recording controls</small></summary>
             <div class="tool-panel__body">
               <div class="control-buttons control-buttons--secondary">
                 <button id="control-replay-toggle" type="button">Replay</button>
@@ -170,7 +170,7 @@
           </dl>
 
           <details id="panel-diagnostics" class="tool-panel">
-            <summary>Diagnostics</summary>
+            <summary><span>Diagnostics</span><small>live metrics, lights, events, inspector</small></summary>
             <div class="tool-panel__body">
               <h3>Runtime Status</h3>
               <dl class="status-list">
@@ -202,7 +202,7 @@
           </details>
 
           <details id="panel-benchmark-lab" class="tool-panel">
-            <summary>Benchmark Lab</summary>
+            <summary><span>Benchmark Lab</span><small>history and A/B comparisons</small></summary>
             <div class="tool-panel__body">
               <h3>Benchmark History</h3>
               <ol id="benchmark-history-list" class="info-list">
@@ -240,6 +240,6 @@
       </footer>
     </div>
 
-    <script type="module" src="js/app/main.js?v=s42-optional-replay"></script>
+    <script type="module" src="js/app/main.js?v=s43-ux-polish"></script>
   </body>
 </html>

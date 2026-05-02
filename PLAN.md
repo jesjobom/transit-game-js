@@ -8,7 +8,7 @@ Plano de simplificação de UX e redução de overhead do **transit-game-js**.
 - [x] Sprint 40 — Contextual Visibility
 - [x] Sprint 41 — Diagnostics Gating
 - [x] Sprint 42 — Optional Replay
-- [ ] Sprint 43 — UX Polish
+- [x] Sprint 43 — UX Polish
 
 As sprints de performance anteriores já foram concluídas.
 Agora o foco passa a ser **limpar a experiência**, separar melhor o que é fluxo principal versus laboratório/debug, e **parar de pagar custo de coleta/renderização quando a informação nem está visível**.
@@ -448,15 +448,23 @@ Menos uso de memória e menos serialização desnecessária.
 
 ## Sprint 43 — polimento final de UX e validação
 
+**Status:** concluído
+
 ### Entrega
-- revisar nomenclatura dos painéis
-- ajustar hierarquia visual
-- revisar defaults
-- garantir que benchmark lab e diagnostics ainda sejam úteis
-- revisar testes de UI/comportamento
+- [x] revisar nomenclatura dos painéis
+- [x] ajustar hierarquia visual
+- [x] revisar defaults
+- [x] garantir que benchmark lab e diagnostics ainda sejam úteis
+- [x] revisar testes de UI/comportamento
 
 ### Resultado esperado
 Experiência final mais limpa, previsível e com menos atrito.
+
+### Fechamento prático
+- [x] painéis agora mostram subtítulos curtos para explicar sua função
+- [x] Replay abre no contexto certo quando o usuário entra em replay/manual scrub
+- [x] Diagnostics abre quando há inspeção explícita por clique
+- [x] cobertura de teste ajustada para os novos hints e helpers de painel
 
 ---
 

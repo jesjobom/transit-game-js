@@ -328,6 +328,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       diagnosticsOpen: true,
       benchmarkLabOpen: true
     });
+
+    appShell.setPanelOpen('panel-advanced', true);
+    assert.equal(elements.get('panel-advanced').open, true);
   } finally {
     globalThis.document = originalDocument;
   }
