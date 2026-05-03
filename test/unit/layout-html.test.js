@@ -12,7 +12,9 @@ test('transit html groups advanced tooling behind dedicated panels', () => {
   assert.match(html, /<details id="panel-replay"/);
   assert.match(html, /<summary><span>Replay<\/span><small>timeline and recording controls<\/small><\/summary>/);
   assert.match(html, /id="control-replay-enabled"/);
+  assert.match(html, /id="control-map-zoom-auto"/);
   assert.match(html, /id="control-map-zoom"/);
+  assert.match(html, /Auto fit zoom/);
   assert.match(html, /Resize the map inside the viewport\./);
   assert.match(html, /id="control-light-phase-duration"/);
   assert.match(html, /title="Vehicle spawn attempts per tick\./);

@@ -24,6 +24,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       onProceduralHeightChange,
       onProceduralDensityChange,
       onProceduralSignalRateChange,
+      onMapZoomAutoChange,
       onMapZoomChange,
       onLightPhaseDurationChange,
       onImportScenario,
@@ -52,6 +53,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       bindNumberControl('control-procedural-height', onProceduralHeightChange);
       bindNumberControl('control-procedural-density', onProceduralDensityChange);
       bindNumberControl('control-procedural-signal-rate', onProceduralSignalRateChange);
+      bindCheckboxControl('control-map-zoom-auto', onMapZoomAutoChange);
       bindRangeControl('control-map-zoom', onMapZoomChange);
       bindNumberControl('control-light-phase-duration', onLightPhaseDurationChange);
       bindSelectControl('control-overlay-mode', onOverlayModeChange);
@@ -112,7 +114,7 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
       syncNumericValue('control-procedural-height', config.procedural?.height ?? 13);
       syncNumericValue('control-procedural-density', config.procedural?.density ?? 0.6);
       syncNumericValue('control-procedural-signal-rate', config.procedural?.signalRate ?? 0.45);
-      this.setMapZoomState(config.mapZoom ?? 1);
+      this.setMapZoomState(config.mapZoom ?? 1, config.mapZoomAuto !== false);
       syncNumericValue('control-light-phase-duration', config.lightPhaseDurationTicks ?? 5);
       syncSelectValue('control-overlay-mode', config.overlayMode ?? 'off');
       syncCheckboxValue('control-replay-enabled', config.replayEnabled !== false);
@@ -120,9 +122,14 @@ export function createAppShell({ world, engine, renderer, benchmark, appVersion 
     renderSummary(metrics = []) {
       renderMetricList('summary-metrics', metrics);
     },
-    setMapZoomState(zoomLevel = 1) {
+    setMapZoomState(zoomLevel = 1, isAuto = true) {
+      syncCheckboxValue('control-map-zoom-auto', isAuto);
       syncNumericValue('control-map-zoom', zoomLevel);
-      setTextContent('control-map-zoom-value', `${Math.round(Number(zoomLevel) * 100)}%`);
+      setTextContent('control-map-zoom-value', `${Math.round(Number(zoomLevel) * 100)}%${isAuto ? ' · auto' : ''}`);
+      const zoomControl = document.getElementById('control-map-zoom');
+      if (zoomControl) {
+        zoomControl.disabled = Boolean(isAuto);
+      }
     },
     renderDiagnostics({ metrics = [], lights = [], events = [] } = {}) {
       renderMetricList('live-metrics', metrics);

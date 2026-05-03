@@ -55,6 +55,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     ['control-procedural-height', Object.assign(createElement('control-procedural-height'), { value: '13' })],
     ['control-procedural-density', Object.assign(createElement('control-procedural-density'), { value: '0.6' })],
     ['control-procedural-signal-rate', Object.assign(createElement('control-procedural-signal-rate'), { value: '0.45' })],
+    ['control-map-zoom-auto', Object.assign(createElement('control-map-zoom-auto'), { checked: true })],
     ['control-map-zoom', Object.assign(createElement('control-map-zoom'), { value: '1' })],
     ['control-map-zoom-value', createElement('control-map-zoom-value')],
     ['control-light-phase-duration', Object.assign(createElement('control-light-phase-duration'), { value: '5' })],
@@ -102,6 +103,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     const proceduralHeightCalls = [];
     const proceduralDensityCalls = [];
     const proceduralSignalCalls = [];
+    const mapZoomAutoCalls = [];
     const mapZoomCalls = [];
     const lightPhaseDurationCalls = [];
     const selectedCells = [];
@@ -148,6 +150,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       onProceduralSignalRateChange(value) {
         proceduralSignalCalls.push(value);
       },
+      onMapZoomAutoChange(value) {
+        mapZoomAutoCalls.push(value);
+      },
       onMapZoomChange(value) {
         mapZoomCalls.push(value);
       },
@@ -189,6 +194,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.deepEqual(proceduralHeightCalls, [13]);
     assert.deepEqual(proceduralDensityCalls, [0.6]);
     assert.deepEqual(proceduralSignalCalls, [0.45]);
+    assert.deepEqual(mapZoomAutoCalls, [true]);
     assert.deepEqual(mapZoomCalls, []);
     assert.deepEqual(lightPhaseDurationCalls, [5]);
     assert.deepEqual(overlayModes, ['off']);
@@ -201,6 +207,10 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     elements.get('control-speed').value = '1.5';
     elements.get('control-speed').oninput();
     assert.deepEqual(speedCalls, [0.75, 1.5]);
+
+    elements.get('control-map-zoom-auto').checked = false;
+    elements.get('control-map-zoom-auto').onchange();
+    assert.deepEqual(mapZoomAutoCalls, [true, false]);
 
     elements.get('control-map-zoom').value = '0.8';
     elements.get('control-map-zoom').oninput();
@@ -253,9 +263,11 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
 
     appShell.renderSummary([{ label: 'Status', value: 'running' }]);
     assert.match(elements.get('summary-metrics').innerHTML, /running/);
-    appShell.setMapZoomState(0.85);
+    appShell.setMapZoomState(0.85, false);
     assert.equal(elements.get('control-map-zoom').value, '0.85');
     assert.equal(elements.get('control-map-zoom-value').textContent, '85%');
+    assert.equal(elements.get('control-map-zoom').disabled, false);
+    assert.equal(elements.get('control-map-zoom-auto').checked, false);
 
     appShell.renderBenchmarkComparison(['A: baseline', 'Score Δ (B-A): +10']);
     assert.match(elements.get('benchmark-compare-summary').innerHTML, /Score Δ/);
@@ -296,6 +308,7 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
       lightPhaseDurationTicks: 9,
       overlayMode: 'flow',
       mapZoom: 0.7,
+      mapZoomAuto: true,
       replayEnabled: false,
       rules: {
         freeRightOnRed: true,
@@ -314,7 +327,9 @@ test('createAppShell binds step control, speed control, mode, rules, and disable
     assert.equal(elements.get('control-light-phase-duration').value, '9');
     assert.equal(elements.get('control-overlay-mode').value, 'flow');
     assert.equal(elements.get('control-map-zoom').value, '0.7');
-    assert.equal(elements.get('control-map-zoom-value').textContent, '70%');
+    assert.equal(elements.get('control-map-zoom-value').textContent, '70% · auto');
+    assert.equal(elements.get('control-map-zoom').disabled, true);
+    assert.equal(elements.get('control-map-zoom-auto').checked, true);
     assert.equal(elements.get('control-replay-enabled').checked, false);
     assert.equal(elements.get('rule-free-right-on-red').checked, true);
 

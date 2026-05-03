@@ -236,6 +236,19 @@ test('computeWorldScale fits larger maps below the old minimum and honors zoom l
   assert.ok(zoomedInScale > autoFitScale);
 });
 
+test('computeWorldScale can bypass auto fit and honor manual zoom directly', () => {
+  const world = createWorldState({
+    mapMode: 'procedural',
+    procedural: { width: 25, height: 25, density: 0.8, signalRate: 0.5 }
+  });
+
+  const manualScale = computeWorldScale(world.map, { width: 320, height: 320 }, 0.8, false);
+  const autoScale = computeWorldScale(world.map, { width: 320, height: 320 }, 0.8, true);
+
+  assert.equal(manualScale, 0.8);
+  assert.ok(autoScale < manualScale);
+});
+
 test('buildWorldHtml uses the shortest turn arc for west-to-north conversions', () => {
   const world = createWorldState({
     vehicles: [

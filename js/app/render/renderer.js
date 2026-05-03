@@ -80,7 +80,7 @@ export function createRenderer(rootElement) {
         ...options,
         viewport,
         staticWorldDescriptor: staticWorldCache.descriptor,
-        worldScale: computeWorldScale(world.map, viewport, options.zoomLevel)
+        worldScale: computeWorldScale(world.map, viewport, options.zoomLevel, options.autoFitZoom !== false)
       };
 
       const canUseIncrementalDom = hasIncrementalDomSupport(rootElement);
@@ -313,12 +313,12 @@ function applyVehicleDescriptorToNode(node, descriptor) {
   node.setAttribute('aria-label', descriptor.ariaLabel);
 }
 
-export function computeWorldScale(map, viewport = {}, zoomLevel = 1) {
+export function computeWorldScale(map, viewport = {}, zoomLevel = 1, autoFitZoom = true) {
   const stageWidthPx = map.width * DEFAULT_TILE_SIZE_PX + WORLD_STAGE_PADDING_PX;
   const stageHeightPx = map.height * DEFAULT_TILE_SIZE_PX + WORLD_STAGE_PADDING_PX;
   const widthScale = Number.isFinite(viewport.width) ? viewport.width / stageWidthPx : 1;
   const heightScale = Number.isFinite(viewport.height) ? viewport.height / stageHeightPx : 1;
-  const fitScale = Math.min(1, widthScale, heightScale);
+  const fitScale = autoFitZoom ? Math.min(1, widthScale, heightScale) : 1;
   const normalizedZoomLevel = Number.isFinite(zoomLevel) ? zoomLevel : 1;
   return clampWorldScale(fitScale * normalizedZoomLevel);
 }
