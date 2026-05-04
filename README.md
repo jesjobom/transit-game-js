@@ -2,6 +2,10 @@
 
 Demo: https://jesjobom.github.io/transit-game-js/transit.html
 
+## Version note
+
+This second version of the project was also built to test the capabilities of the OpenClaw agent as a development assistant while evolving the simulator.
+
 While talking with a [friend](https://github.com/rogeriofonseca) about [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life) I had an idea about a simple transit simulator, where cars would indepentently move along roads respecting some basic rules. (Actually I had had this idea for some time, but I was lacking time and motivation to do it ^^).
 
 I chose Javascript/HTML to do it because
